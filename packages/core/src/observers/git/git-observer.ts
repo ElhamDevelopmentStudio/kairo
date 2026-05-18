@@ -1,6 +1,8 @@
 import type { GitCommitEvent } from "@kairo/shared";
 import simpleGit, { type SimpleGit } from "simple-git";
 
+type GitCommitFile = GitCommitEvent["payload"]["files"][number];
+
 export class GitObserver {
   private readonly git: SimpleGit;
 
@@ -12,10 +14,14 @@ export class GitObserver {
   }
 
   async commitsSince(sinceSha?: string): Promise<GitCommitEvent[]> {
-    const log = await this.git.log(sinceSha ? { from: sinceSha, to: "HEAD" } : {});
+    const log = await this.git.raw([
+      "log",
+      ...(sinceSha ? [`${sinceSha}..HEAD`] : []),
+      "--pretty=format:%H%x1f%P%x1f%an%x1f%aI%x1f%s%x1e",
+    ]);
     const now = new Date().toISOString();
     const events: GitCommitEvent[] = [];
-    for (const c of log.all) {
+    for (const c of parseCommits(log)) {
       events.push({
         id: crypto.randomUUID(),
         projectId: this.projectId,
@@ -25,13 +31,127 @@ export class GitObserver {
         kind: "git.commit",
         payload: {
           sha: c.hash,
-          parentShas: [],
-          author: c.author_name,
+          parentShas: c.parentShas,
+          author: c.author,
           message: c.message,
-          files: [],
+          files: await this.commitFiles(c.hash),
         },
       });
     }
     return events;
   }
+
+  private async commitFiles(sha: string): Promise<GitCommitFile[]> {
+    const [nameStatus, numstat] = await Promise.all([
+      this.git.raw(["show", "--format=", "--name-status", "-M", sha]),
+      this.git.raw(["show", "--format=", "--numstat", "-M", sha]),
+    ]);
+    const stats = parseNumstat(numstat);
+
+    return parseNameStatus(nameStatus).map((file) => ({
+      ...file,
+      additions: stats.get(file.path)?.additions ?? 0,
+      deletions: stats.get(file.path)?.deletions ?? 0,
+    }));
+  }
+}
+
+interface RawCommit {
+  hash: string;
+  parentShas: string[];
+  author: string;
+  date: string;
+  message: string;
+}
+
+interface ParsedFileStatus {
+  path: string;
+  status: GitCommitFile["status"];
+  renamedFrom?: string;
+}
+
+interface FileStats {
+  additions: number;
+  deletions: number;
+}
+
+function parseCommits(log: string): RawCommit[] {
+  return log
+    .split("\x1e")
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map((entry) => {
+      const [hash, parents = "", author = "", date = "", message = ""] = entry.split("\x1f");
+      if (!hash) {
+        throw new Error("git log returned a commit without a hash");
+      }
+
+      return {
+        hash,
+        parentShas: parents.split(" ").filter(Boolean),
+        author,
+        date,
+        message,
+      };
+    });
+}
+
+function parseNameStatus(output: string): ParsedFileStatus[] {
+  return output
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [rawStatus = "", firstPath, secondPath] = line.split("\t");
+      const status = normalizeStatus(rawStatus);
+
+      if ((status === "R" || status === "C") && firstPath && secondPath) {
+        return { status, renamedFrom: firstPath, path: secondPath };
+      }
+
+      if (!firstPath) {
+        throw new Error(`git show returned a file status without a path: ${line}`);
+      }
+
+      return { status, path: firstPath };
+    });
+}
+
+function parseNumstat(output: string): Map<string, FileStats> {
+  const stats = new Map<string, FileStats>();
+
+  for (const line of output.split("\n")) {
+    if (!line.trim()) continue;
+    const [rawAdditions = "0", rawDeletions = "0", ...pathParts] = line.split("\t");
+    const path = pathParts[pathParts.length - 1];
+    if (!path) {
+      throw new Error(`git show returned numstat without a path: ${line}`);
+    }
+
+    stats.set(path, {
+      additions: parseCount(rawAdditions),
+      deletions: parseCount(rawDeletions),
+    });
+  }
+
+  return stats;
+}
+
+function normalizeStatus(rawStatus: string): GitCommitFile["status"] {
+  const status = rawStatus[0];
+  if (
+    status === "A" ||
+    status === "M" ||
+    status === "D" ||
+    status === "R" ||
+    status === "C" ||
+    status === "U"
+  ) {
+    return status;
+  }
+  throw new Error(`unsupported git file status: ${rawStatus}`);
+}
+
+function parseCount(value: string): number {
+  return value === "-" ? 0 : Number.parseInt(value, 10);
 }

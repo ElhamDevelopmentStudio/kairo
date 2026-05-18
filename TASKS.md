@@ -125,9 +125,9 @@ phase plugs into a clean skeleton.
 **Goal:** point Kairo at any git repo, run `kairo sweep`, get `.kairo/timeline.md`
 + per-session markdown files that describe the project's evolution.
 
-### 1.1 — Flesh out `GitObserver`
+### 1.1 — Flesh out `GitObserver` ✅
 
-- [ ] **Goal:** commit events carry parents and file-level diff stats.
+- [x] **Goal:** commit events carry parents and file-level diff stats.
 - **Files:** `packages/core/src/observers/git/git-observer.ts` (move from current
   flat location into a folder per the AGENTS.md module convention).
 - **Acceptance:** `commitsSince()` returns events whose `payload.parentShas` and
