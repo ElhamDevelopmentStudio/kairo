@@ -204,9 +204,9 @@ phase plugs into a clean skeleton.
 - **Tests:** add cases to `merge-hooks.test.ts`.
 - **Notes:** Symmetry matters. The same tagging logic powers both install and uninstall.
 
-### 1.7 — Workspace `Session` persistence
+### 1.7 — Workspace `Session` persistence ✅
 
-- [ ] **Goal:** sessions are stored in SQLite, not only rendered to markdown.
+- [x] **Goal:** sessions are stored in SQLite, not only rendered to markdown.
 - **Files:**
   - `packages/core/src/event-store/event-store.ts` — add `appendSession`, `recentSessions`, `getSession`.
   - Migration is already in `migrate()` — sessions table exists.

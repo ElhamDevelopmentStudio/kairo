@@ -1,4 +1,4 @@
-import type { KairoEvent } from "@kairo/shared";
+import type { KairoEvent, Session } from "@kairo/shared";
 import Database from "better-sqlite3";
 
 interface EventRow {
@@ -9,6 +9,19 @@ interface EventRow {
   source: string;
   kind: string;
   payload: string;
+}
+
+interface SessionRow {
+  id: string;
+  project_id: string;
+  slug: string;
+  title: string;
+  started_at: string;
+  ended_at: string | null;
+  intent: string;
+  summary: string | null;
+  architecture_impact: string | null;
+  data: string;
 }
 
 export class EventStore {
@@ -102,9 +115,61 @@ export class EventStore {
     return event?.kind === "git.commit" ? event.payload.sha : null;
   }
 
+  appendSession(session: Session): void {
+    this.db
+      .prepare(
+        `INSERT INTO sessions (
+          id, project_id, slug, title, started_at, ended_at, intent, summary, architecture_impact, data
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          project_id = excluded.project_id,
+          slug = excluded.slug,
+          title = excluded.title,
+          started_at = excluded.started_at,
+          ended_at = excluded.ended_at,
+          intent = excluded.intent,
+          summary = excluded.summary,
+          architecture_impact = excluded.architecture_impact,
+          data = excluded.data`,
+      )
+      .run(
+        session.id,
+        session.projectId,
+        session.slug,
+        session.title,
+        session.startedAt,
+        session.endedAt,
+        session.intent,
+        session.summary,
+        session.architectureImpact,
+        JSON.stringify(session),
+      );
+  }
+
+  recentSessions(projectId: string, limit = 100): Session[] {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM sessions WHERE project_id = ?
+         ORDER BY started_at DESC LIMIT ?`,
+      )
+      .all(projectId, limit) as SessionRow[];
+    return rows.map(rowToSession);
+  }
+
+  getSession(id: string): Session | null {
+    const row = this.db.prepare("SELECT * FROM sessions WHERE id = ?").get(id) as
+      | SessionRow
+      | undefined;
+    return row ? rowToSession(row) : null;
+  }
+
   close(): void {
     this.db.close();
   }
+}
+
+function rowToSession(r: SessionRow): Session {
+  return JSON.parse(r.data) as Session;
 }
 
 function rowToEvent(r: EventRow): KairoEvent {

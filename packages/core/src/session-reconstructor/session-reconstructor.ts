@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { KairoEvent, Session } from "@kairo/shared";
 
 export interface SessionReconstructorOptions {
@@ -52,9 +53,10 @@ export class SessionReconstructor {
 
     const date = start.slice(0, 10);
     const slug = `${date}-session-${first.id.slice(0, 6)}`;
+    const eventIds = bucket.map((e) => e.id);
 
     return {
-      id: crypto.randomUUID(),
+      id: deterministicSessionId(this.projectId, eventIds),
       projectId: this.projectId,
       title: `Session ${slug}`,
       slug,
@@ -67,9 +69,26 @@ export class SessionReconstructor {
       files: [...files],
       summary: null,
       architectureImpact: null,
-      eventIds: bucket.map((e) => e.id),
+      eventIds,
     };
   }
+}
+
+function deterministicSessionId(projectId: string, eventIds: string[]): string {
+  const hash = createHash("sha256")
+    .update(projectId)
+    .update("\0")
+    .update(eventIds.join("\0"))
+    .digest();
+  const versionByte = hash[6];
+  const variantByte = hash[8];
+  if (versionByte === undefined || variantByte === undefined) {
+    throw new Error("sha256 digest was shorter than expected");
+  }
+  hash[6] = (versionByte & 0x0f) | 0x50;
+  hash[8] = (variantByte & 0x3f) | 0x80;
+  const hex = hash.toString("hex").slice(0, 32);
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
 }
 
 function bucketize(sorted: KairoEvent[], idleGapMinutes: number): KairoEvent[][] {

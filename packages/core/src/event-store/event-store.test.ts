@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { KairoEvent } from "@kairo/shared";
+import type { Session } from "@kairo/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EventStore } from "./event-store.ts";
 
@@ -35,6 +36,26 @@ function commitEvent(overrides: Partial<KairoEvent> = {}): KairoEvent {
     },
     ...overrides,
   } as KairoEvent;
+}
+
+function session(overrides: Partial<Session> = {}): Session {
+  return {
+    id: "11111111-1111-4111-8111-111111111111",
+    projectId: "p1",
+    title: "Session one",
+    slug: "session-one",
+    startedAt: "2026-05-18T10:00:00.000Z",
+    endedAt: "2026-05-18T11:00:00.000Z",
+    intent: "unknown",
+    themes: [],
+    affectedAreas: [],
+    commitShas: [],
+    files: [],
+    summary: null,
+    architectureImpact: null,
+    eventIds: [],
+    ...overrides,
+  };
 }
 
 describe("EventStore", () => {
@@ -109,5 +130,47 @@ describe("EventStore", () => {
 
     expect(store.latestGitCommitSha("p1")).toBe("newer");
     expect(store.latestGitCommitSha("missing")).toBeNull();
+  });
+
+  it("upserts and reads sessions by id", () => {
+    const first = session();
+    store.appendSession(first);
+    store.appendSession({ ...first, title: "Updated session", summary: "updated" });
+
+    expect(store.getSession(first.id)).toMatchObject({
+      id: first.id,
+      title: "Updated session",
+      summary: "updated",
+    });
+    expect(store.recentSessions("p1")).toHaveLength(1);
+  });
+
+  it("returns recent sessions newest first and scoped by project", () => {
+    store.appendSession(
+      session({
+        id: "22222222-2222-4222-8222-222222222222",
+        startedAt: "2026-05-18T09:00:00.000Z",
+      }),
+    );
+    store.appendSession(
+      session({
+        id: "33333333-3333-4333-8333-333333333333",
+        startedAt: "2026-05-18T11:00:00.000Z",
+      }),
+    );
+    store.appendSession(
+      session({
+        id: "44444444-4444-4444-8444-444444444444",
+        projectId: "p2",
+        startedAt: "2026-05-18T12:00:00.000Z",
+      }),
+    );
+
+    const out = store.recentSessions("p1");
+
+    expect(out).toHaveLength(2);
+    expect(out[0]?.startedAt).toBe("2026-05-18T11:00:00.000Z");
+    expect(out[1]?.startedAt).toBe("2026-05-18T09:00:00.000Z");
+    expect(store.getSession("missing")).toBeNull();
   });
 });

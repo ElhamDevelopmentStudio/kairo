@@ -36,6 +36,7 @@ describe("runSweep", () => {
     const store = new EventStore(workspace.dbPath);
     try {
       expect(store.eventsForProject(config.projectId)).toHaveLength(3);
+      expect(store.recentSessions(config.projectId)).toHaveLength(1);
     } finally {
       store.close();
     }
@@ -68,6 +69,7 @@ describe("runSweep", () => {
     const store = new EventStore(workspace.dbPath);
     try {
       expect(store.eventsForProject(config.projectId)).toHaveLength(3);
+      expect(store.recentSessions(config.projectId)).toHaveLength(1);
     } finally {
       store.close();
     }

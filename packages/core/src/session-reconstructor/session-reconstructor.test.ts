@@ -14,6 +14,13 @@ function fsEvent(occurredAt: string, path = "src/a.ts"): KairoEvent {
   };
 }
 
+function stableFsEvent(id: string, occurredAt: string, path = "src/a.ts"): KairoEvent {
+  return {
+    ...fsEvent(occurredAt, path),
+    id,
+  };
+}
+
 describe("SessionReconstructor", () => {
   it("returns no sessions for empty input", () => {
     const r = new SessionReconstructor("p1");
@@ -63,5 +70,19 @@ describe("SessionReconstructor", () => {
     ];
     const sessions = r.reconstruct(events);
     expect(sessions[0]?.files.sort()).toEqual(["src/a.ts", "src/b.ts"]);
+  });
+
+  it("generates stable session IDs for the same event bucket", () => {
+    const r = new SessionReconstructor("p1", { idleGapMinutes: 30, minEventsForSession: 2 });
+    const events = [
+      stableFsEvent("11111111-1111-4111-8111-111111111111", "2026-05-18T10:00:00.000Z"),
+      stableFsEvent("22222222-2222-4222-8222-222222222222", "2026-05-18T10:05:00.000Z"),
+    ];
+
+    const first = r.reconstruct(events);
+    const second = r.reconstruct(events);
+
+    expect(second[0]?.id).toBe(first[0]?.id);
+    expect(first[0]?.id).toMatch(/^[0-9a-f-]{36}$/);
   });
 });

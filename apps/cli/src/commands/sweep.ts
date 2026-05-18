@@ -47,6 +47,7 @@ export async function runSweep(opts: SweepOptions = {}, cwd = process.cwd()): Pr
     const eventsById = new Map(events.map((event) => [event.id, event]));
 
     for (const session of sessions) {
+      store.appendSession(session);
       const sessionEvents = session.eventIds
         .map((id) => eventsById.get(id))
         .filter((event): event is NonNullable<typeof event> => event !== undefined);
