@@ -1,13 +1,6 @@
 import { z } from "zod";
 
-export const EventSource = z.enum([
-  "git",
-  "fs",
-  "terminal",
-  "ai",
-  "session",
-  "manual",
-]);
+export const EventSource = z.enum(["git", "fs", "terminal", "ai", "session", "manual"]);
 export type EventSource = z.infer<typeof EventSource>;
 
 const BaseEvent = z.object({
