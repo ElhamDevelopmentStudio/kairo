@@ -43,7 +43,7 @@ kairo/
 │   ├── cli/              `kairo` CLI binary
 │   ├── mcp/              `kairo-mcp` MCP server
 │   ├── web/              Vite dashboard (Phase 4)
-│   └── desktop/          Tauri shell (Phase 5)
+│   └── desktop/          Electron shell (Phase 5)
 ├── templates/            Files dropped into user projects by `kairo init`
 └── (root config)         pnpm-workspace.yaml, turbo.json, tsconfig.base.json, …
 ```
@@ -237,8 +237,9 @@ sharing — sharing is recoverable, scattered duplicates are not.
 
 - **Don't add Hono / Express / Fastify** until you're building `apps/api` in
   Phase 4. The CLI talks to the core via direct function calls. No HTTP needed.
-- **Don't add Next.js.** The dashboard runs in a Tauri webview — Vite is right.
-- **Don't add Rust** before Phase 5. Node observation is more than fast enough
+- **Don't add Next.js.** The dashboard runs as the Electron renderer — Vite is right.
+- **Don't add Rust or native sidecars.** The Electron main process is already
+  Node — observers run in-process. Node observation is more than fast enough
   for v1.
 - **Don't add a queue / job system / message bus.** SQLite + a long-running
   process handles every Phase 1–3 workload.

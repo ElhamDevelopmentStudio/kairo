@@ -289,8 +289,8 @@ Planned stack:
 - shadcn/ui
 
 ## Runtime
-- Tauri
-- Rust background services
+- Electron (main + renderer)
+- Node background services
 
 ## Backend
 - Hono
@@ -400,7 +400,7 @@ no manual logging.
 - **MCP:** `@modelcontextprotocol/sdk`
 - **Schemas:** `zod`
 
-Tauri desktop shell and a Vite + React dashboard are deferred to a later phase.
+Electron desktop shell and a Vite + React dashboard are deferred to a later phase.
 
 ---
 

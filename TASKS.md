@@ -225,9 +225,9 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
 **Goal:** while you code with Claude Code / Codex normally, Kairo updates
 `.kairo/` passively in the background and the AI can query it via MCP.
 
-### 2.1 — `kairo watch` (long-running daemon)
+### 2.1 — `kairo watch` (long-running daemon) ✅
 
-- [ ] **Goal:** one process that holds FileObserver and tails git, writes events live.
+- [x] **Goal:** one process that holds FileObserver and tails git, writes events live.
 - **Files:**
   - `apps/cli/src/commands/watch.ts`.
   - `packages/core/src/observers/file/file-observer.ts` (move into a folder).
@@ -422,7 +422,7 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
   - (b) **Sqlite WASM in browser:** Web reads `.kairo/kairo.db` directly via wa-sqlite. (Stricter local-first, more setup.)
 - **Acceptance:** decision recorded in `docs/decisions/0001-web-data-source.md` with rationale.
 - **Notes:** Recommend (a) for v1 — simpler. (b) becomes a later option when
-  Tauri-shelling.
+  Electron-shelling, since the renderer can speak directly to the main process.
 
 ### 4.3 — Timeline view
 
@@ -453,32 +453,45 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
 
 ---
 
-## Phase 5 — Tauri desktop shell
+## Phase 5 — Electron desktop shell
 
 **Goal:** real desktop app, tray icon, autostart, observer running as a background service.
 
-### 5.1 — `apps/desktop` Tauri 2 skeleton
+### 5.1 — `apps/desktop` Electron skeleton
 
-- [ ] **Goal:** Tauri shell wraps `apps/web`.
-- **Files:** `apps/desktop/`.
-- **Acceptance:** `pnpm --filter @kairo/desktop tauri dev` opens the dashboard
-  in a native window.
+- [ ] **Goal:** Electron shell wraps `apps/web`.
+- **Files:** `apps/desktop/` — `electron/main.ts` (main process), `electron/preload.ts`
+  (context bridge), `electron.vite.config.ts` (or electron-forge config).
+- **Acceptance:** `pnpm --filter @kairo/desktop dev` opens the dashboard in a
+  native Electron window with HMR for the renderer.
+- **Notes:** Use `electron-vite` for the dev/build pipeline. The renderer is the
+  same Vite build that `apps/web` produces — Electron just hosts it.
 
 ### 5.2 — Tray icon + autostart
 
 - [ ] **Goal:** menubar icon, "open dashboard", "pause observation", autostart on login.
-- **Acceptance:** verified manually on macOS; plan for Linux + Windows.
+- **Files:** `apps/desktop/electron/tray.ts`, `apps/desktop/electron/autostart.ts`.
+- **Acceptance:** verified manually on macOS; plan for Linux + Windows. Autostart
+  uses Electron's `app.setLoginItemSettings` on macOS/Windows and a `.desktop`
+  file installer on Linux.
 
 ### 5.3 — Observer process management
 
-- [ ] **Goal:** Tauri spawns `kairo watch` per registered project; supervises it.
-- **Files:** `apps/desktop/src-tauri/src/observer.rs`.
+- [ ] **Goal:** the Electron main process runs `kairo watch` (or its underlying
+  observer module) for each registered project and supervises it.
+- **Files:** `apps/desktop/electron/observer-supervisor.ts`.
 - **Acceptance:** open desktop app → projects you've registered show as "observing".
+- **Notes:** Since the main process is Node, prefer importing `@kairo/core`
+  observers directly over spawning a child `kairo watch` process — fewer moving
+  parts, fewer IPC hops. Fall back to spawning only if isolation is required
+  (e.g. user wants the daemon to survive desktop quit).
 
 ### 5.4 — Session boundary notifications
 
 - [ ] **Goal:** OS notification when a session finalizes.
-- **Acceptance:** opt-in toggle in settings; notification on Mac/Linux/Windows.
+- **Files:** `apps/desktop/electron/notifications.ts`.
+- **Acceptance:** opt-in toggle in settings; notification on Mac/Linux/Windows
+  via Electron's `Notification` API.
 
 **Milestone:** open Kairo from the dock, see your projects, get a notification when a coding session wraps.
 
@@ -508,7 +521,7 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
 
 ### 6.4 — Release workflow
 
-- [ ] **Goal:** tag → npm publish + Tauri build artifacts.
+- [ ] **Goal:** tag → npm publish + Electron build artifacts (`.dmg`, `.AppImage`, `.exe`) via `electron-builder`.
 - **Files:** `.github/workflows/release.yml`.
 
 ### 6.5 — Docs site

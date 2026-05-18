@@ -1032,8 +1032,10 @@ Recommended frontend stack:
 # 19.2 Desktop Runtime
 
 Recommended desktop/runtime technologies:
-- Tauri
-- Rust background services
+- Electron (main + renderer)
+- Node background services running in the Electron main process
+- `electron-vite` for the dev/build pipeline
+- `electron-builder` for distributable artifacts (.dmg / .AppImage / .exe)
 - local process orchestration
 
 ---

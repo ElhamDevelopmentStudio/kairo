@@ -1,3 +1,4 @@
+import { relative } from "node:path";
 import type { FileChangeEvent } from "@kairo/shared";
 import chokidar, { type FSWatcher } from "chokidar";
 
@@ -12,7 +13,7 @@ export class FileObserver {
     private readonly ignore: string[],
   ) {}
 
-  start(onEvent: FileEventHandler): void {
+  start(onEvent: FileEventHandler): Promise<void> {
     this.watcher = chokidar.watch(this.root, {
       ignored: this.ignore,
       ignoreInitial: true,
@@ -21,6 +22,9 @@ export class FileObserver {
     this.watcher.on("add", (p) => onEvent(this.event(p, "create")));
     this.watcher.on("change", (p) => onEvent(this.event(p, "modify")));
     this.watcher.on("unlink", (p) => onEvent(this.event(p, "delete")));
+    return new Promise((resolve) => {
+      this.watcher?.once("ready", resolve);
+    });
   }
 
   async stop(): Promise<void> {
@@ -30,6 +34,7 @@ export class FileObserver {
 
   private event(path: string, op: FileChangeEvent["payload"]["op"]): FileChangeEvent {
     const now = new Date().toISOString();
+    const projectPath = relative(this.root, path);
     return {
       id: crypto.randomUUID(),
       projectId: this.projectId,
@@ -37,7 +42,7 @@ export class FileObserver {
       observedAt: now,
       source: "fs",
       kind: "fs.change",
-      payload: { path, op },
+      payload: { path: projectPath, op },
     };
   }
 }

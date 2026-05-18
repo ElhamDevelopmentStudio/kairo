@@ -9,6 +9,7 @@ import { showCommand } from "./commands/show.ts";
 import { sweepCommand } from "./commands/sweep.ts";
 import { timelineCommand } from "./commands/timeline.ts";
 import { wakeCommand } from "./commands/wake.ts";
+import { watchCommand } from "./commands/watch.ts";
 
 const program = new Command();
 program
@@ -24,6 +25,7 @@ program.addCommand(showCommand);
 program.addCommand(searchCommand);
 program.addCommand(sweepCommand);
 program.addCommand(wakeCommand);
+program.addCommand(watchCommand);
 program.addCommand(serveCommand);
 
 program.parseAsync(process.argv).catch((err) => {
