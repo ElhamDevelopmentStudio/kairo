@@ -68,4 +68,46 @@ describe("EventStore", () => {
     }
     expect(store.recentEvents("p1", 2)).toHaveLength(2);
   });
+
+  it("loads all project events oldest first", () => {
+    store.append(commitEvent({ occurredAt: "2026-05-18T11:00:00.000Z" }));
+    store.append(commitEvent({ id: crypto.randomUUID(), occurredAt: "2026-05-18T09:00:00.000Z" }));
+
+    const out = store.eventsForProject("p1");
+
+    expect(out).toHaveLength(2);
+    expect(out[0]?.occurredAt).toBe("2026-05-18T09:00:00.000Z");
+    expect(out[1]?.occurredAt).toBe("2026-05-18T11:00:00.000Z");
+  });
+
+  it("returns the latest ingested git commit SHA", () => {
+    store.append(
+      commitEvent({
+        occurredAt: "2026-05-18T09:00:00.000Z",
+        payload: {
+          sha: "older",
+          parentShas: [],
+          author: "test",
+          message: "older commit",
+          files: [],
+        },
+      }),
+    );
+    store.append(
+      commitEvent({
+        id: crypto.randomUUID(),
+        occurredAt: "2026-05-18T11:00:00.000Z",
+        payload: {
+          sha: "newer",
+          parentShas: ["older"],
+          author: "test",
+          message: "newer commit",
+          files: [],
+        },
+      }),
+    );
+
+    expect(store.latestGitCommitSha("p1")).toBe("newer");
+    expect(store.latestGitCommitSha("missing")).toBeNull();
+  });
 });

@@ -80,6 +80,28 @@ export class EventStore {
     return rows.map(rowToEvent);
   }
 
+  eventsForProject(projectId: string): KairoEvent[] {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM events WHERE project_id = ?
+         ORDER BY occurred_at ASC`,
+      )
+      .all(projectId) as EventRow[];
+    return rows.map(rowToEvent);
+  }
+
+  latestGitCommitSha(projectId: string): string | null {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM events
+         WHERE project_id = ? AND kind = 'git.commit'
+         ORDER BY occurred_at DESC LIMIT 1`,
+      )
+      .all(projectId) as EventRow[];
+    const [event] = rows.map(rowToEvent);
+    return event?.kind === "git.commit" ? event.payload.sha : null;
+  }
+
   close(): void {
     this.db.close();
   }

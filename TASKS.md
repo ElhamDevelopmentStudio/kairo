@@ -162,9 +162,9 @@ phase plugs into a clean skeleton.
 - **Notes:** Use zod schemas from `@kairo/shared`. Use a `Workspace.find()`
   helper that walks up from cwd to find `.kairo/` (add it to `packages/core/src/workspace/`).
 
-### 1.4 — Implement `kairo sweep`
+### 1.4 — Implement `kairo sweep` ✅
 
-- [ ] **Goal:** the first real end-to-end pipeline.
+- [x] **Goal:** the first real end-to-end pipeline.
 - **Files:** `apps/cli/src/commands/sweep.ts`.
 - **Pipeline:**
   1. `Workspace.find()` from cwd.
