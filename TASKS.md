@@ -181,9 +181,9 @@ phase plugs into a clean skeleton.
   asserts files exist and contain expected fragments.
 - **Notes:** **(blocks: 1.5, 1.6)**
 
-### 1.5 — Hook merge in `kairo init`
+### 1.5 — Hook merge in `kairo init` ✅
 
-- [ ] **Goal:** `kairo init` installs Claude Code + Codex hooks non-destructively.
+- [x] **Goal:** `kairo init` installs Claude Code + Codex hooks non-destructively.
 - **Files:**
   - `apps/cli/src/commands/init.ts` (extend).
   - `packages/core/src/hooks/` new module — `merge-hooks.ts`, `merge-hooks.test.ts`.
