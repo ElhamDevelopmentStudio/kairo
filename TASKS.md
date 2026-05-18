@@ -137,9 +137,9 @@ phase plugs into a clean skeleton.
 - **Notes:** Use `git log --pretty=format:%H|%P|%an|%aI|%s` + `git show --name-status --numstat <sha>`,
   parse both. Or use `simple-git`'s `raw(['show', '--name-status', '--numstat', sha])`.
 
-### 1.2 — Markdown render module
+### 1.2 — Markdown render module ✅
 
-- [ ] **Goal:** pure functions turn Sessions into markdown.
+- [x] **Goal:** pure functions turn Sessions into markdown.
 - **Files:**
   - `packages/core/src/render/index.ts` (public surface).
   - `packages/core/src/render/timeline.ts` — `renderTimeline(sessions: Session[]): string`.
