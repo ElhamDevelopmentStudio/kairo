@@ -151,9 +151,9 @@ phase plugs into a clean skeleton.
 - **Notes:** Keep markdown stable — diffs in `.kairo/timeline.md` should be
   meaningful, not churn. Sort sessions newest-first.
 
-### 1.3 — Wire `kairo ingest`
+### 1.3 — Wire `kairo ingest` ✅
 
-- [ ] **Goal:** the stub becomes real. Hooks call this; events land in SQLite.
+- [x] **Goal:** the stub becomes real. Hooks call this; events land in SQLite.
 - **Files:** `apps/cli/src/commands/ingest.ts`.
 - **Acceptance:** `kairo ingest git --payload '{"sha":"..."}'` validates with
   zod, opens `Workspace`, writes one event row to `kairo.db`.

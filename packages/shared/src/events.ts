@@ -32,6 +32,11 @@ export const GitCommitEvent = BaseEvent.extend({
 });
 export type GitCommitEvent = z.infer<typeof GitCommitEvent>;
 
+export const GitIngestPayload = z.object({
+  sha: z.string().min(1),
+});
+export type GitIngestPayload = z.infer<typeof GitIngestPayload>;
+
 export const GitBranchEvent = BaseEvent.extend({
   kind: z.literal("git.branch"),
   payload: z.object({

@@ -22,23 +22,42 @@ export class GitObserver {
     const now = new Date().toISOString();
     const events: GitCommitEvent[] = [];
     for (const c of parseCommits(log)) {
-      events.push({
-        id: crypto.randomUUID(),
-        projectId: this.projectId,
-        occurredAt: new Date(c.date).toISOString(),
-        observedAt: now,
-        source: "git",
-        kind: "git.commit",
-        payload: {
-          sha: c.hash,
-          parentShas: c.parentShas,
-          author: c.author,
-          message: c.message,
-          files: await this.commitFiles(c.hash),
-        },
-      });
+      events.push(await this.toEvent(c, now));
     }
     return events;
+  }
+
+  async commit(sha: string): Promise<GitCommitEvent> {
+    const log = await this.git.raw([
+      "log",
+      "-1",
+      sha,
+      "--pretty=format:%H%x1f%P%x1f%an%x1f%aI%x1f%s%x1e",
+    ]);
+    const [commit] = parseCommits(log);
+    if (!commit) {
+      throw new Error(`Git commit not found: ${sha}`);
+    }
+
+    return this.toEvent(commit, new Date().toISOString());
+  }
+
+  private async toEvent(commit: RawCommit, observedAt: string): Promise<GitCommitEvent> {
+    return {
+      id: crypto.randomUUID(),
+      projectId: this.projectId,
+      occurredAt: new Date(commit.date).toISOString(),
+      observedAt,
+      source: "git",
+      kind: "git.commit",
+      payload: {
+        sha: commit.hash,
+        parentShas: commit.parentShas,
+        author: commit.author,
+        message: commit.message,
+        files: await this.commitFiles(commit.hash),
+      },
+    };
   }
 
   private async commitFiles(sha: string): Promise<GitCommitFile[]> {

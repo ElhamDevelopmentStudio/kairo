@@ -1,5 +1,5 @@
 import { existsSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { ensureDir, readJson, writeJson } from "@kairo/utils/fs";
 
 const WORKSPACE_DIR = ".kairo";
@@ -18,6 +18,21 @@ const DEFAULT_IGNORE = ["node_modules/**", "dist/**", ".git/**", ".kairo/**"];
 export class Workspace {
   readonly root: string;
   readonly dir: string;
+
+  static find(start = process.cwd()): Workspace {
+    let current = resolve(start);
+
+    while (true) {
+      const workspace = new Workspace(current);
+      if (workspace.exists()) return workspace;
+
+      const parent = dirname(current);
+      if (parent === current) {
+        throw new Error(`No Kairo workspace found from ${resolve(start)}`);
+      }
+      current = parent;
+    }
+  }
 
   constructor(projectRoot: string) {
     this.root = projectRoot;

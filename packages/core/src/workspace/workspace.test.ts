@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -44,6 +44,24 @@ describe("Workspace.readConfig", () => {
     const ws = new Workspace(projectRoot);
     const written = ws.init("demo");
     expect(ws.readConfig()).toEqual(written);
+  });
+});
+
+describe("Workspace.find", () => {
+  it("walks up from a nested directory to find .kairo", () => {
+    const ws = new Workspace(projectRoot);
+    ws.init("demo");
+    const nested = join(projectRoot, "a", "b");
+    mkdirSync(nested, { recursive: true });
+
+    const found = Workspace.find(nested);
+
+    expect(found.root).toBe(projectRoot);
+    expect(found.dir).toBe(ws.dir);
+  });
+
+  it("throws when no workspace exists above the start directory", () => {
+    expect(() => Workspace.find(projectRoot)).toThrow(/No Kairo workspace found/);
   });
 });
 
