@@ -1,0 +1,17 @@
+{
+  "_comment": "Drop into .codex/hooks.json. Same observation shape as Claude Code hooks.",
+  "hooks": [
+    {
+      "event": "post_edit",
+      "command": "kairo ingest fs --payload \"$CODEX_HOOK_PAYLOAD\""
+    },
+    {
+      "event": "post_command",
+      "command": "kairo ingest terminal --payload \"$CODEX_HOOK_PAYLOAD\""
+    },
+    {
+      "event": "session_start",
+      "command": "kairo wake --days 7"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# build
+dist/
+build/
+*.tsbuildinfo
+
+# turbo
+.turbo/
+
+# env / local
+.env
+.env.local
+.env.*.local
+
+# local Kairo workspace state (per-project, never committed by users either)
+.kairo/kairo.db
+.kairo/kairo.db-journal
+.kairo/kairo.db-wal
+.kairo/kairo.db-shm
+.kairo/cache/
+.kairo/logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# editors
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+.idea/
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*

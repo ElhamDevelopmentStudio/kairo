@@ -1,0 +1,36 @@
+{
+  "_comment": "Drop into .claude/hooks.json in your project. Kairo init merges these in non-destructively.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "kairo ingest fs --payload \"$CLAUDE_HOOK_PAYLOAD\""
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "kairo ingest ai --payload \"$CLAUDE_HOOK_PAYLOAD\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "kairo wake --days 7"
+          }
+        ]
+      }
+    ]
+  }
+}

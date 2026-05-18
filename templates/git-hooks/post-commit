@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Kairo git post-commit hook.
+# Symlink or copy into .git/hooks/post-commit and chmod +x.
+set -euo pipefail
+if command -v kairo >/dev/null 2>&1; then
+  kairo ingest git --payload "{\"sha\": \"$(git rev-parse HEAD)\"}" || true
+fi
