@@ -1,5 +1,5 @@
-import chokidar, { type FSWatcher } from "chokidar";
 import type { FileChangeEvent } from "@kairo/shared";
+import chokidar, { type FSWatcher } from "chokidar";
 
 export type FileEventHandler = (event: FileChangeEvent) => void;
 

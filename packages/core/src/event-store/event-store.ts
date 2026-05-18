@@ -1,5 +1,15 @@
-import Database from "better-sqlite3";
 import type { KairoEvent } from "@kairo/shared";
+import Database from "better-sqlite3";
+
+interface EventRow {
+  id: string;
+  project_id: string;
+  occurred_at: string;
+  observed_at: string;
+  source: string;
+  kind: string;
+  payload: string;
+}
 
 export class EventStore {
   private readonly db: Database.Database;
@@ -66,30 +76,23 @@ export class EventStore {
         `SELECT * FROM events WHERE project_id = ?
          ORDER BY occurred_at DESC LIMIT ?`,
       )
-      .all(projectId, limit) as Array<{
-      id: string;
-      project_id: string;
-      occurred_at: string;
-      observed_at: string;
-      source: string;
-      kind: string;
-      payload: string;
-    }>;
-    return rows.map(
-      (r) =>
-        ({
-          id: r.id,
-          projectId: r.project_id,
-          occurredAt: r.occurred_at,
-          observedAt: r.observed_at,
-          source: r.source,
-          kind: r.kind,
-          payload: JSON.parse(r.payload),
-        }) as KairoEvent,
-    );
+      .all(projectId, limit) as EventRow[];
+    return rows.map(rowToEvent);
   }
 
   close(): void {
     this.db.close();
   }
+}
+
+function rowToEvent(r: EventRow): KairoEvent {
+  return {
+    id: r.id,
+    projectId: r.project_id,
+    occurredAt: r.occurred_at,
+    observedAt: r.observed_at,
+    source: r.source,
+    kind: r.kind,
+    payload: JSON.parse(r.payload),
+  } as KairoEvent;
 }

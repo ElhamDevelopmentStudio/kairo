@@ -1,5 +1,6 @@
-import { existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { ensureDir, readJson, writeJson } from "@kairo/utils/fs";
 
 const WORKSPACE_DIR = ".kairo";
 const CONFIG_FILE = "config.json";
@@ -11,6 +12,8 @@ export interface WorkspaceConfig {
   createdAt: string;
   ignore: string[];
 }
+
+const DEFAULT_IGNORE = ["node_modules/**", "dist/**", ".git/**", ".kairo/**"];
 
 export class Workspace {
   readonly root: string;
@@ -29,23 +32,26 @@ export class Workspace {
     if (this.exists()) {
       throw new Error(`Kairo workspace already exists at ${this.dir}`);
     }
-    mkdirSync(this.dir, { recursive: true });
-    mkdirSync(join(this.dir, "sessions"), { recursive: true });
-    mkdirSync(join(this.dir, "logs"), { recursive: true });
+    ensureDir(this.dir);
+    ensureDir(join(this.dir, "sessions"));
+    ensureDir(join(this.dir, "logs"));
 
     const config: WorkspaceConfig = {
       projectId: crypto.randomUUID(),
       projectName: name,
       createdAt: new Date().toISOString(),
-      ignore: ["node_modules/**", "dist/**", ".git/**", ".kairo/**"],
+      ignore: [...DEFAULT_IGNORE],
     };
-    writeFileSync(this.configPath, JSON.stringify(config, null, 2));
-    writeFileSync(this.timelinePath, `# ${name} — Timeline\n\n_Kairo just woke up. No sessions yet._\n`);
+    writeJson(this.configPath, config);
+    writeFileSync(
+      this.timelinePath,
+      `# ${name} — Timeline\n\n_Kairo just woke up. No sessions yet._\n`,
+    );
     return config;
   }
 
   readConfig(): WorkspaceConfig {
-    return JSON.parse(readFileSync(this.configPath, "utf8")) as WorkspaceConfig;
+    return readJson<WorkspaceConfig>(this.configPath);
   }
 
   get configPath(): string {

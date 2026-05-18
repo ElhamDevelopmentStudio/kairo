@@ -1,5 +1,5 @@
-import simpleGit, { type SimpleGit } from "simple-git";
 import type { GitCommitEvent } from "@kairo/shared";
+import simpleGit, { type SimpleGit } from "simple-git";
 
 export class GitObserver {
   private readonly git: SimpleGit;

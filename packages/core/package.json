@@ -10,11 +10,14 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsc -b",
-    "clean": "rm -rf dist .tsbuildinfo"
+    "lint": "biome check src",
+    "test": "vitest run",
+    "build": "tsc",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "@kairo/shared": "workspace:*",
+    "@kairo/utils": "workspace:*",
     "better-sqlite3": "^11.3.0",
     "chokidar": "^4.0.0",
     "simple-git": "^3.27.0",

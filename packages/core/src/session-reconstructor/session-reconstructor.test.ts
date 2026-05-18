@@ -1,0 +1,67 @@
+import type { KairoEvent } from "@kairo/shared";
+import { describe, expect, it } from "vitest";
+import { SessionReconstructor } from "./session-reconstructor.ts";
+
+function fsEvent(occurredAt: string, path = "src/a.ts"): KairoEvent {
+  return {
+    id: crypto.randomUUID(),
+    projectId: "p1",
+    occurredAt,
+    observedAt: occurredAt,
+    source: "fs",
+    kind: "fs.change",
+    payload: { path, op: "modify" },
+  };
+}
+
+describe("SessionReconstructor", () => {
+  it("returns no sessions for empty input", () => {
+    const r = new SessionReconstructor("p1");
+    expect(r.reconstruct([])).toEqual([]);
+  });
+
+  it("buckets consecutive events into a single session", () => {
+    const r = new SessionReconstructor("p1", { idleGapMinutes: 30, minEventsForSession: 3 });
+    const events = [
+      fsEvent("2026-05-18T10:00:00.000Z"),
+      fsEvent("2026-05-18T10:05:00.000Z"),
+      fsEvent("2026-05-18T10:20:00.000Z"),
+    ];
+    const sessions = r.reconstruct(events);
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0]?.startedAt).toBe("2026-05-18T10:00:00.000Z");
+    expect(sessions[0]?.endedAt).toBe("2026-05-18T10:20:00.000Z");
+  });
+
+  it("splits when an idle gap exceeds the threshold", () => {
+    const r = new SessionReconstructor("p1", { idleGapMinutes: 30, minEventsForSession: 3 });
+    const events = [
+      fsEvent("2026-05-18T10:00:00.000Z"),
+      fsEvent("2026-05-18T10:05:00.000Z"),
+      fsEvent("2026-05-18T10:10:00.000Z"),
+      // 2-hour gap
+      fsEvent("2026-05-18T12:10:00.000Z"),
+      fsEvent("2026-05-18T12:15:00.000Z"),
+      fsEvent("2026-05-18T12:20:00.000Z"),
+    ];
+    const sessions = r.reconstruct(events);
+    expect(sessions).toHaveLength(2);
+  });
+
+  it("drops buckets below the min-events threshold", () => {
+    const r = new SessionReconstructor("p1", { idleGapMinutes: 30, minEventsForSession: 3 });
+    const events = [fsEvent("2026-05-18T10:00:00.000Z"), fsEvent("2026-05-18T10:05:00.000Z")];
+    expect(r.reconstruct(events)).toHaveLength(0);
+  });
+
+  it("collects unique file paths", () => {
+    const r = new SessionReconstructor("p1", { idleGapMinutes: 30, minEventsForSession: 2 });
+    const events = [
+      fsEvent("2026-05-18T10:00:00.000Z", "src/a.ts"),
+      fsEvent("2026-05-18T10:05:00.000Z", "src/b.ts"),
+      fsEvent("2026-05-18T10:10:00.000Z", "src/a.ts"),
+    ];
+    const sessions = r.reconstruct(events);
+    expect(sessions[0]?.files.sort()).toEqual(["src/a.ts", "src/b.ts"]);
+  });
+});
