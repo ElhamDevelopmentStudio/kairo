@@ -1,8 +1,8 @@
-import { Command } from "commander";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import kleur from "kleur";
 import { Workspace } from "@kairo/core";
+import { Command } from "commander";
+import kleur from "kleur";
 
 export const doctorCommand = new Command("doctor")
   .description("Check Kairo installation and integrations")

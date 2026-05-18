@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { initCommand } from "./commands/init.ts";
 import { doctorCommand } from "./commands/doctor.ts";
 import { ingestCommand } from "./commands/ingest.ts";
-import { timelineCommand } from "./commands/timeline.ts";
-import { showCommand } from "./commands/show.ts";
+import { initCommand } from "./commands/init.ts";
 import { searchCommand } from "./commands/search.ts";
-import { sweepCommand } from "./commands/sweep.ts";
-import { wakeCommand } from "./commands/wake.ts";
 import { serveCommand } from "./commands/serve.ts";
+import { showCommand } from "./commands/show.ts";
+import { sweepCommand } from "./commands/sweep.ts";
+import { timelineCommand } from "./commands/timeline.ts";
+import { wakeCommand } from "./commands/wake.ts";
 
 const program = new Command();
 program

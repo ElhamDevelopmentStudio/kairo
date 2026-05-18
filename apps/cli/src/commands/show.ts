@@ -1,6 +1,6 @@
-import { Command } from "commander";
 import { readFileSync } from "node:fs";
 import { Workspace } from "@kairo/core";
+import { Command } from "commander";
 import kleur from "kleur";
 
 export const showCommand = new Command("show")

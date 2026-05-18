@@ -1,7 +1,7 @@
-import { Command } from "commander";
 import { basename, resolve } from "node:path";
-import kleur from "kleur";
 import { Workspace } from "@kairo/core";
+import { Command } from "commander";
+import kleur from "kleur";
 
 export const initCommand = new Command("init")
   .description("Initialize Kairo in the current project")

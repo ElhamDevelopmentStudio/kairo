@@ -57,9 +57,7 @@ export function registerTools(server: McpServer): void {
     { limit: z.number().int().positive().max(50).default(10) },
     async ({ limit }) => {
       return {
-        content: [
-          { type: "text", text: `[stub] up to ${limit} architecture shifts` },
-        ],
+        content: [{ type: "text", text: `[stub] up to ${limit} architecture shifts` }],
       };
     },
   );

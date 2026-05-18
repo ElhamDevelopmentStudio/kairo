@@ -352,11 +352,12 @@ kairo/
 │   └── SDD.md             Technical Design
 ├── packages/
 │   ├── shared/            Normalized event + session types (zod schemas)
-│   ├── core/              Observers, SQLite event store, session reconstructor
+│   ├── utils/             Cross-cutting pure helpers (date, slug, fs)
+│   └── core/              Observers, SQLite event store, session reconstructor
+├── apps/
 │   ├── cli/               kairo CLI (init, doctor, ingest, timeline, search, …)
 │   └── mcp/               kairo-mcp — MCP server for Claude Code / Codex / Cursor
-├── templates/             Hook templates + example .kairo/ workspace shape
-└── apps/                  (reserved — web dashboard, Tauri shell, later)
+└── templates/             Hook templates + example .kairo/ workspace shape
 ```
 
 # Quickstart (development)
