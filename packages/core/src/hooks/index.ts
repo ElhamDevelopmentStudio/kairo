@@ -1,1 +1,6 @@
-export { installKairoHooks, mergeKairoHooks } from "./merge-hooks.ts";
+export {
+  installKairoHooks,
+  mergeKairoHooks,
+  removeKairoHooks,
+  uninstallKairoHooks,
+} from "./merge-hooks.ts";

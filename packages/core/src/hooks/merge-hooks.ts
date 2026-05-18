@@ -21,6 +21,17 @@ export function installKairoHooks(projectRoot: string): void {
   });
 }
 
+export function uninstallKairoHooks(projectRoot: string): void {
+  uninstallHookFile({
+    format: "claude",
+    projectPath: join(projectRoot, ".claude", "hooks.json"),
+  });
+  uninstallHookFile({
+    format: "codex",
+    projectPath: join(projectRoot, ".codex", "hooks.json"),
+  });
+}
+
 export function mergeKairoHooks(
   existing: JsonObject | null,
   template: JsonObject,
@@ -29,6 +40,10 @@ export function mergeKairoHooks(
   return format === "claude"
     ? mergeClaudeHooks(existing, template)
     : mergeCodexHooks(existing, template);
+}
+
+export function removeKairoHooks(existing: JsonObject | null, format: HookFormat): JsonObject {
+  return format === "claude" ? removeClaudeHooks(existing) : removeCodexHooks(existing);
 }
 
 function installHookFile(opts: {
@@ -42,6 +57,13 @@ function installHookFile(opts: {
 
   ensureDir(dirname(opts.projectPath));
   writeJson(opts.projectPath, merged);
+}
+
+function uninstallHookFile(opts: { format: HookFormat; projectPath: string }): void {
+  if (!existsSync(opts.projectPath)) return;
+
+  const existing = readJson<JsonObject>(opts.projectPath);
+  writeJson(opts.projectPath, removeKairoHooks(existing, opts.format));
 }
 
 function mergeClaudeHooks(existing: JsonObject | null, template: JsonObject): JsonObject {
@@ -64,6 +86,19 @@ function mergeClaudeHooks(existing: JsonObject | null, template: JsonObject): Js
   return output;
 }
 
+function removeClaudeHooks(existing: JsonObject | null): JsonObject {
+  const output = { ...(existing ?? {}) };
+  const existingHooks = asRecord(output.hooks);
+  const cleanedHooks: JsonObject = {};
+
+  for (const [eventName, entries] of Object.entries(existingHooks)) {
+    cleanedHooks[eventName] = asArray(entries).filter((entry) => !isKairoEntry(entry));
+  }
+
+  output.hooks = cleanedHooks;
+  return output;
+}
+
 function mergeCodexHooks(existing: JsonObject | null, template: JsonObject): JsonObject {
   const output = { ...(existing ?? {}) };
   const preservedHooks = asArray(output.hooks).filter((entry) => !isKairoEntry(entry));
@@ -72,6 +107,12 @@ function mergeCodexHooks(existing: JsonObject | null, template: JsonObject): Jso
   if (!("_comment" in output) && typeof template._comment === "string") {
     output._comment = template._comment;
   }
+  return output;
+}
+
+function removeCodexHooks(existing: JsonObject | null): JsonObject {
+  const output = { ...(existing ?? {}) };
+  output.hooks = asArray(output.hooks).filter((entry) => !isKairoEntry(entry));
   return output;
 }
 

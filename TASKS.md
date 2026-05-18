@@ -195,9 +195,9 @@ phase plugs into a clean skeleton.
 - **Notes:** Hook templates live in `templates/`. Read them at runtime via
   `import.meta.url` resolution, not bundled strings.
 
-### 1.6 — `kairo init --uninstall`
+### 1.6 — `kairo init --uninstall` ✅
 
-- [ ] **Goal:** clean removal of Kairo hooks without nuking the user's other hooks.
+- [x] **Goal:** clean removal of Kairo hooks without nuking the user's other hooks.
 - **Files:** same module as 1.5.
 - **Acceptance:** running `kairo init --uninstall` removes only entries tagged
   `"kairo": true`. Other entries remain untouched.
