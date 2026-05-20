@@ -433,7 +433,7 @@ architecture shifts are detected.
 
 ### 3.5 — Semantic search via sqlite-vec
 
-- [ ] **Goal:** `kairo search "auth rewrite"` returns the right session even if
+- [x] **Goal:** `kairo search "auth rewrite"` returns the right session even if
   those words don't appear verbatim.
 - **Files:**
   - `packages/core/src/event-store/event-store.ts` — load `sqlite-vec` extension.
@@ -445,6 +445,8 @@ architecture shifts are detected.
 - **Tests:** with a tiny embedded local model or recorded fixtures.
 - **Notes:** Default embedding model is small + fast (e.g. `nomic-embed-text` via
   Ollama if local) so it remains usable offline per SRS §9.4.
+  Implemented semantic indexing during sweep with keyword fallback for offline or
+  unavailable embedding providers.
 
 ### 3.6 — `kairo wake` uses AI prose
 

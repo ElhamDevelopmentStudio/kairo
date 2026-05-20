@@ -3,22 +3,24 @@ import {
   type AiProviderConfig,
   type SessionSummary,
   applySessionSummary,
-  listProviderSetups,
+  embedText,
   summarizeSession,
 } from "@kairo/ai";
 import {
   EventStore,
   GitObserver,
   SessionReconstructor,
+  type TextEmbedder,
   Workspace,
-  type WorkspaceAiConfigType,
   detectArchitectureShifts,
+  indexSessionEmbeddings,
   renderSession,
   renderTimeline,
 } from "@kairo/core";
-import { AiProviderName, type KairoEvent, type Session } from "@kairo/shared";
+import type { KairoEvent, Session } from "@kairo/shared";
 import { Command } from "commander";
 import kleur from "kleur";
+import { hasAiEnv, resolveAiConfig } from "../internal/ai-config.ts";
 
 export const sweepCommand = new Command("sweep")
   .description("One-shot ingest of existing git history")
@@ -34,6 +36,7 @@ export interface SweepOptions {
   since?: string;
   summarize?: boolean;
   summarizer?: SessionSummarizer;
+  embedder?: TextEmbedder;
 }
 
 export interface SweepResult {
@@ -103,6 +106,8 @@ export async function runSweep(opts: SweepOptions = {}, cwd = process.cwd()): Pr
       store.appendArchitectureShift(shift);
     }
 
+    await maybeIndexSessionEmbeddings(store, sessions, opts.embedder, aiConfig);
+
     writeFileSync(workspace.timelinePath, renderTimeline(sessions));
 
     return {
@@ -111,6 +116,26 @@ export async function runSweep(opts: SweepOptions = {}, cwd = process.cwd()): Pr
     };
   } finally {
     store.close();
+  }
+}
+
+async function maybeIndexSessionEmbeddings(
+  store: EventStore,
+  sessions: Session[],
+  embedder: TextEmbedder | undefined,
+  config: AiProviderConfig,
+): Promise<void> {
+  const shouldIndex = embedder !== undefined || shouldAttemptConfiguredEmbeddings(config);
+  if (!shouldIndex) return;
+
+  try {
+    await indexSessionEmbeddings(
+      store,
+      sessions,
+      embedder ?? ((text) => embedText(text, { config })),
+    );
+  } catch {
+    // Semantic search is opportunistic; sweep must still produce timeline/session output offline.
   }
 }
 
@@ -145,45 +170,7 @@ function reuseSummaryFields(session: Session, existing: Session): Session {
   };
 }
 
-function hasAiEnv(): boolean {
-  return envConfigKeys().some((key) => process.env[key] !== undefined);
-}
-
-function resolveAiConfig(config: WorkspaceAiConfigType | null): AiProviderConfig {
-  const resolved: AiProviderConfig = {};
-
-  if (config !== null) {
-    resolved.provider = config.provider;
-    if (config.model !== undefined) resolved.model = config.model;
-    if (config.embeddingModel !== undefined) resolved.embeddingModel = config.embeddingModel;
-    if (config.apiKeyEnv !== undefined) resolved.apiKeyEnv = config.apiKeyEnv;
-    if (config.baseUrl !== undefined) resolved.baseUrl = config.baseUrl;
-  }
-
-  const envProvider = process.env.KAIRO_AI_PROVIDER;
-  if (envProvider !== undefined) {
-    resolved.provider = AiProviderName.parse(envProvider);
-  }
-  if (process.env.KAIRO_AI_MODEL) resolved.model = process.env.KAIRO_AI_MODEL;
-  if (process.env.KAIRO_AI_EMBEDDING_MODEL) {
-    resolved.embeddingModel = process.env.KAIRO_AI_EMBEDDING_MODEL;
-  }
-  if (process.env.KAIRO_AI_API_KEY_ENV) resolved.apiKeyEnv = process.env.KAIRO_AI_API_KEY_ENV;
-  if (process.env.KAIRO_AI_BASE_URL) resolved.baseUrl = process.env.KAIRO_AI_BASE_URL;
-
-  return resolved;
-}
-
-function envConfigKeys(): string[] {
-  return [
-    "KAIRO_AI_PROVIDER",
-    "KAIRO_AI_MODEL",
-    "KAIRO_AI_EMBEDDING_MODEL",
-    "KAIRO_AI_API_KEY_ENV",
-    "KAIRO_AI_BASE_URL",
-    "OLLAMA_HOST",
-    ...listProviderSetups()
-      .map((provider) => provider.apiKeyEnv)
-      .filter((key): key is string => key !== null),
-  ];
+function shouldAttemptConfiguredEmbeddings(config: AiProviderConfig): boolean {
+  if (config.provider === undefined) return hasAiEnv();
+  return config.provider !== "anthropic" && config.provider !== "cohere";
 }

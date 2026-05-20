@@ -1,5 +1,7 @@
 import { ArchitectureShift, KairoEvent, Session } from "@kairo/shared";
+import { deterministicUuid } from "@kairo/utils/id";
 import Database from "better-sqlite3";
+import { load as loadSqliteVec } from "sqlite-vec";
 import { redactSecrets } from "../redact/index.ts";
 
 interface EventRow {
@@ -35,12 +37,47 @@ interface ArchitectureShiftRow {
   data: string;
 }
 
+interface SessionEmbeddingRow {
+  embedding_rowid: number;
+  id: string;
+  project_id: string;
+  session_id: string;
+  model: string;
+  dimension: number;
+  content_hash: string;
+  embedding: string;
+  embedded_at: string;
+}
+
+interface VectorSearchRow {
+  session_id: string;
+  model: string;
+  distance: number;
+}
+
+export interface SessionEmbeddingInput {
+  projectId: string;
+  sessionId: string;
+  model: string;
+  contentHash: string;
+  embedding: number[];
+  embeddedAt?: string;
+}
+
+export interface SessionEmbeddingSearchResult {
+  session: Session;
+  model: string;
+  distance: number;
+}
+
 export class EventStore {
   private readonly db: Database.Database;
+  private readonly sqliteVecAvailable: boolean;
 
   constructor(dbPath: string) {
     this.db = new Database(dbPath);
     this.db.pragma("journal_mode = WAL");
+    this.sqliteVecAvailable = tryLoadSqliteVec(this.db);
     this.migrate();
   }
 
@@ -86,6 +123,22 @@ export class EventStore {
       );
       CREATE INDEX IF NOT EXISTS architecture_shifts_project_time
         ON architecture_shifts (project_id, detected_at);
+
+      CREATE TABLE IF NOT EXISTS session_embeddings (
+        embedding_rowid INTEGER PRIMARY KEY AUTOINCREMENT,
+        id              TEXT NOT NULL UNIQUE,
+        project_id      TEXT NOT NULL,
+        session_id      TEXT NOT NULL,
+        model           TEXT NOT NULL,
+        dimension       INTEGER NOT NULL,
+        content_hash    TEXT NOT NULL,
+        embedding       TEXT NOT NULL,
+        embedded_at     TEXT NOT NULL
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS session_embeddings_unique_session_model
+        ON session_embeddings (project_id, session_id, model);
+      CREATE INDEX IF NOT EXISTS session_embeddings_project_dim
+        ON session_embeddings (project_id, dimension);
     `);
   }
 
@@ -248,8 +301,174 @@ export class EventStore {
     return rows.map(rowToArchitectureShift);
   }
 
+  appendSessionEmbedding(input: SessionEmbeddingInput): void {
+    if (input.embedding.length === 0) {
+      throw new Error("Session embedding cannot be empty");
+    }
+
+    const id = deterministicUuid(
+      "session.embedding",
+      input.projectId,
+      input.sessionId,
+      input.model,
+    );
+    const existing = this.db.prepare("SELECT * FROM session_embeddings WHERE id = ?").get(id) as
+      | SessionEmbeddingRow
+      | undefined;
+    const embeddedAt = input.embeddedAt ?? new Date().toISOString();
+
+    const embeddingJson = JSON.stringify(input.embedding);
+    if (existing === undefined) {
+      const result = this.db
+        .prepare(
+          `INSERT INTO session_embeddings (
+            id, project_id, session_id, model, dimension, content_hash, embedding, embedded_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .run(
+          id,
+          input.projectId,
+          input.sessionId,
+          input.model,
+          input.embedding.length,
+          input.contentHash,
+          embeddingJson,
+          embeddedAt,
+        );
+      const rowid = Number(result.lastInsertRowid);
+      this.upsertVectorRow(rowid, input.embedding);
+      return;
+    }
+
+    this.db
+      .prepare(
+        `UPDATE session_embeddings SET
+          project_id = ?,
+          session_id = ?,
+          model = ?,
+          dimension = ?,
+          content_hash = ?,
+          embedding = ?,
+          embedded_at = ?
+         WHERE id = ?`,
+      )
+      .run(
+        input.projectId,
+        input.sessionId,
+        input.model,
+        input.embedding.length,
+        input.contentHash,
+        embeddingJson,
+        embeddedAt,
+        id,
+      );
+    this.upsertVectorRow(existing.embedding_rowid, input.embedding);
+  }
+
+  searchSessionEmbeddings(
+    projectId: string,
+    queryEmbedding: number[],
+    limit = 20,
+  ): SessionEmbeddingSearchResult[] {
+    if (queryEmbedding.length === 0) return [];
+
+    const vectorResults = this.searchSessionEmbeddingsWithSqliteVec(
+      projectId,
+      queryEmbedding,
+      limit,
+    );
+    if (vectorResults !== null) return vectorResults;
+
+    return this.searchSessionEmbeddingsInMemory(projectId, queryEmbedding, limit);
+  }
+
   close(): void {
     this.db.close();
+  }
+
+  private upsertVectorRow(rowid: number, embedding: number[]): void {
+    if (!this.sqliteVecAvailable) return;
+
+    const table = vectorTableName(embedding.length);
+    try {
+      this.ensureVectorTable(embedding.length);
+      this.db.prepare(`DELETE FROM ${table} WHERE rowid = ?`).run(BigInt(rowid));
+      this.db
+        .prepare(`INSERT INTO ${table} (rowid, embedding) VALUES (?, ?)`)
+        .run(BigInt(rowid), JSON.stringify(embedding));
+    } catch {
+      // JSON embeddings remain the source of truth; sqlite-vec is an optional acceleration path.
+    }
+  }
+
+  private searchSessionEmbeddingsWithSqliteVec(
+    projectId: string,
+    queryEmbedding: number[],
+    limit: number,
+  ): SessionEmbeddingSearchResult[] | null {
+    if (!this.sqliteVecAvailable) return null;
+
+    const table = vectorTableName(queryEmbedding.length);
+    try {
+      this.ensureVectorTable(queryEmbedding.length);
+      const rows = this.db
+        .prepare(
+          `SELECT e.session_id, e.model, v.distance
+           FROM ${table} v
+           JOIN session_embeddings e ON e.embedding_rowid = v.rowid
+           WHERE e.project_id = ? AND e.dimension = ? AND v.embedding MATCH ? AND k = ?
+           ORDER BY v.distance`,
+        )
+        .all(
+          projectId,
+          queryEmbedding.length,
+          JSON.stringify(queryEmbedding),
+          limit,
+        ) as VectorSearchRow[];
+      return rows
+        .map((row) => {
+          const session = this.getSession(row.session_id);
+          return session === null ? null : { session, model: row.model, distance: row.distance };
+        })
+        .filter((result): result is SessionEmbeddingSearchResult => result !== null);
+    } catch {
+      return null;
+    }
+  }
+
+  private searchSessionEmbeddingsInMemory(
+    projectId: string,
+    queryEmbedding: number[],
+    limit: number,
+  ): SessionEmbeddingSearchResult[] {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM session_embeddings
+         WHERE project_id = ? AND dimension = ?`,
+      )
+      .all(projectId, queryEmbedding.length) as SessionEmbeddingRow[];
+
+    return rows
+      .map((row) => {
+        const session = this.getSession(row.session_id);
+        if (session === null) return null;
+        const embedding = JSON.parse(row.embedding) as number[];
+        return {
+          session,
+          model: row.model,
+          distance: 1 - cosineSimilarity(queryEmbedding, embedding),
+        };
+      })
+      .filter((result): result is SessionEmbeddingSearchResult => result !== null)
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, limit);
+  }
+
+  private ensureVectorTable(dimension: number): void {
+    this.db.exec(
+      `CREATE VIRTUAL TABLE IF NOT EXISTS ${vectorTableName(dimension)}
+       USING vec0(embedding float[${dimension}])`,
+    );
   }
 }
 
@@ -275,4 +494,35 @@ function rowToEvent(r: EventRow): KairoEvent {
 
 function rowToArchitectureShift(r: ArchitectureShiftRow): ArchitectureShift {
   return ArchitectureShift.parse(JSON.parse(r.data));
+}
+
+function tryLoadSqliteVec(db: Database.Database): boolean {
+  try {
+    loadSqliteVec(db);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function vectorTableName(dimension: number): string {
+  if (!Number.isInteger(dimension) || dimension <= 0) {
+    throw new Error(`Invalid embedding dimension: ${dimension}`);
+  }
+  return `session_embeddings_vec_${dimension}`;
+}
+
+function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0;
+  let aNorm = 0;
+  let bNorm = 0;
+  for (let i = 0; i < a.length; i++) {
+    const av = a[i] ?? 0;
+    const bv = b[i] ?? 0;
+    dot += av * bv;
+    aNorm += av * av;
+    bNorm += bv * bv;
+  }
+  if (aNorm === 0 || bNorm === 0) return 0;
+  return dot / (Math.sqrt(aNorm) * Math.sqrt(bNorm));
 }

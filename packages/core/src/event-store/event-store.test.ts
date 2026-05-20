@@ -272,6 +272,46 @@ describe("EventStore", () => {
     ]);
   });
 
+  it("stores and searches session embeddings by nearest match", () => {
+    const auth = session({
+      id: "22222222-2222-4222-8222-222222222222",
+      title: "Auth rewrite",
+      slug: "auth-rewrite",
+      summary: "Moved login state into the panel",
+    });
+    const billing = session({
+      id: "33333333-3333-4333-8333-333333333333",
+      title: "Billing cleanup",
+      slug: "billing-cleanup",
+      summary: "Removed duplicate invoice helpers",
+    });
+    store.appendSession(auth);
+    store.appendSession(billing);
+    store.appendSessionEmbedding({
+      projectId: "p1",
+      sessionId: auth.id,
+      model: "test-embed",
+      contentHash: "auth",
+      embedding: [1, 0],
+    });
+    store.appendSessionEmbedding({
+      projectId: "p1",
+      sessionId: billing.id,
+      model: "test-embed",
+      contentHash: "billing",
+      embedding: [0, 1],
+    });
+
+    const results = store.searchSessionEmbeddings("p1", [0.9, 0.1], 2);
+
+    expect(results.map((result) => result.session.slug)).toEqual([
+      "auth-rewrite",
+      "billing-cleanup",
+    ]);
+    expect(results[0]?.model).toBe("test-embed");
+    expect(results[0]?.distance).toBeLessThan(results[1]?.distance ?? Number.POSITIVE_INFINITY);
+  });
+
   it("returns recent sessions newest first and scoped by project", () => {
     store.appendSession(
       session({

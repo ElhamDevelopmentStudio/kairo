@@ -148,6 +148,35 @@ describe("runSweep", () => {
       store.close();
     }
   });
+
+  it("indexes session embeddings when an embedder is provided", async () => {
+    const workspace = new Workspace(repoRoot);
+    const config = workspace.init("demo");
+    mkdirSync(join(repoRoot, "src"));
+    commitFile("src/auth.ts", "export const auth = true;\n", "add auth module");
+    commitFile("src/session.ts", "export const session = true;\n", "add session module");
+    commitFile("src/login.ts", "export const login = true;\n", "add login module");
+
+    await runSweep(
+      {
+        summarize: false,
+        embedder: async (text) => ({
+          model: "fake-embed",
+          embedding: text.includes("auth") ? [1, 0] : [0, 1],
+        }),
+      },
+      repoRoot,
+    );
+
+    const store = new EventStore(workspace.dbPath);
+    try {
+      expect(
+        store.searchSessionEmbeddings(config.projectId, [1, 0], 1)[0]?.session.files,
+      ).toContain("src/auth.ts");
+    } finally {
+      store.close();
+    }
+  });
 });
 
 function commitFile(path: string, content: string, message: string): void {
