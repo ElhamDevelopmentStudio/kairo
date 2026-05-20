@@ -81,6 +81,16 @@ export const AIActivityEvent = BaseEvent.extend({
 });
 export type AIActivityEvent = z.infer<typeof AIActivityEvent>;
 
+export const AIIngestPayload = z.object({
+  kind: z.literal("pre-compact"),
+  tool: z.string().default("claude"),
+  sessionRef: z.string().optional(),
+  summary: z.string().optional(),
+  filesTouched: z.array(z.string()).default([]),
+  occurredAt: z.string().datetime().optional(),
+});
+export type AIIngestPayload = z.infer<typeof AIIngestPayload>;
+
 export const KairoEvent = z.discriminatedUnion("kind", [
   GitCommitEvent,
   GitBranchEvent,

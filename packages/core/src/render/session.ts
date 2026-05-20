@@ -55,7 +55,10 @@ function renderEventChange(event: KairoEvent): string[] {
     case "terminal.command":
       return [`- ran \`${event.payload.command}\` in \`${event.payload.cwd}\``];
     case "ai.activity":
-      return [`- ${event.payload.tool}: ${event.payload.summary ?? "AI activity captured."}`];
+      return [
+        `- ${event.payload.tool}: ${event.payload.summary ?? "AI activity captured."}`,
+        ...event.payload.filesTouched.map((file) => `  - touched \`${file}\``),
+      ];
   }
 }
 

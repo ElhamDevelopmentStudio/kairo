@@ -18,6 +18,8 @@ export function buildSessionFromEvents(projectId: string, events: KairoEvent[]):
       for (const f of ev.payload.files) files.add(f.path);
     } else if (ev.kind === "fs.change") {
       files.add(ev.payload.path);
+    } else if (ev.kind === "ai.activity") {
+      for (const file of ev.payload.filesTouched) files.add(file);
     }
   }
 

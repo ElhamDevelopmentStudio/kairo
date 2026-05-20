@@ -328,9 +328,9 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
 - **Tests:** snapshot test on a fixture DB.
 - **Notes:** Output is plain markdown. Inspired by MemPalace's `wake-up` command.
 
-### 2.8 — Pre-compaction hook surfaces
+### 2.8 — Pre-compaction hook surfaces ✅
 
-- [ ] **Goal:** when Claude Code is about to compact, Kairo finalizes the open session.
+- [x] **Goal:** when Claude Code is about to compact, Kairo finalizes the open session.
 - **Files:**
   - `apps/cli/src/commands/ingest.ts` — recognize `ai` source with `kind: pre-compact`.
   - On pre-compact: force-close the live session, render markdown immediately.
@@ -338,6 +338,8 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
   becomes a finalized one in `.kairo/sessions/`.
 - **Tests:** integration test.
 - **Notes:** This is the MemPalace insight — make Kairo a context survival layer.
+  Pre-compact ingest now renders the active event bucket immediately and carries
+  AI-reported touched files into the finalized session.
 
 ### 2.9 — Hooks installer covers SessionStart + PreCompact
 

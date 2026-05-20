@@ -72,6 +72,27 @@ describe("SessionReconstructor", () => {
     expect(sessions[0]?.files.sort()).toEqual(["src/a.ts", "src/b.ts"]);
   });
 
+  it("includes files touched by AI activity", () => {
+    const r = new SessionReconstructor("p1", { idleGapMinutes: 30, minEventsForSession: 1 });
+    const sessions = r.reconstruct([
+      {
+        id: "33333333-3333-4333-8333-333333333333",
+        projectId: "p1",
+        occurredAt: "2026-05-18T10:10:00.000Z",
+        observedAt: "2026-05-18T10:10:01.000Z",
+        source: "ai",
+        kind: "ai.activity",
+        payload: {
+          tool: "claude",
+          summary: "pre-compact",
+          filesTouched: ["src/a.ts", "src/b.ts", "src/a.ts"],
+        },
+      },
+    ]);
+
+    expect(sessions[0]?.files.sort()).toEqual(["src/a.ts", "src/b.ts"]);
+  });
+
   it("generates stable session IDs for the same event bucket", () => {
     const r = new SessionReconstructor("p1", { idleGapMinutes: 30, minEventsForSession: 2 });
     const events = [

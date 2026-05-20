@@ -1,8 +1,9 @@
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { EventStore, Workspace } from "@kairo/core";
+import type { KairoEvent } from "@kairo/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runIngest } from "./ingest.ts";
 
@@ -66,6 +67,82 @@ describe("runIngest", () => {
     ).resolves.toMatchObject({
       kind: "git.commit",
     });
+  });
+
+  it("finalizes and renders the current session on pre-compact AI ingest", async () => {
+    const workspace = new Workspace(repoRoot);
+    const config = workspace.init("demo");
+    const store = new EventStore(workspace.dbPath);
+    const firstEvent: KairoEvent = {
+      id: "11111111-1111-4111-8111-111111111111",
+      projectId: config.projectId,
+      occurredAt: "2026-05-18T10:00:00.000Z",
+      observedAt: "2026-05-18T10:00:01.000Z",
+      source: "fs",
+      kind: "fs.change",
+      payload: { path: "src/a.ts", op: "modify" },
+    };
+    const secondEvent: KairoEvent = {
+      id: "22222222-2222-4222-8222-222222222222",
+      projectId: config.projectId,
+      occurredAt: "2026-05-18T10:05:00.000Z",
+      observedAt: "2026-05-18T10:05:01.000Z",
+      source: "fs",
+      kind: "fs.change",
+      payload: { path: "src/b.ts", op: "modify" },
+    };
+
+    try {
+      store.append(firstEvent);
+      store.append(secondEvent);
+    } finally {
+      store.close();
+    }
+
+    const event = await runIngest(
+      "ai",
+      {
+        payload: JSON.stringify({
+          kind: "pre-compact",
+          tool: "claude",
+          summary: "Compacting conversation",
+          filesTouched: ["src/c.ts"],
+          occurredAt: "2026-05-18T10:10:00.000Z",
+        }),
+      },
+      repoRoot,
+    );
+
+    const reopened = new EventStore(workspace.dbPath);
+    try {
+      const sessions = reopened.recentSessions(config.projectId);
+      expect(event).toMatchObject({
+        projectId: config.projectId,
+        source: "ai",
+        kind: "ai.activity",
+        payload: {
+          tool: "claude",
+          summary: "Compacting conversation",
+          filesTouched: ["src/c.ts"],
+        },
+      });
+      expect(sessions).toHaveLength(1);
+      expect(sessions[0]?.eventIds).toEqual([firstEvent.id, secondEvent.id, event.id]);
+      expect(sessions[0]?.endedAt).toBe("2026-05-18T10:10:00.000Z");
+      expect(sessions[0]?.files.sort()).toEqual(["src/a.ts", "src/b.ts", "src/c.ts"]);
+
+      const session = sessions[0];
+      expect(session).toBeDefined();
+      if (!session) return;
+
+      const sessionPath = workspace.sessionPath(session.slug);
+      expect(existsSync(sessionPath)).toBe(true);
+      expect(readFileSync(sessionPath, "utf8")).toContain("- claude: Compacting conversation");
+      expect(readFileSync(sessionPath, "utf8")).toContain("- touched `src/c.ts`");
+      expect(readFileSync(workspace.timelinePath, "utf8")).toContain(session.slug);
+    } finally {
+      reopened.close();
+    }
   });
 });
 

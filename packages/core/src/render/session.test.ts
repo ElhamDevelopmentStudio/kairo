@@ -28,6 +28,8 @@ describe("renderSession", () => {
         - A \`packages/auth/index.ts\` (+12/-0)
         - R \`apps/web/middleware/auth.ts\` (+3/-8) from \`apps/web/auth.ts\`
       - modify \`apps/web/middleware/auth.ts\`
+      - claude: pre-compact
+        - touched \`apps/web/middleware/auth.ts\`
 
       ## Architecture impact
 
@@ -51,7 +53,7 @@ const session: Session = {
   files: ["packages/auth/index.ts", "apps/web/middleware/auth.ts"],
   summary: "Consolidated auth validation into one package.",
   architectureImpact: "One verifier now serves web and desktop.",
-  eventIds: ["event-1", "event-2"],
+  eventIds: ["event-1", "event-2", "event-3"],
 };
 
 const events: KairoEvent[] = [
@@ -89,6 +91,19 @@ const events: KairoEvent[] = [
     payload: {
       path: "apps/web/middleware/auth.ts",
       op: "modify",
+    },
+  },
+  {
+    id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    projectId: "project-1",
+    occurredAt: "2026-05-15T09:25:00.000Z",
+    observedAt: "2026-05-15T09:25:01.000Z",
+    source: "ai",
+    kind: "ai.activity",
+    payload: {
+      tool: "claude",
+      summary: "pre-compact",
+      filesTouched: ["apps/web/middleware/auth.ts"],
     },
   },
 ];
