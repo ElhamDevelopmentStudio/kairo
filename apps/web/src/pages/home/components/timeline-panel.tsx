@@ -6,12 +6,12 @@ import { cn } from "@/lib/utils";
 import { timelineItems } from "./timeline-data";
 
 const iconToneClass = {
-  neutral: "border-white/14 bg-white/[0.055] text-kairo-white",
-  green: "border-[#5cff45]/30 bg-[#5cff45]/5 text-[#5cff45]",
-  blue: "border-[#43b9ff]/30 bg-[#43b9ff]/5 text-[#43b9ff]",
-  purple: "border-[#bd71ff]/35 bg-[#bd71ff]/5 text-[#bd71ff]",
+  neutral: "border-white/18 bg-[#111315] text-kairo-white",
+  green: "border-[#5cff45]/55 bg-[#061006] text-[#5cff45]",
+  blue: "border-[#43b9ff]/55 bg-[#061018] text-[#43b9ff]",
+  purple: "border-[#bd71ff]/55 bg-[#100819] text-[#bd71ff]",
   yellow:
-    "border-kairo-yellow bg-kairo-yellow/10 text-kairo-yellow shadow-[0_0_22px_rgba(251,215,8,0.42)]",
+    "border-kairo-yellow bg-[#171500] text-kairo-yellow shadow-[0_0_28px_rgba(251,215,8,0.45)]",
 };
 
 export function TimelinePanel() {
@@ -23,9 +23,8 @@ export function TimelinePanel() {
       </div>
 
       <div className="relative flex-1">
-        <div className="absolute top-[25px] bottom-[77px] left-[129px] w-px bg-white/14" />
         <div className="space-y-0">
-          {timelineItems.map((item) => (
+          {timelineItems.map((item, index) => (
             <article
               className={cn(
                 "grid min-h-[103px] grid-cols-[104px_70px_minmax(0,1fr)_248px] border-white/8 border-b font-mono",
@@ -44,14 +43,30 @@ export function TimelinePanel() {
               </div>
 
               <div className="relative flex justify-center pt-[23px]">
+                {index > 0 && (
+                  <span
+                    className={cn(
+                      "absolute top-0 left-1/2 h-[23px] w-px -translate-x-1/2 bg-white/14",
+                      item.active && "h-[17px]",
+                    )}
+                  />
+                )}
+                {index < timelineItems.length - 1 && (
+                  <span
+                    className={cn(
+                      "absolute top-[75px] bottom-0 left-1/2 w-px -translate-x-1/2 bg-white/14",
+                      item.active && "top-[95px]",
+                    )}
+                  />
+                )}
                 {item.active && (
                   <span className="absolute top-[23px] left-[7px] h-[56px] w-px bg-kairo-yellow" />
                 )}
                 <span
                   className={cn(
-                    "relative z-10 flex size-[52px] items-center justify-center rounded-full border",
+                    "relative z-10 flex size-[52px] items-center justify-center rounded-full border shadow-[inset_0_0_18px_rgba(255,255,255,0.025)]",
                     item.active &&
-                      "size-[66px] border-2 outline outline-1 outline-kairo-yellow/70 outline-offset-[5px]",
+                      "size-[66px] border-2 outline outline-1 outline-kairo-yellow/70 outline-offset-[5px] shadow-[0_0_30px_rgba(251,215,8,0.35),inset_0_0_24px_rgba(251,215,8,0.07)]",
                     iconToneClass[item.iconTone],
                   )}
                 >
