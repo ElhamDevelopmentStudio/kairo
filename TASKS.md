@@ -512,22 +512,28 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
 
 ### 4.3 — Timeline view
 
-- [ ] **Goal:** vertical timeline with phase grouping, architecture markers.
+- [x] **Goal:** vertical timeline with phase grouping, architecture markers.
 - **Files:** `apps/web/src/features/timeline/`.
 - **Acceptance:** sessions render chronologically with summaries.
 - **Tests:** component tests via Vitest + React Testing Library.
+- **Done:** Added the `/dashboard` timeline view with month grouping,
+  chronological sessions, summary cards, and related architecture markers.
 
 ### 4.4 — Session detail view
 
-- [ ] **Goal:** click a session, see commits, files, summary, architecture impact.
+- [x] **Goal:** click a session, see commits, files, summary, architecture impact.
 - **Files:** `apps/web/src/features/session/`.
 - **Acceptance:** detail page renders all fields from the Session shape.
+- **Done:** Added session detail routing at `/dashboard/sessions/:slug`,
+  loading state, full Session field rendering, events, and rendered markdown.
 
 ### 4.5 — Search UI
 
-- [ ] **Goal:** search bar hooked to semantic search.
+- [x] **Goal:** search bar hooked to semantic search.
 - **Files:** `apps/web/src/features/search/`.
 - **Acceptance:** typing returns ranked sessions.
+- **Done:** Added debounced dashboard search wired to `/api/search`, with
+  result selection feeding the session detail route.
 
 ### 4.6 — `kairo serve` boots web + api
 
