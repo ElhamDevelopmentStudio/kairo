@@ -51,11 +51,21 @@ describe("createAiProvider", () => {
       "ollama",
       "amazon-bedrock",
       "azure-openai",
+      "cerebras",
       "cohere",
       "custom",
+      "deepseek",
+      "fireworks",
       "groq",
+      "kilo",
+      "lm-studio",
+      "minimax",
       "mistral",
+      "moonshot",
+      "perplexity",
+      "together",
       "vertex-ai",
+      "xai",
     ]);
   });
 });

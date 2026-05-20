@@ -403,9 +403,11 @@ architecture shifts are detected.
 - **Tests:** schema validation tests.
 - **Notes:** Carry forward provider setup UX from `@kairo/ai`: API-key auth for
   OpenAI, Anthropic, Gemini, OpenRouter, Ollama, Amazon Bedrock, Azure OpenAI,
-  Cohere, custom OpenAI-compatible, Groq, Mistral, and Vertex AI. Add headless
-  auth where supported: Anthropic WIF, OpenRouter OAuth, Amazon Bedrock
-  IAM/temporary credentials, Azure Entra ID, and Vertex AI ADC.
+  Cerebras, Cohere, custom OpenAI-compatible, DeepSeek, Fireworks, Groq, Kilo
+  Gateway, LM Studio, MiniMax, Mistral, Moonshot Kimi, Perplexity, Together AI,
+  Vertex AI, and xAI. Add headless auth where supported: Anthropic WIF,
+  OpenRouter OAuth, Amazon Bedrock IAM/temporary credentials, Azure Entra ID,
+  and Vertex AI ADC.
 
 ### 3.4 — Architecture shift detection
 

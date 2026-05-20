@@ -8,11 +8,21 @@ export type AiProviderName =
   | "ollama"
   | "amazon-bedrock"
   | "azure-openai"
+  | "cerebras"
   | "cohere"
   | "custom"
+  | "deepseek"
+  | "fireworks"
   | "groq"
+  | "kilo"
+  | "lm-studio"
+  | "minimax"
   | "mistral"
-  | "vertex-ai";
+  | "moonshot"
+  | "perplexity"
+  | "together"
+  | "vertex-ai"
+  | "xai";
 
 export interface AiProviderConfig {
   provider?: AiProviderName;
