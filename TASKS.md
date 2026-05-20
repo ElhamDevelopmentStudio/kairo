@@ -489,11 +489,13 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
 
 ### 4.1 — `apps/web` skeleton
 
-- [ ] **Goal:** Vite + React + Tailwind + shadcn skeleton.
+- [x] **Goal:** Vite + React + Tailwind + shadcn skeleton.
 - **Files:** `apps/web/`.
 - **Acceptance:** `pnpm --filter @kairo/web dev` boots Vite, shows a placeholder page.
 - **Tests:** none yet.
 - **Notes:** No Next.js. The web app is static; `kairo serve` hosts it.
+- **Done:** Added the Vite React app with Tailwind v4, shadcn-compatible UI
+  scaffolding, and an operational placeholder dashboard.
 
 ### 4.2 — Decide API surface
 

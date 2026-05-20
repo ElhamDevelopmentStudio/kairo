@@ -3,13 +3,13 @@
   "ui": "stream",
   "tasks": {
     "typecheck": {
-      "inputs": ["src/**/*.ts", "tsconfig.json", "../../tsconfig.base.json"]
+      "inputs": ["src/**/*.{ts,tsx}", "tsconfig.json", "../../tsconfig.base.json"]
     },
     "lint": {
-      "inputs": ["src/**/*.ts", "../../biome.json"]
+      "inputs": ["src/**/*.{ts,tsx}", "../../biome.json"]
     },
     "test": {
-      "inputs": ["src/**/*.ts", "src/**/*.json", "test/**/*.ts", "../../vitest.config.ts"]
+      "inputs": ["src/**/*.{ts,tsx,json}", "test/**/*.{ts,tsx}", "../../vitest.config.ts"]
     },
     "dev": {
       "cache": false,
