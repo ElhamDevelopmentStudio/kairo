@@ -450,6 +450,24 @@ architecture shifts are detected.
 - **Acceptance:** the output reads like a colleague briefing you on the last week.
 - **Tests:** fixture-based.
 
+### 3.7 — Agent runtime gateways
+
+- [ ] **Goal:** evaluate and add gateway support for already-authenticated AI
+  agent runtimes without mixing them into provider API-key config.
+- **Files:**
+  - `packages/ai/src/gateway/` — gateway interfaces for external agent runtimes.
+  - `apps/cli/src/commands/doctor.ts` — readiness checks for installed gateways.
+  - `docs/decisions/` — decision note on provider APIs vs agent runtime gateways.
+- **Acceptance:** Codex can be detected as an optional gateway via the local CLI
+  auth boundary (`codex login status` / `codex exec` smoke check), with room for
+  Claude Code, Cursor, and similar tools later.
+- **Tests:** no network; fixture or fake-process tests for readiness parsing and
+  command construction.
+- **Notes:** Keep current provider config as-is. Gateways are not providers:
+  they should reuse existing user auth from each tool, avoid storing tokens, and
+  run only through explicit bounded commands after the core AI provider layer is
+  stable.
+
 **Milestone:** open a real codebase, search "auth rewrite", get the right
 session. Read `.kairo/timeline.md` — it reads like a human wrote it.
 
