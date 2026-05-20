@@ -319,9 +319,9 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
   the (still-empty) shifts table) rather than an error.
 - **Tests:** trivial.
 
-### 2.7 — `kairo wake` outputs real context
+### 2.7 — `kairo wake` outputs real context ✅
 
-- [ ] **Goal:** prints last N days' session summaries as markdown to stdout.
+- [x] **Goal:** prints last N days' session summaries as markdown to stdout.
 - **Files:** `apps/cli/src/commands/wake.ts`.
 - **Acceptance:** `kairo wake --days 7` outputs a markdown report suitable for
   pasting into a new AI chat. Used by `SessionStart` hooks.
