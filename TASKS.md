@@ -296,9 +296,9 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
 - **Notes:** MCP server opens a `Workspace.find()` at startup. If no workspace,
   tools return an empty array, not an error.
 
-### 2.4 — MCP `kairo_session_detail` → real
+### 2.4 — MCP `kairo_session_detail` → real ✅
 
-- [ ] **Goal:** fetch one session by slug, including its event list.
+- [x] **Goal:** fetch one session by slug, including its event list.
 - **Files:** `apps/mcp/src/tools/session-detail.ts`.
 - **Acceptance:** returns session metadata + the relevant markdown content.
 - **Tests:** same pattern as 2.3.

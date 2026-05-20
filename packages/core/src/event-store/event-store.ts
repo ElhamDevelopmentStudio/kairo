@@ -165,6 +165,13 @@ export class EventStore {
     return row ? rowToSession(row) : null;
   }
 
+  getSessionBySlug(projectId: string, slug: string): Session | null {
+    const row = this.db
+      .prepare("SELECT * FROM sessions WHERE project_id = ? AND slug = ?")
+      .get(projectId, slug) as SessionRow | undefined;
+    return row ? rowToSession(row) : null;
+  }
+
   close(): void {
     this.db.close();
   }

@@ -192,6 +192,22 @@ describe("EventStore", () => {
     expect(store.recentSessions("p1")).toHaveLength(1);
   });
 
+  it("reads sessions by project and slug", () => {
+    store.appendSession(session({ slug: "same-slug", title: "Project one" }));
+    store.appendSession(
+      session({
+        id: "22222222-2222-4222-8222-222222222222",
+        projectId: "p2",
+        slug: "same-slug",
+        title: "Project two",
+      }),
+    );
+
+    expect(store.getSessionBySlug("p1", "same-slug")?.title).toBe("Project one");
+    expect(store.getSessionBySlug("p2", "same-slug")?.title).toBe("Project two");
+    expect(store.getSessionBySlug("p1", "missing")).toBeNull();
+  });
+
   it("returns recent sessions newest first and scoped by project", () => {
     store.appendSession(
       session({

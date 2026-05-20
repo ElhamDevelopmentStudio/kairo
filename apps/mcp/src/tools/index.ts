@@ -11,6 +11,6 @@ export type { ToolContext };
 export function registerTools(server: McpServer, context: ToolContext): void {
   registerRecentSessionsTool(server, context);
   registerSearchTool(server);
-  registerSessionDetailTool(server);
+  registerSessionDetailTool(server, context);
   registerArchitectureShiftsTool(server);
 }
