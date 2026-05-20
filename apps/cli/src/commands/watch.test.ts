@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { EventStore, Workspace } from "@kairo/core";
@@ -27,7 +27,7 @@ describe("runWatch", () => {
     const config = workspace.init("demo");
     commitFile("initial.txt", "initial\n", "initial commit");
 
-    const handle = await runWatch({ pollInterval: 60_000 }, repoRoot);
+    const handle = await runWatch({ pollInterval: 60_000, sessionCheckIntervalMs: 0 }, repoRoot);
     try {
       writeFileSync(join(repoRoot, "live.txt"), "live\n");
       await waitFor(() => {
@@ -40,9 +40,14 @@ describe("runWatch", () => {
           store.close();
         }
       });
+      writeFileSync(join(repoRoot, "live-two.txt"), "live two\n");
+      await waitForEvent(workspace.dbPath, config.projectId, "live-two.txt");
+      writeFileSync(join(repoRoot, "live-three.txt"), "live three\n");
+      await waitForEvent(workspace.dbPath, config.projectId, "live-three.txt");
 
       commitFile("commit.txt", "commit\n", "watched commit");
       await handle.pollGitOnce();
+      handle.flushSessions(new Date(Date.now() + 31 * 60_000));
     } finally {
       await handle.stop();
     }
@@ -58,6 +63,21 @@ describe("runWatch", () => {
           (event) => event.kind === "git.commit" && event.payload.message === "watched commit",
         ),
       ).toBe(true);
+
+      const [session] = store.recentSessions(config.projectId);
+      if (!session) throw new Error("Expected watch to finalize a live session");
+      expect(session?.files).toEqual(
+        expect.arrayContaining(["live.txt", "live-two.txt", "live-three.txt"]),
+      );
+      expect(existsSync(workspace.sessionPath(session.slug))).toBe(true);
+      const sessionMarkdown = readFileSync(workspace.sessionPath(session.slug), "utf8");
+      expect(sessionMarkdown).toContain("- create `live.txt`");
+      expect(sessionMarkdown).toContain("- create `live-two.txt`");
+      expect(sessionMarkdown).not.toContain("`.kairo/");
+      expect(sessionMarkdown).not.toContain("`.git/");
+      expect(readFileSync(workspace.timelinePath, "utf8")).toContain(
+        `[full session ->](sessions/${session.slug}.md)`,
+      );
     } finally {
       store.close();
     }
@@ -71,6 +91,19 @@ async function waitFor(predicate: () => boolean, timeoutMs = 2_000): Promise<voi
     await new Promise((resolve) => setTimeout(resolve, 25));
   }
   throw new Error("Timed out waiting for condition");
+}
+
+async function waitForEvent(dbPath: string, projectId: string, path: string): Promise<void> {
+  await waitFor(() => {
+    const store = new EventStore(dbPath);
+    try {
+      return store.eventsForProject(projectId).some((event) => {
+        return event.kind === "fs.change" && event.payload.path === path;
+      });
+    } finally {
+      store.close();
+    }
+  });
 }
 
 function commitFile(path: string, content: string, message: string): void {

@@ -1,4 +1,4 @@
-import { relative } from "node:path";
+import { relative, sep } from "node:path";
 import type { FileChangeEvent } from "@kairo/shared";
 import chokidar, { type FSWatcher } from "chokidar";
 
@@ -15,7 +15,7 @@ export class FileObserver {
 
   start(onEvent: FileEventHandler): Promise<void> {
     this.watcher = chokidar.watch(this.root, {
-      ignored: this.ignore,
+      ignored: (path) => this.isIgnored(path),
       ignoreInitial: true,
       persistent: true,
     });
@@ -32,6 +32,12 @@ export class FileObserver {
     this.watcher = null;
   }
 
+  private isIgnored(path: string): boolean {
+    const projectPath = normalizeProjectPath(relative(this.root, path));
+    if (projectPath === "") return false;
+    return this.ignore.some((pattern) => matchesIgnorePattern(pattern, projectPath));
+  }
+
   private event(path: string, op: FileChangeEvent["payload"]["op"]): FileChangeEvent {
     const now = new Date().toISOString();
     const projectPath = relative(this.root, path);
@@ -45,4 +51,17 @@ export class FileObserver {
       payload: { path: projectPath, op },
     };
   }
+}
+
+function normalizeProjectPath(path: string): string {
+  return path.split(sep).join("/");
+}
+
+function matchesIgnorePattern(pattern: string, path: string): boolean {
+  const normalizedPattern = normalizeProjectPath(pattern);
+  if (normalizedPattern.endsWith("/**")) {
+    const prefix = normalizedPattern.slice(0, -3);
+    return path === prefix || path.startsWith(`${prefix}/`);
+  }
+  return path === normalizedPattern;
 }

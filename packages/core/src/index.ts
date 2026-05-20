@@ -11,5 +11,9 @@ export { GitObserver, GitTailer, FileObserver } from "./observers/index.ts";
 export type { FileEventHandler } from "./observers/file/index.ts";
 export type { GitEventHandler, GitTailerOptions } from "./observers/git/index.ts";
 export { renderSession, renderTimeline } from "./render/index.ts";
-export { SessionReconstructor } from "./session-reconstructor/index.ts";
-export type { SessionReconstructorOptions } from "./session-reconstructor/index.ts";
+export { LiveSession, SessionReconstructor, bucketize } from "./session-reconstructor/index.ts";
+export type {
+  FinalizedSession,
+  LiveSessionOptions,
+  SessionReconstructorOptions,
+} from "./session-reconstructor/index.ts";

@@ -239,9 +239,9 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
   uses a temp repo, creates files, asserts events landed.
 - **Notes:** Single process, no IPC. Use `process.on('SIGINT', …)` for cleanup.
 
-### 2.2 — Live session boundary detection
+### 2.2 — Live session boundary detection ✅
 
-- [ ] **Goal:** when activity goes idle, the current session finalizes.
+- [x] **Goal:** when activity goes idle, the current session finalizes.
 - **Files:** `packages/core/src/session-reconstructor/` (split current file into folder):
   - `bucketize.ts` (pure function, current logic).
   - `live-session.ts` — state machine over a stream of events.

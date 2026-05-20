@@ -11,6 +11,7 @@ export interface WorkspaceConfig {
   projectName: string;
   createdAt: string;
   ignore: string[];
+  sessionIdleGapMinutes?: number;
 }
 
 const DEFAULT_IGNORE = ["node_modules/**", "dist/**", ".git/**", ".kairo/**"];
@@ -56,6 +57,7 @@ export class Workspace {
       projectName: name,
       createdAt: new Date().toISOString(),
       ignore: [...DEFAULT_IGNORE],
+      sessionIdleGapMinutes: 30,
     };
     writeJson(this.configPath, config);
     writeFileSync(

@@ -30,6 +30,7 @@ describe("Workspace.init", () => {
     expect(config.projectName).toBe("demo");
     expect(config.projectId).toMatch(/^[0-9a-f-]{36}$/);
     expect(config.ignore).toContain(".git/**");
+    expect(config.sessionIdleGapMinutes).toBe(30);
   });
 
   it("throws if workspace already exists", () => {
