@@ -362,9 +362,9 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
 **Goal:** session summaries are written in human prose; semantic search works;
 architecture shifts are detected.
 
-### 3.1 — Create `packages/ai`
+### 3.1 — Create `packages/ai` ✅
 
-- [ ] **Goal:** provider-abstracted AI calls live in one package.
+- [x] **Goal:** provider-abstracted AI calls live in one package.
 - **Files:**
   - `packages/ai/package.json`.
   - `packages/ai/src/index.ts`.
@@ -378,6 +378,9 @@ architecture shifts are detected.
 - **Tests:** providers tested against recorded JSON fixtures (no network).
 - **Notes:** Vendor lock-in is flagged as a top risk in SDD §17.4. Never call
   a provider directly from `apps/*` or `packages/core` — always through `@kairo/ai`.
+  Provider setup catalog lists common providers first, then the rest
+  alphabetically, with custom OpenAI-compatible support and no-network provider
+  tests.
 
 ### 3.2 — Session summarization
 
@@ -398,6 +401,11 @@ architecture shifts are detected.
 - **Acceptance:** `kairo init` writes a sensible default. Users can switch
   provider by editing config.
 - **Tests:** schema validation tests.
+- **Notes:** Carry forward provider setup UX from `@kairo/ai`: API-key auth for
+  OpenAI, Anthropic, Gemini, OpenRouter, Ollama, Amazon Bedrock, Azure OpenAI,
+  Cohere, custom OpenAI-compatible, Groq, Mistral, and Vertex AI. Add headless
+  auth where supported: Anthropic WIF, OpenRouter OAuth, Amazon Bedrock
+  IAM/temporary credentials, Azure Entra ID, and Vertex AI ADC.
 
 ### 3.4 — Architecture shift detection
 
