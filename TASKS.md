@@ -311,9 +311,9 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
 - **Tests:** populated test DB + assertions.
 - **Notes:** **Semantic search is Phase 3.** Don't reach for embeddings yet.
 
-### 2.6 — MCP `kairo_architecture_shifts` → empty-safe stub
+### 2.6 — MCP `kairo_architecture_shifts` → empty-safe stub ✅
 
-- [ ] **Goal:** the tool returns `[]` cleanly. Phase 3 will fill it.
+- [x] **Goal:** the tool returns `[]` cleanly. Phase 3 will fill it.
 - **Files:** `apps/mcp/src/tools/architecture-shifts.ts`.
 - **Acceptance:** Claude Code calls it; gets an empty array (or whatever is in
   the (still-empty) shifts table) rather than an error.
