@@ -21,10 +21,7 @@ export function SiteHeader() {
           </a>
         ))}
       </nav>
-      <Button
-        className="h-[47px] min-w-[214px] rounded-[3px] border border-kairo-yellow/70 bg-transparent px-5 font-medium text-[15px] text-kairo-yellow hover:bg-kairo-yellow hover:text-black"
-        variant="outline"
-      >
+      <Button size="home-header" variant="kairo-outline">
         Download for macOS
         <HugeIcon icon={ArrowDown01Icon} className="ml-2 size-5" />
       </Button>

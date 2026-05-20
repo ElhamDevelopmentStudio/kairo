@@ -20,11 +20,11 @@ export function HeroPanel() {
       </div>
 
       <div className="flex gap-6">
-        <Button className="h-[55px] w-[218px] rounded-[3px] bg-kairo-yellow font-medium text-[15px] text-black shadow-[0_0_28px_rgba(251,215,8,0.15)] hover:bg-kairo-yellow/90">
+        <Button size="home-primary" variant="kairo-primary">
           <HugeIcon icon={Download01Icon} className="mr-2 size-[19px]" />
           Download for macOS
         </Button>
-        <Button className="h-[55px] w-[225px] rounded-[3px] border border-white/15 bg-transparent font-medium text-[15px] text-kairo-white hover:border-white/30 hover:bg-white/[0.04]">
+        <Button size="home-secondary" variant="kairo-secondary">
           Explore a demo project
           <HugeIcon icon={ArrowRight01Icon} className="ml-3 size-[19px]" />
         </Button>
