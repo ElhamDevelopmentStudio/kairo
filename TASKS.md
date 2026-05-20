@@ -450,10 +450,12 @@ architecture shifts are detected.
 
 ### 3.6 — `kairo wake` uses AI prose
 
-- [ ] **Goal:** wake output is a human-prose paragraph, not bullet dumps.
+- [x] **Goal:** wake output is a human-prose paragraph, not bullet dumps.
 - **Files:** `apps/cli/src/commands/wake.ts`.
 - **Acceptance:** the output reads like a colleague briefing you on the last week.
 - **Tests:** fixture-based.
+- **Done:** `kairo wake` now asks the configured AI provider for a one-paragraph
+  briefing and falls back to deterministic prose when AI is unavailable.
 
 ### 3.7 — Agent runtime gateways
 

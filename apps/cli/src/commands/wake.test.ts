@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { EventStore, Workspace } from "@kairo/core";
 import type { Session } from "@kairo/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { runWake } from "./wake.ts";
+import { renderWakeBriefing, runWake } from "./wake.ts";
 
 let root: string;
 
@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 describe("runWake", () => {
-  it("prints recent session context as markdown", () => {
+  it("prints recent session context as an AI prose briefing", async () => {
     const workspace = new Workspace(root);
     const config = workspace.init("demo");
     const store = new EventStore(workspace.dbPath);
@@ -52,43 +52,93 @@ describe("runWake", () => {
       store.close();
     }
 
-    expect(
-      runWake({ days: 7, now: new Date("2026-05-20T10:00:00.000Z") }, root),
-    ).toMatchInlineSnapshot(`
-      "# Kairo Wake Context
+    const output = await runWake(
+      {
+        days: 7,
+        now: new Date("2026-05-20T10:00:00.000Z"),
+        proser: async (context) =>
+          `You spent the last week on ${context.sessions[0]?.title}, mainly moving auth context into MCP-backed project memory.`,
+      },
+      root,
+    );
 
-      Project: demo
-      Window: last 7 days
-      Generated: 2026-05-20T10:00:00.000Z
+    expect(output).toMatchInlineSnapshot(`
+      "# Kairo Wake Briefing
 
-      ## Recent Sessions
-
-      ### 2026-05-19 — Auth rewrite
-
-      - Slug: \`auth-rewrite\`
-      - Intent: feature
-      - Time: 2026-05-19T10:00:00.000Z → 2026-05-19T11:00:00.000Z
-      - Summary: Moved login state into the panel.
-      - Themes: \`auth\`, \`sessions\`
-      - Areas: \`apps/mcp\`
-      - Files: \`apps/mcp/src/tools/search.ts\`
-      - Commits: \`abcdef1\`
-      - Architecture impact: MCP now reads project memory through the store.
-
-      ## Architecture Shifts
-
-      No architecture shifts recorded yet.
+      You spent the last week on Auth rewrite, mainly moving auth context into MCP-backed project memory.
       "
     `);
+    expect(output).not.toContain("- ");
   });
 
-  it("prints an empty-window message", () => {
+  it("falls back to deterministic prose when AI prose is unavailable", async () => {
+    const workspace = new Workspace(root);
+    const config = workspace.init("demo");
+    const store = new EventStore(workspace.dbPath);
+    try {
+      store.appendSession(
+        session({
+          projectId: config.projectId,
+          slug: "auth-rewrite",
+          title: "Auth rewrite",
+          startedAt: "2026-05-19T10:00:00.000Z",
+          intent: "feature",
+          summary: "moved login state into the panel",
+          themes: ["auth", "sessions"],
+          affectedAreas: ["apps/mcp"],
+          files: ["apps/mcp/src/tools/search.ts"],
+          architectureImpact: "MCP now reads project memory through the store.",
+        }),
+      );
+    } finally {
+      store.close();
+    }
+
+    const output = await runWake(
+      {
+        days: 7,
+        now: new Date("2026-05-20T10:00:00.000Z"),
+        proser: async () => {
+          throw new Error("provider unavailable");
+        },
+      },
+      root,
+    );
+
+    expect(output).toContain("Over the last 7 days, demo had 1 recorded development session");
+    expect(output).toContain('The latest session was "Auth rewrite"');
+    expect(output).not.toContain("- Slug:");
+  });
+
+  it("prints an empty-window prose message", async () => {
     const workspace = new Workspace(root);
     workspace.init("demo");
 
-    expect(runWake({ days: 1, now: new Date("2026-05-20T10:00:00.000Z") }, root)).toContain(
-      "No sessions recorded in this window.",
-    );
+    await expect(
+      runWake({ days: 1, now: new Date("2026-05-20T10:00:00.000Z") }, root),
+    ).resolves.toContain("There is no recorded Kairo activity for demo in the last 1 day.");
+  });
+});
+
+describe("renderWakeBriefing", () => {
+  it("renders a colleague-style paragraph from session evidence", () => {
+    const briefing = renderWakeBriefing({
+      projectName: "demo",
+      days: 7,
+      generatedAt: "2026-05-20T10:00:00.000Z",
+      sessions: [
+        session({
+          title: "Auth rewrite",
+          summary: "moved login state into the panel",
+          themes: ["auth", "sessions"],
+          files: ["apps/mcp/src/tools/search.ts"],
+        }),
+      ],
+    });
+
+    expect(briefing).toContain("Over the last 7 days");
+    expect(briefing).toContain("auth and sessions");
+    expect(briefing).not.toContain("\n- ");
   });
 });
 
