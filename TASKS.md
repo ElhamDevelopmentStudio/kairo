@@ -638,6 +638,95 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
 
 ---
 
+## Post-MVP — Project memory intelligence
+
+**Goal:** turn Kairo from a searchable project history into an answer engine for
+why the project changed, how past problems were solved, and what evidence backs
+that answer.
+
+### PM.1 — Natural-language project memory Q&A
+
+- [ ] **Goal:** ask questions like "Why did we switch from REST to GraphQL?"
+  and get a grounded answer from Kairo's stored sessions, architecture shifts,
+  commits, files, and decisions.
+- **Files:** `packages/core/src/memory/`, `packages/ai/src/answer/`,
+  `apps/cli/src/commands/ask.ts`, `apps/mcp/src/tools/ask.ts`.
+- **Acceptance:** `kairo ask "why did we switch to graphql from rest?"` retrieves
+  relevant sessions/architecture shifts and returns a concise answer with
+  source references.
+- **Tests:** recorded retrieval fixtures; no network calls in tests.
+- **Notes:** This is not generic chat. Answers must be grounded in stored Kairo
+  evidence and should say when the memory does not contain enough information.
+
+### PM.2 — Error and fix recall memory
+
+- [ ] **Goal:** remember previously solved errors and explain how they were fixed
+  when the same or similar error appears later.
+- **Files:** `packages/shared/src/problem.ts`, `packages/core/src/problem-memory/`,
+  terminal observation/reconstruction code, `apps/cli/src/commands/ask.ts`.
+- **Acceptance:** a query like `kairo ask "we fixed AN_ERROR before, how?"`
+  returns the prior session, suspected root cause, files changed, commits, and
+  fix summary.
+- **Tests:** fixtures with terminal error events, related fix commits, and a
+  later similar query.
+- **Notes:** Add a first-class `ProblemMemory` / `FixMemory` shape instead of
+  relying only on raw terminal text. Redaction rules still apply before storage.
+
+### PM.3 — Evidence citations and traceable answers
+
+- [ ] **Goal:** every synthesized memory answer cites the sessions, commits,
+  files, architecture shifts, ADRs, or terminal events it used.
+- **Files:** `packages/shared/src/memory.ts`, `packages/core/src/memory/`,
+  `packages/ai/src/answer/`.
+- **Acceptance:** answer output includes stable references such as session slug,
+  commit SHA, file path, event ID, and architecture shift ID where available.
+- **Tests:** answer synthesis fixtures verify citation presence and that no
+  uncited factual claims are emitted when evidence is missing.
+- **Notes:** Prefer concise citations over long copied source text.
+
+### PM.4 — Memory retrieval ranking
+
+- [ ] **Goal:** rank candidate memory by semantic similarity, recency, file/path
+  overlap, architecture relevance, and problem/fix confidence.
+- **Files:** `packages/core/src/memory/retrieval.ts`,
+  `packages/core/src/search/semantic.ts`, `packages/core/src/problem-memory/`.
+- **Acceptance:** similar error queries and architecture-why queries retrieve
+  the correct prior sessions above weaker keyword-only matches.
+- **Tests:** deterministic ranking fixtures covering synonyms, renamed files,
+  recurring stack traces, and architecture terms.
+- **Notes:** Keep keyword fallback for offline use; semantic retrieval should
+  improve ranking, not become the only path.
+
+### PM.5 — Dashboard memory assistant
+
+- [ ] **Goal:** add an "Ask Kairo" surface to `/dashboard` for project-memory Q&A.
+- **Files:** `apps/web/src/features/memory/`, `apps/web/src/features/dashboard/`,
+  `apps/cli/src/commands/serve.ts`.
+- **Acceptance:** dashboard users can ask a project-history question, see a
+  synthesized answer, inspect citations, and jump to related sessions.
+- **Tests:** component tests for query entry, loading/error states, cited answer
+  rendering, and session navigation.
+- **Notes:** This should feel like a local project memory browser, not a generic
+  chatbot. It must work with the same local `kairo serve` API boundary.
+
+### PM.6 — Decision memory from ADRs and inferred changes
+
+- [ ] **Goal:** index explicit ADRs plus inferred decisions from architecture
+  shifts so Kairo can answer decision-oriented questions.
+- **Files:** `docs/decisions/`, `packages/core/src/memory/decisions.ts`,
+  `packages/shared/src/memory.ts`.
+- **Acceptance:** questions about why a technology, boundary, or architecture
+  direction changed can cite ADRs when present and architecture shifts when
+  ADRs are missing.
+- **Tests:** fixtures with one explicit ADR and one inferred architecture shift.
+- **Notes:** Do not invent rationale. If only inferred evidence exists, label it
+  as inference.
+
+**Milestone:** ask Kairo why something changed or how a past error was fixed,
+and get a concise answer with evidence links back into project memory.
+
+---
+
 ## Cross-phase rules
 
 - **Audit after each phase:** re-check the AGENTS.md type-centralization and
