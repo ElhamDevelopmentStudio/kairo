@@ -115,7 +115,16 @@ describe("installKairoHooks", () => {
 
     expect(readFileSync(claudePath, "utf8")).toBe(firstClaude);
     expect(readFileSync(codexPath, "utf8")).toBe(firstCodex);
-    expect(JSON.parse(firstClaude).hooks.PostToolUse[0].kairo).toBe(true);
+    const claude = JSON.parse(firstClaude);
+    expect(claude.hooks.PostToolUse[0].kairo).toBe(true);
+    expect(claude.hooks.PreCompact[0]).toMatchObject({
+      kairo: true,
+      hooks: [{ command: 'kairo ingest ai --payload "$CLAUDE_HOOK_PAYLOAD"' }],
+    });
+    expect(claude.hooks.SessionStart[0]).toMatchObject({
+      kairo: true,
+      hooks: [{ command: "kairo wake --days 7" }],
+    });
     expect(JSON.parse(firstCodex).hooks[0].kairo).toBe(true);
   });
 

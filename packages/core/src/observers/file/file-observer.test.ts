@@ -20,8 +20,33 @@ afterEach(async () => {
   rmSync(root, { recursive: true, force: true });
 });
 
-async function settle(ms = 500): Promise<void> {
-  await new Promise((r) => setTimeout(r, ms));
+async function waitForEvent(
+  events: FileChangeEvent[],
+  predicate: (event: FileChangeEvent) => boolean,
+  timeoutMs = 2_000,
+): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    if (events.some(predicate)) return;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+}
+
+async function writeFileUntilObserved(
+  events: FileChangeEvent[],
+  path: string,
+  eventPath: string,
+): Promise<void> {
+  const deadline = Date.now() + 2_000;
+  let attempt = 0;
+
+  while (Date.now() < deadline) {
+    writeFileSync(path, `content ${attempt}\n`);
+    await waitForEvent(events, (event) => event.payload.path === eventPath, 150);
+    if (events.some((event) => event.payload.path === eventPath)) return;
+    attempt += 1;
+  }
 }
 
 describe("FileObserver", () => {
@@ -30,8 +55,7 @@ describe("FileObserver", () => {
     observer = new FileObserver("p1", root, IGNORE);
     await observer.start((e) => events.push(e));
 
-    writeFileSync(join(root, "live.txt"), "live\n");
-    await settle();
+    await writeFileUntilObserved(events, join(root, "live.txt"), "live.txt");
 
     expect(events.some((e) => e.payload.path === "live.txt")).toBe(true);
   });
@@ -43,8 +67,7 @@ describe("FileObserver", () => {
     await observer.start((e) => events.push(e));
 
     writeFileSync(join(root, "node_modules", "pkg", "index.js"), "module.exports = {};\n");
-    writeFileSync(join(root, "root.txt"), "root\n");
-    await settle();
+    await writeFileUntilObserved(events, join(root, "root.txt"), "root.txt");
 
     expect(events.some((e) => e.payload.path === "root.txt")).toBe(true);
     expect(events.some((e) => e.payload.path.includes("node_modules"))).toBe(false);
@@ -57,8 +80,7 @@ describe("FileObserver", () => {
     await observer.start((e) => events.push(e));
 
     writeFileSync(join(root, ".git", "HEAD"), "ref: refs/heads/main\n");
-    writeFileSync(join(root, "root.txt"), "root\n");
-    await settle();
+    await writeFileUntilObserved(events, join(root, "root.txt"), "root.txt");
 
     expect(events.some((e) => e.payload.path === "root.txt")).toBe(true);
     expect(events.some((e) => e.payload.path.startsWith(".git"))).toBe(false);
@@ -72,8 +94,7 @@ describe("FileObserver", () => {
     writeFileSync(join(root, ".env.local"), "TOKEN=secret\n");
     writeFileSync(join(root, "private.pem"), "secret\n");
     writeFileSync(join(root, "id_rsa_backup"), "secret\n");
-    writeFileSync(join(root, "src.ts"), "safe\n");
-    await settle();
+    await writeFileUntilObserved(events, join(root, "src.ts"), "src.ts");
 
     const paths = events.map((e) => e.payload.path);
     expect(paths).toContain("src.ts");

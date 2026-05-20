@@ -341,13 +341,15 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
   Pre-compact ingest now renders the active event bucket immediately and carries
   AI-reported touched files into the finalized session.
 
-### 2.9 — Hooks installer covers SessionStart + PreCompact
+### 2.9 — Hooks installer covers SessionStart + PreCompact ✅
 
-- [ ] **Goal:** the hook templates already mention these — make sure init wires them.
+- [x] **Goal:** the hook templates already mention these — make sure init wires them.
 - **Files:** `templates/claude/hooks.json` (already correct) — verify `kairo init`
   installs them.
 - **Acceptance:** after `kairo init`, `.claude/hooks.json` includes both events.
 - **Tests:** extend `merge-hooks.test.ts`.
+- **Notes:** Installer coverage now asserts tagged `PreCompact` and `SessionStart`
+  Claude hook entries are present after template merge.
 
 **Milestone:** open Claude Code in a project, edit files for an hour, see
 `.kairo/timeline.md` update live. Ask Claude *"what did I work on?"* — it calls
