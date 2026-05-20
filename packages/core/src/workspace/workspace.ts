@@ -14,7 +14,33 @@ export interface WorkspaceConfig {
   sessionIdleGapMinutes?: number;
 }
 
-const DEFAULT_IGNORE = ["node_modules/**", "dist/**", ".git/**", ".kairo/**"];
+const DEFAULT_IGNORE = [
+  "node_modules/**",
+  "dist/**",
+  ".git/**",
+  ".kairo/**",
+  ".env",
+  ".env.*",
+  "*.pem",
+  "*.key",
+  "*.crt",
+  "*.cer",
+  "*.p12",
+  "*.pfx",
+  "id_rsa*",
+  "id_dsa*",
+  "id_ecdsa*",
+  "id_ed25519*",
+  "secrets/**",
+  ".secrets/**",
+  ".ssh/**",
+  ".aws/**",
+  ".gcp/**",
+  ".azure/**",
+  ".netrc",
+  ".npmrc",
+  ".pypirc",
+];
 
 export class Workspace {
   readonly root: string;

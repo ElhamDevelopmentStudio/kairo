@@ -9,7 +9,8 @@
     ".": "./src/index.ts",
     "./date": "./src/date/index.ts",
     "./slug": "./src/slug/index.ts",
-    "./fs": "./src/fs/index.ts"
+    "./fs": "./src/fs/index.ts",
+    "./id": "./src/id/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

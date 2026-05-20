@@ -1,4 +1,5 @@
 import type { GitCommitEvent } from "@kairo/shared";
+import { deterministicUuid } from "@kairo/utils/id";
 import simpleGit, { type SimpleGit } from "simple-git";
 
 type GitCommitFile = GitCommitEvent["payload"]["files"][number];
@@ -44,7 +45,7 @@ export class GitObserver {
 
   private async toEvent(commit: RawCommit, observedAt: string): Promise<GitCommitEvent> {
     return {
-      id: crypto.randomUUID(),
+      id: deterministicUuid("git.commit", this.projectId, commit.hash),
       projectId: this.projectId,
       occurredAt: new Date(commit.date).toISOString(),
       observedAt,

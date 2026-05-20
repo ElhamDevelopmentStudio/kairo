@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { KairoEvent } from "@kairo/shared";
 import type { Session } from "@kairo/shared";
+import Database from "better-sqlite3";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EventStore } from "./event-store.ts";
 
@@ -66,6 +67,52 @@ describe("EventStore", () => {
     expect(out).toHaveLength(1);
     expect(out[0]?.id).toBe(ev.id);
     expect(out[0]?.kind).toBe("git.commit");
+  });
+
+  it("redacts secrets in payloads on append", () => {
+    store.append(
+      commitEvent({
+        payload: {
+          sha: "abc123",
+          parentShas: [],
+          author: "test",
+          message: "rotate token ghp_abcdefghijklmnopqrstuvwxyz0123456789",
+          files: [],
+        },
+      }),
+    );
+    const [event] = store.recentEvents("p1");
+    if (event?.kind !== "git.commit") throw new Error("expected git.commit");
+    expect(event.payload.message).toContain("<REDACTED>");
+    expect(event.payload.message).not.toContain("ghp_");
+  });
+
+  it("rejects malformed event rows at read time", () => {
+    const raw = new Database(join(tmp, "test.db"));
+    raw
+      .prepare(
+        `INSERT INTO events (id, project_id, occurred_at, observed_at, source, kind, payload)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(
+        "00000000-0000-4000-8000-000000000000",
+        "p1",
+        "2026-05-18T10:00:00.000Z",
+        "2026-05-18T10:00:01.000Z",
+        "git",
+        "git.commit",
+        JSON.stringify({ wrong: "shape" }),
+      );
+    raw.close();
+
+    expect(() => store.recentEvents("p1")).toThrow();
+  });
+
+  it("is idempotent on duplicate event id", () => {
+    const ev = commitEvent();
+    store.append(ev);
+    store.append(ev);
+    expect(store.recentEvents("p1")).toHaveLength(1);
   });
 
   it("scopes by projectId", () => {

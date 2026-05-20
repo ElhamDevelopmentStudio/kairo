@@ -218,6 +218,40 @@ phase plugs into a clean skeleton.
 **Milestone:** open any git project, `kairo init && kairo sweep`, see meaningful
 sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
 
+### 1.8 — Storage + privacy hardening ✅ (2026-05-20)
+
+- [x] **Goal:** close four gaps surfaced by a code-quality review of the Phase 1
+  surface before Phase 2 starts emitting live fs/terminal/ai events.
+- **Files:**
+  - `packages/utils/src/id/deterministic-uuid.ts` (+ test) — pure SHA-256 →
+    UUID-shaped id; subpath export `@kairo/utils/id`.
+  - `packages/core/src/observers/git/git-observer.ts` — `GitObserver.toEvent`
+    now derives id from `("git.commit", projectId, sha)` so re-ingesting the
+    same commit is idempotent.
+  - `packages/core/src/event-store/event-store.ts` — `INSERT OR IGNORE` on
+    events; `rowToEvent` / `rowToSession` now zod-parse via `KairoEvent.parse`
+    and `Session.parse`; `append`/`appendSession` run payloads through
+    `redactSecrets` before storage (single chokepoint).
+  - `packages/core/src/redact/` — new module. `redactString` handles JWTs, SSH
+    private key blocks, common API key prefixes (`sk-*`, `sk-ant-*`, `ghp_*`,
+    `gho_*`, `ghs_*`, `ghu_*`, `ghr_*`, `github_pat_*`, `glpat-*`, `xox[abps]-*`,
+    `AKIA*`, `ASIA*`, `AIza*`) and secret-shaped env assignments (`*KEY=`,
+    `*TOKEN=`, `*SECRET=`, `*PASSWORD=`, `*AUTH=`, `*API=`, `*PRIVATE=`,
+    `*CREDENTIAL=`). `redactSecrets` walks objects/arrays.
+  - `packages/core/src/workspace/workspace.ts` — `DEFAULT_IGNORE` extended with
+    secrets denylist (`.env*`, `*.pem`, `*.key`, `id_rsa*`, `secrets/**`,
+    `.ssh/**`, `.aws/**`, `.netrc`, `.npmrc`, etc.).
+  - `packages/core/src/observers/file/file-observer.test.ts` — new; verified
+    chokidar v4's glob `ignored` patterns *do* work; no fix needed there.
+- **Acceptance:** `pnpm doctor` green; 51 core tests, 7 cli tests, 21 utils
+  tests, all passing.
+- **Notes:** Redaction is **aggressive by default** (drop signal > leak). Tone
+  down by editing the pattern list in `redact.ts`. The agent-reviewer also
+  flagged a possible `parseNumstat` rename-with-edit bug and a stub-CLI/hook
+  template mismatch (`kairo ingest fs|terminal`) — both are deferred:
+  rename-with-edit needs its own task, and the missing `fs`/`terminal` ingest
+  sources are already partly planned for Phase 2.8 / 2.9.
+
 ---
 
 ## Phase 2 — Live observation + MCP integration

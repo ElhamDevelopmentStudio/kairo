@@ -1,5 +1,6 @@
-import type { KairoEvent, Session } from "@kairo/shared";
+import { KairoEvent, Session } from "@kairo/shared";
 import Database from "better-sqlite3";
+import { redactSecrets } from "../redact/index.ts";
 
 interface EventRow {
   id: string;
@@ -69,7 +70,7 @@ export class EventStore {
   append(event: KairoEvent): void {
     this.db
       .prepare(
-        `INSERT INTO events (id, project_id, occurred_at, observed_at, source, kind, payload)
+        `INSERT OR IGNORE INTO events (id, project_id, occurred_at, observed_at, source, kind, payload)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
@@ -79,7 +80,7 @@ export class EventStore {
         event.observedAt,
         event.source,
         event.kind,
-        JSON.stringify(event.payload),
+        JSON.stringify(redactSecrets(event.payload)),
       );
   }
 
@@ -116,6 +117,7 @@ export class EventStore {
   }
 
   appendSession(session: Session): void {
+    const redacted = redactSecrets(session);
     this.db
       .prepare(
         `INSERT INTO sessions (
@@ -133,16 +135,16 @@ export class EventStore {
           data = excluded.data`,
       )
       .run(
-        session.id,
-        session.projectId,
-        session.slug,
-        session.title,
-        session.startedAt,
-        session.endedAt,
-        session.intent,
-        session.summary,
-        session.architectureImpact,
-        JSON.stringify(session),
+        redacted.id,
+        redacted.projectId,
+        redacted.slug,
+        redacted.title,
+        redacted.startedAt,
+        redacted.endedAt,
+        redacted.intent,
+        redacted.summary,
+        redacted.architectureImpact,
+        JSON.stringify(redacted),
       );
   }
 
@@ -169,11 +171,11 @@ export class EventStore {
 }
 
 function rowToSession(r: SessionRow): Session {
-  return JSON.parse(r.data) as Session;
+  return Session.parse(JSON.parse(r.data));
 }
 
 function rowToEvent(r: EventRow): KairoEvent {
-  return {
+  return KairoEvent.parse({
     id: r.id,
     projectId: r.project_id,
     occurredAt: r.occurred_at,
@@ -181,5 +183,5 @@ function rowToEvent(r: EventRow): KairoEvent {
     source: r.source,
     kind: r.kind,
     payload: JSON.parse(r.payload),
-  } as KairoEvent;
+  });
 }

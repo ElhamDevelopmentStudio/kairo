@@ -63,5 +63,16 @@ function matchesIgnorePattern(pattern: string, path: string): boolean {
     const prefix = normalizedPattern.slice(0, -3);
     return path === prefix || path.startsWith(`${prefix}/`);
   }
+  if (normalizedPattern.includes("*")) {
+    const fileName = path.split("/").at(-1) ?? path;
+    return (
+      globToRegExp(normalizedPattern).test(path) || globToRegExp(normalizedPattern).test(fileName)
+    );
+  }
   return path === normalizedPattern;
+}
+
+function globToRegExp(pattern: string): RegExp {
+  const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replaceAll("*", "[^/]*");
+  return new RegExp(`^${escaped}$`);
 }
