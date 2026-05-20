@@ -10,8 +10,7 @@ const iconToneClass = {
   green: "border-[#5cff45]/55 bg-[#061006] text-[#5cff45]",
   blue: "border-[#43b9ff]/55 bg-[#061018] text-[#43b9ff]",
   purple: "border-[#bd71ff]/55 bg-[#100819] text-[#bd71ff]",
-  yellow:
-    "border-kairo-yellow bg-[#171500] text-kairo-yellow shadow-[0_0_28px_rgba(251,215,8,0.45)]",
+  yellow: "border-kairo-yellow/55 bg-[#171500] text-kairo-yellow",
 };
 
 export function TimelinePanel() {
@@ -26,94 +25,56 @@ export function TimelinePanel() {
         <div className="space-y-0">
           {timelineItems.map((item, index) => (
             <article
-              className={cn(
-                "grid min-h-[103px] grid-cols-[104px_70px_minmax(0,1fr)_248px] border-white/8 border-b font-mono",
-                item.active && "min-h-[126px] border-white/10",
-              )}
+              className="group/timeline-item grid min-h-[126px] grid-cols-[104px_70px_minmax(0,1fr)_248px] border-white/8 border-b font-mono transition-colors duration-200 hover:border-white/10"
               key={`${item.date}-${item.title}`}
             >
-              <div
-                className={cn(
-                  "pt-[31px] text-[14px] text-kairo-muted leading-[1.7]",
-                  item.active && "pt-[29px] text-kairo-yellow",
-                )}
-              >
+              <div className="pt-[29px] text-[14px] text-kairo-muted leading-[1.7] transition-colors duration-200 group-hover/timeline-item:text-kairo-yellow">
                 <div>{item.date}</div>
                 <div className="text-[12px]">{item.time}</div>
               </div>
 
               <div className="relative flex justify-center pt-[23px]">
                 {index > 0 && (
-                  <span
-                    className={cn(
-                      "absolute top-0 left-1/2 h-[23px] w-px -translate-x-1/2 bg-white/14",
-                      item.active && "h-[17px]",
-                    )}
-                  />
+                  <span className="absolute top-0 left-1/2 h-[23px] w-px -translate-x-1/2 bg-white/14 transition-[height] duration-200 group-hover/timeline-item:h-[17px]" />
                 )}
                 {index < timelineItems.length - 1 && (
-                  <span
-                    className={cn(
-                      "absolute top-[75px] bottom-0 left-1/2 w-px -translate-x-1/2 bg-white/14",
-                      item.active && "top-[95px]",
-                    )}
-                  />
-                )}
-                {item.active && (
-                  <span className="absolute top-[23px] left-[7px] h-[56px] w-px bg-kairo-yellow" />
+                  <span className="absolute top-[75px] bottom-0 left-1/2 w-px -translate-x-1/2 bg-white/14 transition-[top] duration-200 group-hover/timeline-item:top-[95px]" />
                 )}
                 <span
                   className={cn(
-                    "relative z-10 flex size-[52px] items-center justify-center rounded-full border shadow-[inset_0_0_18px_rgba(255,255,255,0.025)]",
-                    item.active &&
-                      "size-[66px] border-2 outline outline-1 outline-kairo-yellow/70 outline-offset-[5px] shadow-[0_0_30px_rgba(251,215,8,0.35),inset_0_0_24px_rgba(251,215,8,0.07)]",
+                    "relative z-10 flex size-[52px] items-center justify-center rounded-full border shadow-[inset_0_0_18px_rgba(255,255,255,0.025)] transition-all duration-200 group-hover/timeline-item:size-[66px] group-hover/timeline-item:border-2 group-hover/timeline-item:border-kairo-yellow group-hover/timeline-item:bg-[#171500] group-hover/timeline-item:text-kairo-yellow group-hover/timeline-item:outline group-hover/timeline-item:outline-1 group-hover/timeline-item:outline-kairo-yellow/70 group-hover/timeline-item:outline-offset-[5px] group-hover/timeline-item:shadow-[0_0_30px_rgba(251,215,8,0.35),inset_0_0_24px_rgba(251,215,8,0.07)]",
                     iconToneClass[item.iconTone],
                   )}
                 >
                   <HugeIcon
                     icon={item.icon}
-                    className={cn("size-[25px]", item.active && "size-[28px]")}
+                    className="size-[25px] transition-all duration-200 group-hover/timeline-item:size-[28px]"
                   />
                 </span>
               </div>
 
-              <div className={cn("pt-[31px] pl-[34px]", item.active && "pt-[31px]")}>
-                <h2
-                  className={cn(
-                    "font-sans text-[18px] text-kairo-white",
-                    item.active && "text-kairo-yellow",
-                  )}
-                >
+              <div className="pt-[31px] pl-[34px]">
+                <h2 className="font-sans text-[18px] text-kairo-white transition-colors duration-200 group-hover/timeline-item:text-kairo-yellow">
                   {item.title}
                 </h2>
                 <p className="mt-[7px] text-[14px] text-kairo-copy leading-[1.45]">
                   {item.description}
                 </p>
-                {item.badge ? (
-                  <div className="mt-[12px] inline-flex h-[27px] items-center rounded-[2px] border border-kairo-yellow/60 px-[11px] font-mono text-[12px] text-kairo-yellow tracking-[0.12em]">
-                    {item.badge}
-                  </div>
-                ) : null}
+                <div className="mt-[12px] inline-flex h-[27px] items-center rounded-[2px] border border-kairo-yellow/60 px-[11px] font-mono text-[12px] text-kairo-yellow tracking-[0.12em] opacity-0 transition-opacity duration-200 group-hover/timeline-item:opacity-100">
+                  {item.badge}
+                </div>
               </div>
 
-              <div
-                className={cn(
-                  "pt-[28px] pl-[32px] text-[13px] text-kairo-copy leading-[1.8]",
-                  item.active && "pt-[31px]",
-                )}
-              >
-                {item.note ? (
-                  <p className="-ml-[54px] border-kairo-yellow/65 border-l pl-[22px] text-[14px] leading-[1.75]">
-                    {item.note}
-                  </p>
-                ) : (
-                  <>
-                    <div>{item.stats}</div>
-                    {item.files?.map((file) => (
-                      <div key={file}>{file}</div>
-                    ))}
-                  </>
-                )}
+              <div className="relative pt-[28px] pl-[32px] text-[13px] text-kairo-copy leading-[1.8]">
+                <div className="transition-opacity duration-200 group-hover/timeline-item:opacity-0">
+                  <div>{item.stats}</div>
+                  {item.files?.map((file) => (
+                    <div key={file}>{file}</div>
+                  ))}
+                </div>
+                <p className="absolute top-[31px] right-0 left-[-22px] border-kairo-yellow/65 border-l pl-[22px] text-[14px] leading-[1.75] opacity-0 transition-opacity duration-200 group-hover/timeline-item:opacity-100">
+                  {item.note}
+                </p>
               </div>
             </article>
           ))}
