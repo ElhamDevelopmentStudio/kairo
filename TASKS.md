@@ -422,7 +422,7 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
   - (b) **Sqlite WASM in browser:** Web reads `.kairo/kairo.db` directly via wa-sqlite. (Stricter local-first, more setup.)
 - **Acceptance:** decision recorded in `docs/decisions/0001-web-data-source.md` with rationale.
 - **Notes:** Recommend (a) for v1 — simpler. (b) becomes a later option when
-  Electron-shelling, since the renderer can speak directly to the main process.
+  Tauri-shelling, since the WebView can `invoke` a Rust command that reads SQLite directly.
 
 ### 4.3 — Timeline view
 
@@ -453,45 +453,56 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
 
 ---
 
-## Phase 5 — Electron desktop shell
+## Phase 5 — Tauri desktop shell
 
-**Goal:** real desktop app, tray icon, autostart, observer running as a background service.
+**Goal:** real desktop app, tray icon, autostart, Node observer sidecar supervised by the Rust core.
 
-### 5.1 — `apps/desktop` Electron skeleton
+### 5.1 — `apps/desktop` Tauri skeleton
 
-- [ ] **Goal:** Electron shell wraps `apps/web`.
-- **Files:** `apps/desktop/` — `electron/main.ts` (main process), `electron/preload.ts`
-  (context bridge), `electron.vite.config.ts` (or electron-forge config).
-- **Acceptance:** `pnpm --filter @kairo/desktop dev` opens the dashboard in a
-  native Electron window with HMR for the renderer.
-- **Notes:** Use `electron-vite` for the dev/build pipeline. The renderer is the
-  same Vite build that `apps/web` produces — Electron just hosts it.
+- [ ] **Goal:** Tauri shell wraps `apps/web`.
+- **Files:** `apps/desktop/` — `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`,
+  `src-tauri/src/main.rs`, `src-tauri/src/lib.rs`. The renderer is whatever
+  `apps/web` builds; `tauri.conf.json` points `build.frontendDist` at it and
+  `build.devUrl` at the Vite dev server.
+- **Acceptance:** `pnpm --filter @kairo/desktop dev` (wraps `tauri dev`) opens
+  the dashboard in a native window with HMR for the renderer.
+- **Notes:** Tauri 2. Use the system WebView (WKWebView on macOS, WebView2 on
+  Windows, WebKitGTK on Linux). The Rust core is thin — its job is to host the
+  WebView, expose `invoke` commands, and supervise the Node sidecar (5.3).
 
 ### 5.2 — Tray icon + autostart
 
 - [ ] **Goal:** menubar icon, "open dashboard", "pause observation", autostart on login.
-- **Files:** `apps/desktop/electron/tray.ts`, `apps/desktop/electron/autostart.ts`.
-- **Acceptance:** verified manually on macOS; plan for Linux + Windows. Autostart
-  uses Electron's `app.setLoginItemSettings` on macOS/Windows and a `.desktop`
-  file installer on Linux.
+- **Files:** `apps/desktop/src-tauri/src/tray.rs`, `apps/desktop/src-tauri/src/autostart.rs`,
+  capability entries in `apps/desktop/src-tauri/capabilities/`.
+- **Acceptance:** verified manually on macOS; plan for Linux + Windows.
+- **Notes:** Use Tauri 2's built-in `tray` APIs and `tauri-plugin-autostart`
+  for cross-platform login-item handling — no per-OS code paths required.
 
-### 5.3 — Observer process management
+### 5.3 — Observer sidecar management
 
-- [ ] **Goal:** the Electron main process runs `kairo watch` (or its underlying
-  observer module) for each registered project and supervises it.
-- **Files:** `apps/desktop/electron/observer-supervisor.ts`.
-- **Acceptance:** open desktop app → projects you've registered show as "observing".
-- **Notes:** Since the main process is Node, prefer importing `@kairo/core`
-  observers directly over spawning a child `kairo watch` process — fewer moving
-  parts, fewer IPC hops. Fall back to spawning only if isolation is required
-  (e.g. user wants the daemon to survive desktop quit).
+- [ ] **Goal:** the Rust core spawns and supervises a Node sidecar that runs the
+  `@kairo/core` observers for each registered project.
+- **Files:** `apps/desktop/src-tauri/src/sidecar.rs`,
+  `apps/desktop/sidecar/observer.ts` (Node entrypoint that imports `@kairo/core`),
+  `externalBin` entry in `tauri.conf.json` for the bundled Node binary.
+- **Acceptance:** open desktop app → projects you've registered show as "observing";
+  killing the desktop app kills the sidecar; sidecar crash auto-restarts.
+- **Notes:** The Rust core *cannot* import `@kairo/core` in-process — this is the
+  load-bearing architectural difference from the prior Electron plan. The sidecar
+  is a packaged Node binary (via `pkg` or `@yao-pkg/pkg`) declared as an
+  `externalBin`; Rust spawns it with `tauri-plugin-shell`'s `Command::sidecar`.
+  IPC: WebView → Rust `invoke` → sidecar over stdio (JSON lines). If isolation
+  isn't needed, you can also reuse the existing `kairo watch` CLI as the sidecar
+  binary directly.
 
 ### 5.4 — Session boundary notifications
 
 - [ ] **Goal:** OS notification when a session finalizes.
-- **Files:** `apps/desktop/electron/notifications.ts`.
+- **Files:** `apps/desktop/src-tauri/src/notifications.rs`, capability entry
+  for `notification:default`.
 - **Acceptance:** opt-in toggle in settings; notification on Mac/Linux/Windows
-  via Electron's `Notification` API.
+  via `tauri-plugin-notification`.
 
 **Milestone:** open Kairo from the dock, see your projects, get a notification when a coding session wraps.
 
@@ -521,7 +532,7 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
 
 ### 6.4 — Release workflow
 
-- [ ] **Goal:** tag → npm publish + Electron build artifacts (`.dmg`, `.AppImage`, `.exe`) via `electron-builder`.
+- [ ] **Goal:** tag → npm publish + Tauri build artifacts (`.dmg`, `.AppImage`, `.msi`) via `tauri build` (using `tauri-apps/tauri-action` in CI).
 - **Files:** `.github/workflows/release.yml`.
 
 ### 6.5 — Docs site
