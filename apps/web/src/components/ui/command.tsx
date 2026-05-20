@@ -1,8 +1,10 @@
 "use client";
 
+import { CheckmarkCircle01Icon, Search01Icon } from "@hugeicons/core-free-icons";
 import { Command as CommandPrimitive } from "cmdk";
 import type * as React from "react";
 
+import { HugeIcon } from "@/components/huge-icon";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import { InputGroup, InputGroupAddon } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
-import { CheckIcon, SearchIcon } from "lucide-react";
 
 function Command({ className, ...props }: React.ComponentProps<typeof CommandPrimitive>) {
   return (
@@ -72,7 +73,7 @@ function CommandInput({
           {...props}
         />
         <InputGroupAddon>
-          <SearchIcon className="size-4 shrink-0 opacity-50" />
+          <HugeIcon icon={Search01Icon} className="size-4 shrink-0 opacity-50" />
         </InputGroupAddon>
       </InputGroup>
     </div>
@@ -149,7 +150,10 @@ function CommandItem({
       {...props}
     >
       {children}
-      <CheckIcon className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
+      <HugeIcon
+        icon={CheckmarkCircle01Icon}
+        className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-[checked=true]/command-item:opacity-100"
+      />
     </CommandPrimitive.Item>
   );
 }
