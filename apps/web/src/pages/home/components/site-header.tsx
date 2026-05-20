@@ -1,7 +1,7 @@
 import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
 
-import { BrandLogo } from "@/components/brand-logo";
 import { HugeIcon } from "@/components/huge-icon";
+import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 
 const navItems = ["Why Kairo", "How it works", "Integrations", "Docs"];
@@ -9,7 +9,7 @@ const navItems = ["Why Kairo", "How it works", "Integrations", "Docs"];
 export function SiteHeader() {
   return (
     <header className="absolute top-0 right-0 left-0 z-10 flex h-[120px] items-center justify-between px-[40px]">
-      <BrandLogo />
+      <Logo />
       <nav className="ml-auto flex items-center gap-[38px] pr-[82px] text-[14px] text-kairo-white">
         {navItems.map((item) => (
           <a
