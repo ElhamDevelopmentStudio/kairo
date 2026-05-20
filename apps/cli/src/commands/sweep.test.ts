@@ -120,6 +120,34 @@ describe("runSweep", () => {
       store.close();
     }
   });
+
+  it("stores architecture shifts detected from git history", async () => {
+    const workspace = new Workspace(repoRoot);
+    const config = workspace.init("demo");
+    mkdirSync(join(repoRoot, "packages", "shared", "src"), { recursive: true });
+    commitFile(
+      "packages/shared/package.json",
+      '{"name":"@demo/shared"}\n',
+      "extract shared package",
+    );
+    commitFile("packages/shared/src/index.ts", "export const shared = true;\n", "add package code");
+    commitFile("packages/shared/src/types.ts", "export interface Shared {}\n", "add package types");
+
+    await runSweep({ summarize: false }, repoRoot);
+
+    const store = new EventStore(workspace.dbPath);
+    try {
+      expect(store.recentArchitectureShifts(config.projectId)).toMatchObject([
+        {
+          kind: "package_extraction",
+          title: "Package extraction: packages/shared",
+          affectedPaths: ["packages/shared"],
+        },
+      ]);
+    } finally {
+      store.close();
+    }
+  });
 });
 
 function commitFile(path: string, content: string, message: string): void {

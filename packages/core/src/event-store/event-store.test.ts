@@ -1,8 +1,7 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { KairoEvent } from "@kairo/shared";
-import type { Session } from "@kairo/shared";
+import type { ArchitectureShift, KairoEvent, Session } from "@kairo/shared";
 import Database from "better-sqlite3";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EventStore } from "./event-store.ts";
@@ -55,6 +54,20 @@ function session(overrides: Partial<Session> = {}): Session {
     summary: null,
     architectureImpact: null,
     eventIds: [],
+    ...overrides,
+  };
+}
+
+function architectureShift(overrides: Partial<ArchitectureShift> = {}): ArchitectureShift {
+  return {
+    id: "55555555-5555-4555-8555-555555555555",
+    projectId: "p1",
+    detectedAt: "2026-05-18T11:00:00.000Z",
+    kind: "directory_restructure",
+    title: "Directory restructure",
+    summary: "Moved modules into feature folders",
+    affectedPaths: ["src"],
+    relatedSessionIds: ["11111111-1111-4111-8111-111111111111"],
     ...overrides,
   };
 }
@@ -286,5 +299,36 @@ describe("EventStore", () => {
     expect(out[0]?.startedAt).toBe("2026-05-18T11:00:00.000Z");
     expect(out[1]?.startedAt).toBe("2026-05-18T09:00:00.000Z");
     expect(store.getSession("missing")).toBeNull();
+  });
+
+  it("upserts and reads architecture shifts newest first", () => {
+    store.appendArchitectureShift(
+      architectureShift({
+        id: "55555555-5555-4555-8555-555555555555",
+        detectedAt: "2026-05-18T09:00:00.000Z",
+        title: "Older restructure",
+      }),
+    );
+    store.appendArchitectureShift(
+      architectureShift({
+        id: "66666666-6666-4666-8666-666666666666",
+        detectedAt: "2026-05-18T11:00:00.000Z",
+        kind: "package_extraction",
+        title: "Package extraction",
+      }),
+    );
+    store.appendArchitectureShift(
+      architectureShift({
+        id: "55555555-5555-4555-8555-555555555555",
+        detectedAt: "2026-05-18T09:00:00.000Z",
+        title: "Updated restructure",
+      }),
+    );
+
+    expect(store.recentArchitectureShifts("p1").map((shift) => shift.title)).toEqual([
+      "Package extraction",
+      "Updated restructure",
+    ]);
+    expect(store.recentArchitectureShifts("missing")).toEqual([]);
   });
 });

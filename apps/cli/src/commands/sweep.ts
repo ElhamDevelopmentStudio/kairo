@@ -12,6 +12,7 @@ import {
   SessionReconstructor,
   Workspace,
   type WorkspaceAiConfigType,
+  detectArchitectureShifts,
   renderSession,
   renderTimeline,
 } from "@kairo/core";
@@ -92,6 +93,14 @@ export async function runSweep(opts: SweepOptions = {}, cwd = process.cwd()): Pr
         workspace.sessionPath(enrichedSession.slug),
         renderSession(enrichedSession, sessionEvents),
       );
+    }
+
+    for (const shift of detectArchitectureShifts({
+      projectId: config.projectId,
+      sessions,
+      events,
+    })) {
+      store.appendArchitectureShift(shift);
     }
 
     writeFileSync(workspace.timelinePath, renderTimeline(sessions));

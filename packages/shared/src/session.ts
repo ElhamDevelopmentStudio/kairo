@@ -43,6 +43,7 @@ export const ArchitectureShift = z.object({
     "api_redesign",
     "modularization",
     "directory_restructure",
+    "dependency_shift",
     "other",
   ]),
   title: z.string(),

@@ -1,4 +1,4 @@
-import { KairoEvent, Session } from "@kairo/shared";
+import { ArchitectureShift, KairoEvent, Session } from "@kairo/shared";
 import Database from "better-sqlite3";
 import { redactSecrets } from "../redact/index.ts";
 
@@ -22,6 +22,16 @@ interface SessionRow {
   intent: string;
   summary: string | null;
   architecture_impact: string | null;
+  data: string;
+}
+
+interface ArchitectureShiftRow {
+  id: string;
+  project_id: string;
+  detected_at: string;
+  kind: string;
+  title: string;
+  summary: string;
   data: string;
 }
 
@@ -64,6 +74,18 @@ export class EventStore {
       );
       CREATE INDEX IF NOT EXISTS sessions_project_time
         ON sessions (project_id, started_at);
+
+      CREATE TABLE IF NOT EXISTS architecture_shifts (
+        id          TEXT PRIMARY KEY,
+        project_id  TEXT NOT NULL,
+        detected_at TEXT NOT NULL,
+        kind        TEXT NOT NULL,
+        title       TEXT NOT NULL,
+        summary     TEXT NOT NULL,
+        data        TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS architecture_shifts_project_time
+        ON architecture_shifts (project_id, detected_at);
     `);
   }
 
@@ -190,6 +212,42 @@ export class EventStore {
     return rows.map(rowToSession);
   }
 
+  appendArchitectureShift(shift: ArchitectureShift): void {
+    const redacted = redactSecrets(shift);
+    this.db
+      .prepare(
+        `INSERT INTO architecture_shifts (
+          id, project_id, detected_at, kind, title, summary, data
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          project_id = excluded.project_id,
+          detected_at = excluded.detected_at,
+          kind = excluded.kind,
+          title = excluded.title,
+          summary = excluded.summary,
+          data = excluded.data`,
+      )
+      .run(
+        redacted.id,
+        redacted.projectId,
+        redacted.detectedAt,
+        redacted.kind,
+        redacted.title,
+        redacted.summary,
+        JSON.stringify(redacted),
+      );
+  }
+
+  recentArchitectureShifts(projectId: string, limit = 50): ArchitectureShift[] {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM architecture_shifts WHERE project_id = ?
+         ORDER BY detected_at DESC LIMIT ?`,
+      )
+      .all(projectId, limit) as ArchitectureShiftRow[];
+    return rows.map(rowToArchitectureShift);
+  }
+
   close(): void {
     this.db.close();
   }
@@ -213,4 +271,8 @@ function rowToEvent(r: EventRow): KairoEvent {
     kind: r.kind,
     payload: JSON.parse(r.payload),
   });
+}
+
+function rowToArchitectureShift(r: ArchitectureShiftRow): ArchitectureShift {
+  return ArchitectureShift.parse(JSON.parse(r.data));
 }

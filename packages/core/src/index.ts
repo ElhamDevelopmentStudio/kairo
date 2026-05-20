@@ -8,6 +8,8 @@ export type {
   WorkspaceConfigType,
   WorkspaceInitOptions,
 } from "./workspace/index.ts";
+export { detectArchitectureShifts } from "./architecture/index.ts";
+export type { ArchitectureDetectorInput } from "./architecture/index.ts";
 export { EventStore } from "./event-store/index.ts";
 export {
   installKairoHooks,

@@ -414,9 +414,9 @@ architecture shifts are detected.
   default or accepts `--ai-provider` / `--ai-auth`, and `sweep` passes config
   through to `@kairo/ai` while still allowing `KAIRO_AI_*` env overrides.
 
-### 3.4 — Architecture shift detection
+### 3.4 — Architecture shift detection ✅
 
-- [ ] **Goal:** heuristics over event clusters identify framework migrations,
+- [x] **Goal:** heuristics over event clusters identify framework migrations,
   package extractions, directory restructures.
 - **Files:**
   - `packages/core/src/architecture/` — `detector.ts` + sub-detectors.
@@ -427,6 +427,9 @@ architecture shifts are detected.
 - **Tests:** fixture repos with crafted git history.
 - **Notes:** Start with cheap heuristics: many file renames in a window =
   restructure; package.json delta with new workspaces entry = extraction.
+  Added deterministic detectors for package extraction, framework migration,
+  directory restructure, and dependency shifts. `kairo sweep` stores detected
+  shifts in SQLite, and MCP now returns persisted architecture shifts.
 
 ### 3.5 — Semantic search via sqlite-vec
 
