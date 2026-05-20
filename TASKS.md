@@ -531,9 +531,11 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
 
 ### 4.6 — `kairo serve` boots web + api
 
-- [ ] **Goal:** one command starts everything.
+- [x] **Goal:** one command starts everything.
 - **Files:** `apps/cli/src/commands/serve.ts`.
 - **Acceptance:** `kairo serve` opens browser to `http://localhost:4170`.
+- **Done:** Added the in-process Hono API, static web asset serving with SPA
+  fallback, browser launch, and focused route/static-file coverage.
 
 **Milestone:** `kairo serve` → browser → click around your project's history.
 
