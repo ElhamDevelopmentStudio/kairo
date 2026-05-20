@@ -241,10 +241,10 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
   - `packages/core/src/workspace/workspace.ts` — `DEFAULT_IGNORE` extended with
     secrets denylist (`.env*`, `*.pem`, `*.key`, `id_rsa*`, `secrets/**`,
     `.ssh/**`, `.aws/**`, `.netrc`, `.npmrc`, etc.).
-  - `packages/core/src/observers/file/file-observer.test.ts` — new; verified
-    chokidar v4's glob `ignored` patterns *do* work; no fix needed there.
-- **Acceptance:** `pnpm doctor` green; 51 core tests, 7 cli tests, 21 utils
-  tests, all passing.
+  - `packages/core/src/observers/file/file-observer.test.ts` — verifies ignore
+    matching covers exact paths, `dir/**`, and secret-file globs such as
+    `.env.*`, `*.pem`, `*.key`, and `id_rsa*`.
+- **Acceptance:** `pnpm doctor` green; core, cli, and utils tests all passing.
 - **Notes:** Redaction is **aggressive by default** (drop signal > leak). Tone
   down by editing the pattern list in `redact.ts`. The agent-reviewer also
   flagged a possible `parseNumstat` rename-with-edit bug and a stub-CLI/hook
@@ -285,9 +285,9 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
 - **Tests:** unit-test the state machine with a synthetic event stream.
 - **Notes:** Default idle gap stays at 30 minutes (config-overridable).
 
-### 2.3 — MCP `kairo_recent_sessions` → real
+### 2.3 — MCP `kairo_recent_sessions` → real ✅
 
-- [ ] **Goal:** stub returns real session data.
+- [x] **Goal:** stub returns real session data.
 - **Files:** `apps/mcp/src/tools/recent-sessions.ts` (split current `tools.ts`
   into one file per tool, per the module convention).
 - **Acceptance:** Claude Code (with `kairo-mcp` registered) returns actual
