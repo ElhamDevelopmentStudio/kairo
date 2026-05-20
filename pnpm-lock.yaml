@@ -29,6 +29,9 @@ importers:
 
   apps/cli:
     dependencies:
+      '@kairo/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@kairo/core':
         specifier: workspace:*
         version: link:../../packages/core

@@ -1,0 +1,8 @@
+{
+  "title": "Authentication Rewrite",
+  "intent": "refactor",
+  "themes": ["auth", "middleware", "token-rotation"],
+  "affectedAreas": ["packages/auth", "apps/web/middleware"],
+  "summary": "Consolidated auth validation into one package and aligned token rotation across runtime boundaries.",
+  "architectureImpact": "One verifier now serves the web and middleware surfaces, reducing duplicated auth behavior."
+}

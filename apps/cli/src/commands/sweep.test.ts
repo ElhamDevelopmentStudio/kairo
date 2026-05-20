@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { EventStore, Workspace } from "@kairo/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import summaryFixture from "./fixtures/session-summary.json";
 import { runSweep } from "./sweep.ts";
 
 let repoRoot: string;
@@ -30,7 +31,7 @@ describe("runSweep", () => {
     commitFile("src/two.ts", "export const two = 2;\n", "add two");
     commitFile("src/three.ts", "export const three = 3;\n", "add three");
 
-    const result = await runSweep({}, repoRoot);
+    const result = await runSweep({ summarize: false }, repoRoot);
 
     expect(result).toEqual({ eventsIngested: 3, sessionsRendered: 1 });
     const store = new EventStore(workspace.dbPath);
@@ -55,15 +56,60 @@ describe("runSweep", () => {
     expect(session).toContain("src/three.ts");
   });
 
+  it("writes structured session summaries when a summarizer is available", async () => {
+    const workspace = new Workspace(repoRoot);
+    const config = workspace.init("demo");
+    mkdirSync(join(repoRoot, "src"));
+    commitFile("src/one.ts", "export const one = 1;\n", "add one");
+    commitFile("src/two.ts", "export const two = 2;\n", "add two");
+    commitFile("src/three.ts", "export const three = 3;\n", "add three");
+
+    const result = await runSweep(
+      {
+        summarizer: async (_session, events) => {
+          expect(events).toHaveLength(3);
+          return summaryFixture;
+        },
+      },
+      repoRoot,
+    );
+
+    expect(result).toEqual({ eventsIngested: 3, sessionsRendered: 1 });
+    const store = new EventStore(workspace.dbPath);
+    try {
+      expect(store.recentSessions(config.projectId)[0]).toMatchObject({
+        title: "Module Setup",
+        intent: "feature",
+        themes: ["module-setup", "exports"],
+        affectedAreas: ["src"],
+        summary: "Added three source modules and established the initial exported code shape.",
+        architectureImpact:
+          "The new source files create a small module boundary that later packages can build on.",
+      });
+    } finally {
+      store.close();
+    }
+
+    const sessionFiles = readdirSync(join(workspace.dir, "sessions"));
+    const session = readFileSync(join(workspace.dir, "sessions", sessionFiles[0] ?? ""), "utf8");
+    const timeline = readFileSync(workspace.timelinePath, "utf8");
+    expect(session).toContain("# Module Setup");
+    expect(session).toContain("intent: feature");
+    expect(session).toContain("Added three source modules");
+    expect(session).toContain("The new source files create a small module boundary");
+    expect(timeline).toContain("Module Setup");
+    expect(timeline).toContain("Added three source modules");
+  });
+
   it("uses the latest ingested commit as the default starting point", async () => {
     const workspace = new Workspace(repoRoot);
     const config = workspace.init("demo");
     commitFile("one.txt", "one\n", "add one");
     commitFile("two.txt", "two\n", "add two");
     commitFile("three.txt", "three\n", "add three");
-    await runSweep({}, repoRoot);
+    await runSweep({ summarize: false }, repoRoot);
 
-    const secondRun = await runSweep({}, repoRoot);
+    const secondRun = await runSweep({ summarize: false }, repoRoot);
 
     expect(secondRun.eventsIngested).toBe(0);
     const store = new EventStore(workspace.dbPath);

@@ -12,4 +12,9 @@ export {
   type SummarizeInput,
   type SummarizeResult,
 } from "./provider/index.ts";
-export { summarizeSession } from "./summarize/summarize-session.ts";
+export {
+  applySessionSummary,
+  parseSessionSummary,
+  summarizeSession,
+} from "./summarize/summarize-session.ts";
+export type { SessionSummary, SummarizeSessionResult } from "./summarize/summary.ts";

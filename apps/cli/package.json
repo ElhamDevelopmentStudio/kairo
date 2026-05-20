@@ -15,6 +15,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@kairo/ai": "workspace:*",
     "@kairo/core": "workspace:*",
     "@kairo/shared": "workspace:*",
     "commander": "^12.1.0",

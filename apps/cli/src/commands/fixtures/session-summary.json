@@ -1,0 +1,8 @@
+{
+  "title": "Module Setup",
+  "intent": "feature",
+  "themes": ["module-setup", "exports"],
+  "affectedAreas": ["src"],
+  "summary": "Added three source modules and established the initial exported code shape.",
+  "architectureImpact": "The new source files create a small module boundary that later packages can build on."
+}

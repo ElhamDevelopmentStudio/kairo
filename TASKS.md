@@ -382,15 +382,17 @@ architecture shifts are detected.
   alphabetically, with custom OpenAI-compatible support and no-network provider
   tests.
 
-### 3.2 — Session summarization
+### 3.2 — Session summarization ✅
 
-- [ ] **Goal:** given a session's events, produce title, intent, themes, summary, architecture impact.
+- [x] **Goal:** given a session's events, produce title, intent, themes, summary, architecture impact.
 - **Files:** `packages/ai/src/summarize/summarize-session.ts`.
 - **Acceptance:** running `kairo sweep` now writes prose summaries, not just
   event lists. Output matches the structure in `templates/kairo-workspace/sessions/2026-05-15-auth-rewrite.md`.
 - **Tests:** fixture-based.
 - **Notes:** Cache by hash of `(event IDs sorted, model version)`. Re-running
   sweep is cheap.
+  Sweep now applies structured summaries when a summarizer or AI env is
+  available, and reuses existing summary fields for unchanged session IDs.
 
 ### 3.3 — Provider config
 
