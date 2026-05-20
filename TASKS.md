@@ -499,13 +499,16 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
 
 ### 4.2 — Decide API surface
 
-- [ ] **Goal:** how does the web UI read EventStore?
+- [x] **Goal:** how does the web UI read EventStore?
 - **Options:**
   - (a) **In-process:** `kairo serve` spins up a tiny Hono server reading SQLite directly. (Simple.)
   - (b) **Sqlite WASM in browser:** Web reads `.kairo/kairo.db` directly via wa-sqlite. (Stricter local-first, more setup.)
 - **Acceptance:** decision recorded in `docs/decisions/0001-web-data-source.md` with rationale.
 - **Notes:** Recommend (a) for v1 — simpler. (b) becomes a later option when
   Tauri-shelling, since the WebView can `invoke` a Rust command that reads SQLite directly.
+- **Done:** Chose option (a): `kairo serve` will expose a small in-process local
+  API that reads SQLite through `@kairo/core`. Browser-side SQLite remains
+  deferred for possible Tauri command integration.
 
 ### 4.3 — Timeline view
 
