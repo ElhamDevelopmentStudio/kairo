@@ -1,5 +1,13 @@
 export { Workspace } from "./workspace/index.ts";
-export type { WorkspaceConfig } from "./workspace/index.ts";
+export type {
+  WorkspaceAiAuthMode,
+  WorkspaceAiAuthModeType,
+  WorkspaceAiConfig,
+  WorkspaceAiConfigType,
+  WorkspaceConfig,
+  WorkspaceConfigType,
+  WorkspaceInitOptions,
+} from "./workspace/index.ts";
 export { EventStore } from "./event-store/index.ts";
 export {
   installKairoHooks,

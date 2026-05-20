@@ -1,28 +1,6 @@
-import type { KairoEvent, Session } from "@kairo/shared";
+import type { AiProviderName, KairoEvent, Session } from "@kairo/shared";
 
-export type AiProviderName =
-  | "openai"
-  | "anthropic"
-  | "gemini"
-  | "openrouter"
-  | "ollama"
-  | "amazon-bedrock"
-  | "azure-openai"
-  | "cerebras"
-  | "cohere"
-  | "custom"
-  | "deepseek"
-  | "fireworks"
-  | "groq"
-  | "kilo"
-  | "lm-studio"
-  | "minimax"
-  | "mistral"
-  | "moonshot"
-  | "perplexity"
-  | "together"
-  | "vertex-ai"
-  | "xai";
+export type { AiProviderName };
 
 export interface AiProviderConfig {
   provider?: AiProviderName;

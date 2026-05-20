@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -31,6 +31,21 @@ describe("Workspace.init", () => {
     expect(config.projectId).toMatch(/^[0-9a-f-]{36}$/);
     expect(config.ignore).toContain(".git/**");
     expect(config.sessionIdleGapMinutes).toBe(30);
+    expect(config.ai).toEqual({
+      provider: "anthropic",
+      model: "claude-sonnet-4-5",
+      apiKeyEnv: "ANTHROPIC_API_KEY",
+      baseUrl: "https://api.anthropic.com",
+      authMode: "api-key",
+    });
+  });
+
+  it("can initialize with AI disabled", () => {
+    const ws = new Workspace(projectRoot);
+    const config = ws.init("demo", { ai: null });
+
+    expect(config.ai).toBeNull();
+    expect(ws.readConfig().ai).toBeNull();
   });
 
   it("throws if workspace already exists", () => {
@@ -45,6 +60,26 @@ describe("Workspace.readConfig", () => {
     const ws = new Workspace(projectRoot);
     const written = ws.init("demo");
     expect(ws.readConfig()).toEqual(written);
+  });
+
+  it("normalizes older configs without AI settings", () => {
+    const ws = new Workspace(projectRoot);
+    const written = ws.init("demo");
+    const { ai: _ai, ...legacyConfig } = written;
+    writeFileSync(ws.configPath, JSON.stringify(legacyConfig, null, 2));
+
+    expect(ws.readConfig()).toEqual({ ...legacyConfig, ai: null });
+  });
+
+  it("rejects invalid AI providers", () => {
+    const ws = new Workspace(projectRoot);
+    const config = ws.init("demo");
+    writeFileSync(
+      ws.configPath,
+      JSON.stringify({ ...config, ai: { provider: "bad-provider" } }, null, 2),
+    );
+
+    expect(() => ws.readConfig()).toThrow();
   });
 });
 

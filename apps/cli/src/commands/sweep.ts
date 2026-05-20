@@ -1,14 +1,21 @@
 import { writeFileSync } from "node:fs";
-import { type SessionSummary, applySessionSummary, summarizeSession } from "@kairo/ai";
+import {
+  type AiProviderConfig,
+  type SessionSummary,
+  applySessionSummary,
+  listProviderSetups,
+  summarizeSession,
+} from "@kairo/ai";
 import {
   EventStore,
   GitObserver,
   SessionReconstructor,
   Workspace,
+  type WorkspaceAiConfigType,
   renderSession,
   renderTimeline,
 } from "@kairo/core";
-import type { KairoEvent, Session } from "@kairo/shared";
+import { AiProviderName, type KairoEvent, type Session } from "@kairo/shared";
 import { Command } from "commander";
 import kleur from "kleur";
 
@@ -53,7 +60,11 @@ export async function runSweep(opts: SweepOptions = {}, cwd = process.cwd()): Pr
     const shouldSummarize =
       opts.summarize === false
         ? false
-        : opts.summarizer !== undefined || opts.summarize === true || hasAiEnv();
+        : opts.summarizer !== undefined ||
+          opts.summarize === true ||
+          config.ai !== null ||
+          hasAiEnv();
+    const aiConfig = resolveAiConfig(config.ai);
     const reconstructed = new SessionReconstructor(config.projectId).reconstruct(events);
     const eventsById = new Map(events.map((event) => [event.id, event]));
     const sessions: Session[] = [];
@@ -67,7 +78,13 @@ export async function runSweep(opts: SweepOptions = {}, cwd = process.cwd()): Pr
       const enrichedSession =
         existing !== null && existing.summary !== null
           ? reuseSummaryFields(session, existing)
-          : await maybeSummarizeSession(session, sessionEvents, shouldSummarize, opts.summarizer);
+          : await maybeSummarizeSession(
+              session,
+              sessionEvents,
+              shouldSummarize,
+              opts.summarizer,
+              aiConfig,
+            );
 
       store.appendSession(enrichedSession);
       sessions.push(enrichedSession);
@@ -93,13 +110,14 @@ async function maybeSummarizeSession(
   events: KairoEvent[],
   shouldSummarize: boolean,
   summarizer: SessionSummarizer | undefined,
+  config: AiProviderConfig,
 ): Promise<Session> {
   if (!shouldSummarize) return session;
 
   try {
     const summary = summarizer
       ? await summarizer(session, events)
-      : (await summarizeSession(session, events)).summary;
+      : (await summarizeSession(session, events, { config })).summary;
     return applySessionSummary(session, summary);
   } catch {
     return session;
@@ -119,15 +137,44 @@ function reuseSummaryFields(session: Session, existing: Session): Session {
 }
 
 function hasAiEnv(): boolean {
-  return (
-    process.env.KAIRO_AI_PROVIDER !== undefined ||
-    process.env.KAIRO_AI_MODEL !== undefined ||
-    process.env.KAIRO_AI_API_KEY_ENV !== undefined ||
-    process.env.KAIRO_AI_BASE_URL !== undefined ||
-    process.env.OPENAI_API_KEY !== undefined ||
-    process.env.ANTHROPIC_API_KEY !== undefined ||
-    process.env.GEMINI_API_KEY !== undefined ||
-    process.env.OPENROUTER_API_KEY !== undefined ||
-    process.env.OLLAMA_HOST !== undefined
-  );
+  return envConfigKeys().some((key) => process.env[key] !== undefined);
+}
+
+function resolveAiConfig(config: WorkspaceAiConfigType | null): AiProviderConfig {
+  const resolved: AiProviderConfig = {};
+
+  if (config !== null) {
+    resolved.provider = config.provider;
+    if (config.model !== undefined) resolved.model = config.model;
+    if (config.embeddingModel !== undefined) resolved.embeddingModel = config.embeddingModel;
+    if (config.apiKeyEnv !== undefined) resolved.apiKeyEnv = config.apiKeyEnv;
+    if (config.baseUrl !== undefined) resolved.baseUrl = config.baseUrl;
+  }
+
+  const envProvider = process.env.KAIRO_AI_PROVIDER;
+  if (envProvider !== undefined) {
+    resolved.provider = AiProviderName.parse(envProvider);
+  }
+  if (process.env.KAIRO_AI_MODEL) resolved.model = process.env.KAIRO_AI_MODEL;
+  if (process.env.KAIRO_AI_EMBEDDING_MODEL) {
+    resolved.embeddingModel = process.env.KAIRO_AI_EMBEDDING_MODEL;
+  }
+  if (process.env.KAIRO_AI_API_KEY_ENV) resolved.apiKeyEnv = process.env.KAIRO_AI_API_KEY_ENV;
+  if (process.env.KAIRO_AI_BASE_URL) resolved.baseUrl = process.env.KAIRO_AI_BASE_URL;
+
+  return resolved;
+}
+
+function envConfigKeys(): string[] {
+  return [
+    "KAIRO_AI_PROVIDER",
+    "KAIRO_AI_MODEL",
+    "KAIRO_AI_EMBEDDING_MODEL",
+    "KAIRO_AI_API_KEY_ENV",
+    "KAIRO_AI_BASE_URL",
+    "OLLAMA_HOST",
+    ...listProviderSetups()
+      .map((provider) => provider.apiKeyEnv)
+      .filter((key): key is string => key !== null),
+  ];
 }

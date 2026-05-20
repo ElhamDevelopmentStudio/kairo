@@ -36,6 +36,55 @@ describe("runInit", () => {
     expect(readFileSync(codexPath, "utf8")).toBe(firstCodex);
   });
 
+  it("writes Anthropic AI config by default", () => {
+    runInit({ name: "demo" }, projectRoot);
+    const config = JSON.parse(readFileSync(join(projectRoot, ".kairo", "config.json"), "utf8"));
+
+    expect(config.ai).toEqual({
+      provider: "anthropic",
+      model: "claude-sonnet-4-5",
+      apiKeyEnv: "ANTHROPIC_API_KEY",
+      authMode: "api-key",
+      baseUrl: "https://api.anthropic.com",
+    });
+  });
+
+  it("can disable AI config", () => {
+    runInit({ name: "demo", aiProvider: "none" }, projectRoot);
+    const config = JSON.parse(readFileSync(join(projectRoot, ".kairo", "config.json"), "utf8"));
+
+    expect(config.ai).toBeNull();
+  });
+
+  it("writes provider-specific API key settings", () => {
+    runInit({ name: "demo", aiProvider: "openrouter" }, projectRoot);
+    const config = JSON.parse(readFileSync(join(projectRoot, ".kairo", "config.json"), "utf8"));
+
+    expect(config.ai).toMatchObject({
+      provider: "openrouter",
+      model: "openai/gpt-5.5",
+      apiKeyEnv: "OPENROUTER_API_KEY",
+      baseUrl: "https://openrouter.ai/api/v1",
+      authMode: "api-key",
+    });
+  });
+
+  it("allows headless auth only where the catalog supports it", () => {
+    runInit({ name: "demo", aiProvider: "vertex-ai", aiAuth: "headless" }, projectRoot);
+    const config = JSON.parse(readFileSync(join(projectRoot, ".kairo", "config.json"), "utf8"));
+
+    expect(config.ai).toMatchObject({
+      provider: "vertex-ai",
+      authMode: "headless",
+    });
+  });
+
+  it("rejects unsupported provider config", () => {
+    expect(() => runInit({ name: "demo", aiProvider: "unknown" }, projectRoot)).toThrow(
+      /Unsupported AI provider/,
+    );
+  });
+
   it("uninstalls only Kairo hooks", () => {
     runInit({ name: "demo" }, projectRoot);
     const claudePath = join(projectRoot, ".claude", "hooks.json");

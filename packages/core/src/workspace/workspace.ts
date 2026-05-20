@@ -1,17 +1,19 @@
 import { existsSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { ensureDir, readJson, writeJson } from "@kairo/utils/fs";
+import {
+  DEFAULT_WORKSPACE_AI_CONFIG,
+  type WorkspaceAiConfig,
+  type WorkspaceConfig,
+  WorkspaceConfigSchema,
+} from "./config.ts";
 
 const WORKSPACE_DIR = ".kairo";
 const CONFIG_FILE = "config.json";
 const DB_FILE = "kairo.db";
 
-export interface WorkspaceConfig {
-  projectId: string;
-  projectName: string;
-  createdAt: string;
-  ignore: string[];
-  sessionIdleGapMinutes?: number;
+export interface WorkspaceInitOptions {
+  ai?: WorkspaceAiConfig | null;
 }
 
 const DEFAULT_IGNORE = [
@@ -70,7 +72,7 @@ export class Workspace {
     return existsSync(this.dir);
   }
 
-  init(name: string): WorkspaceConfig {
+  init(name: string, options: WorkspaceInitOptions = {}): WorkspaceConfig {
     if (this.exists()) {
       throw new Error(`Kairo workspace already exists at ${this.dir}`);
     }
@@ -84,6 +86,7 @@ export class Workspace {
       createdAt: new Date().toISOString(),
       ignore: [...DEFAULT_IGNORE],
       sessionIdleGapMinutes: 30,
+      ai: options.ai === undefined ? DEFAULT_WORKSPACE_AI_CONFIG : options.ai,
     };
     writeJson(this.configPath, config);
     writeFileSync(
@@ -94,7 +97,7 @@ export class Workspace {
   }
 
   readConfig(): WorkspaceConfig {
-    return readJson<WorkspaceConfig>(this.configPath);
+    return WorkspaceConfigSchema.parse(readJson<unknown>(this.configPath));
   }
 
   get configPath(): string {

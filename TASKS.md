@@ -394,9 +394,9 @@ architecture shifts are detected.
   Sweep now applies structured summaries when a summarizer or AI env is
   available, and reuses existing summary fields for unchanged session IDs.
 
-### 3.3 — Provider config
+### 3.3 — Provider config ✅
 
-- [ ] **Goal:** users pick their provider in `.kairo/config.json` or via env vars.
+- [x] **Goal:** users pick their provider in `.kairo/config.json` or via env vars.
 - **Files:**
   - `packages/core/src/workspace/config.ts` — extend schema with `ai: { provider, model, apiKeyEnv }`.
   - `apps/cli/src/commands/init.ts` — interactive prompt (default: Anthropic; offer OpenAI / OpenRouter / Ollama / none).
@@ -410,6 +410,9 @@ architecture shifts are detected.
   Vertex AI, and xAI. Add headless auth where supported: Anthropic WIF,
   OpenRouter OAuth, Amazon Bedrock IAM/temporary credentials, Azure Entra ID,
   and Vertex AI ADC.
+  Workspace config now validates `ai` settings, `kairo init` writes Anthropic by
+  default or accepts `--ai-provider` / `--ai-auth`, and `sweep` passes config
+  through to `@kairo/ai` while still allowing `KAIRO_AI_*` env overrides.
 
 ### 3.4 — Architecture shift detection
 

@@ -1,3 +1,4 @@
+import { AiProviderName } from "@kairo/shared";
 import { describe, expect, it } from "vitest";
 import openAiChat from "./fixtures/openai-chat.json";
 import openAiEmbedding from "./fixtures/openai-embedding.json";
@@ -67,6 +68,12 @@ describe("createAiProvider", () => {
       "vertex-ai",
       "xai",
     ]);
+  });
+
+  it("keeps provider setup entries aligned with the shared provider schema", () => {
+    const setupNames = listProviderSetups().map((provider) => provider.name);
+
+    expect(AiProviderName.options).toEqual(setupNames);
   });
 });
 

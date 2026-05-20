@@ -1,3 +1,4 @@
+import { AiProviderName } from "@kairo/shared";
 import { createAmazonBedrockProvider } from "./amazon-bedrock.ts";
 import { createAnthropicProvider } from "./anthropic.ts";
 import { createCerebrasProvider } from "./cerebras.ts";
@@ -82,33 +83,8 @@ export function createAiProvider(
 }
 
 function readProviderFromEnv(env: NodeJS.ProcessEnv): AiProviderConfig["provider"] {
-  const provider = env.KAIRO_AI_PROVIDER;
-  if (
-    provider === "openai" ||
-    provider === "anthropic" ||
-    provider === "gemini" ||
-    provider === "openrouter" ||
-    provider === "ollama" ||
-    provider === "amazon-bedrock" ||
-    provider === "azure-openai" ||
-    provider === "cerebras" ||
-    provider === "cohere" ||
-    provider === "custom" ||
-    provider === "deepseek" ||
-    provider === "fireworks" ||
-    provider === "groq" ||
-    provider === "kilo" ||
-    provider === "lm-studio" ||
-    provider === "minimax" ||
-    provider === "mistral" ||
-    provider === "moonshot" ||
-    provider === "perplexity" ||
-    provider === "together" ||
-    provider === "vertex-ai" ||
-    provider === "xai"
-  ) {
-    return provider;
-  }
+  const provider = AiProviderName.safeParse(env.KAIRO_AI_PROVIDER);
+  if (provider.success) return provider.data;
   return "ollama";
 }
 
