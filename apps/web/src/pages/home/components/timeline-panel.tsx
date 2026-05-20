@@ -25,7 +25,7 @@ export function TimelinePanel() {
         <div className="space-y-0">
           {timelineItems.map((item, index) => (
             <article
-              className="group/timeline-item grid min-h-[126px] grid-cols-[104px_70px_minmax(0,1fr)_248px] border-white/8 border-b font-mono transition-colors duration-200 hover:border-white/10"
+              className="group/timeline-item grid min-h-[126px] grid-cols-[104px_70px_minmax(0,1fr)_248px] border-white/8 border-b font-mono transition-[min-height,border-color] duration-300 ease-out hover:min-h-[214px] hover:border-white/10"
               key={`${item.date}-${item.title}`}
             >
               <div className="pt-[29px] text-[14px] text-kairo-muted leading-[1.7] transition-colors duration-200 group-hover/timeline-item:text-kairo-yellow">
@@ -60,19 +60,19 @@ export function TimelinePanel() {
                 <p className="mt-[7px] text-[14px] text-kairo-copy leading-[1.45]">
                   {item.description}
                 </p>
-                <div className="mt-[12px] inline-flex h-[27px] items-center rounded-[2px] border border-kairo-yellow/60 px-[11px] font-mono text-[12px] text-kairo-yellow tracking-[0.12em] opacity-0 transition-opacity duration-200 group-hover/timeline-item:opacity-100">
+                <div className="mt-[12px] inline-flex h-[27px] translate-y-1 items-center rounded-[2px] border border-kairo-yellow/60 px-[11px] font-mono text-[12px] text-kairo-yellow tracking-[0.12em] opacity-0 transition-all duration-300 ease-out group-hover/timeline-item:translate-y-0 group-hover/timeline-item:opacity-100">
                   {item.badge}
                 </div>
               </div>
 
-              <div className="relative pt-[28px] pl-[32px] text-[13px] text-kairo-copy leading-[1.8]">
-                <div className="transition-opacity duration-200 group-hover/timeline-item:opacity-0">
+              <div className="relative min-h-[126px] pt-[28px] pl-[32px] text-[13px] text-kairo-copy leading-[1.8]">
+                <div className="absolute top-[28px] right-0 left-[32px] translate-y-0 opacity-100 transition-all duration-300 ease-out group-hover/timeline-item:-translate-y-2 group-hover/timeline-item:opacity-0">
                   <div>{item.stats}</div>
                   {item.files?.map((file) => (
                     <div key={file}>{file}</div>
                   ))}
                 </div>
-                <p className="absolute top-[31px] right-0 left-[-22px] border-kairo-yellow/65 border-l pl-[22px] text-[14px] leading-[1.75] opacity-0 transition-opacity duration-200 group-hover/timeline-item:opacity-100">
+                <p className="absolute top-[31px] right-0 left-[-22px] translate-y-3 border-kairo-yellow/65 border-l pl-[22px] text-[14px] leading-[1.75] opacity-0 transition-all duration-300 ease-out group-hover/timeline-item:translate-y-0 group-hover/timeline-item:opacity-100">
                   {item.note}
                 </p>
               </div>
