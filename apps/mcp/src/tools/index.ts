@@ -10,7 +10,7 @@ export type { ToolContext };
 
 export function registerTools(server: McpServer, context: ToolContext): void {
   registerRecentSessionsTool(server, context);
-  registerSearchTool(server);
+  registerSearchTool(server, context);
   registerSessionDetailTool(server, context);
   registerArchitectureShiftsTool(server);
 }

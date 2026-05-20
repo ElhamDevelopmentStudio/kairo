@@ -208,6 +208,57 @@ describe("EventStore", () => {
     expect(store.getSessionBySlug("p1", "missing")).toBeNull();
   });
 
+  it("searches sessions by literal title, summary, themes, and files", () => {
+    store.appendSession(
+      session({
+        id: "22222222-2222-4222-8222-222222222222",
+        title: "Auth rewrite",
+        summary: "Moved login state into the panel",
+        themes: ["security"],
+        files: ["src/auth/session.ts"],
+        startedAt: "2026-05-18T09:00:00.000Z",
+      }),
+    );
+    store.appendSession(
+      session({
+        id: "33333333-3333-4333-8333-333333333333",
+        title: "Billing cleanup",
+        summary: "Removed duplicate invoice helpers",
+        themes: ["finance"],
+        files: ["src/billing/invoice.ts"],
+        startedAt: "2026-05-18T11:00:00.000Z",
+      }),
+    );
+    store.appendSession(
+      session({
+        id: "44444444-4444-4444-8444-444444444444",
+        projectId: "p2",
+        title: "Auth in another project",
+      }),
+    );
+
+    expect(store.searchSessions("p1", "auth").map((s) => s.title)).toEqual(["Auth rewrite"]);
+    expect(store.searchSessions("p1", "login").map((s) => s.title)).toEqual(["Auth rewrite"]);
+    expect(store.searchSessions("p1", "finance").map((s) => s.title)).toEqual(["Billing cleanup"]);
+    expect(store.searchSessions("p1", "invoice.ts").map((s) => s.title)).toEqual([
+      "Billing cleanup",
+    ]);
+  });
+
+  it("treats LIKE wildcard characters as literal search text", () => {
+    store.appendSession(session({ title: "Fix 100_percent coverage" }));
+    store.appendSession(
+      session({
+        id: "22222222-2222-4222-8222-222222222222",
+        title: "Fix 100Xpercent coverage",
+      }),
+    );
+
+    expect(store.searchSessions("p1", "100_percent").map((s) => s.title)).toEqual([
+      "Fix 100_percent coverage",
+    ]);
+  });
+
   it("returns recent sessions newest first and scoped by project", () => {
     store.appendSession(
       session({

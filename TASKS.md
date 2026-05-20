@@ -303,9 +303,9 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
 - **Acceptance:** returns session metadata + the relevant markdown content.
 - **Tests:** same pattern as 2.3.
 
-### 2.5 — MCP `kairo_search` → keyword fallback
+### 2.5 — MCP `kairo_search` → keyword fallback ✅
 
-- [ ] **Goal:** literal substring search over session titles, themes, summaries, file paths.
+- [x] **Goal:** literal substring search over session titles, themes, summaries, file paths.
 - **Files:** `apps/mcp/src/tools/search.ts`. SQLite `LIKE`-based search is fine here.
 - **Acceptance:** queries like "auth" return sessions whose any text field matches.
 - **Tests:** populated test DB + assertions.

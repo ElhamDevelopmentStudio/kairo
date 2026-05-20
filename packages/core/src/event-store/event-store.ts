@@ -172,9 +172,31 @@ export class EventStore {
     return row ? rowToSession(row) : null;
   }
 
+  searchSessions(projectId: string, query: string, limit = 20): Session[] {
+    const pattern = `%${escapeLikePattern(query)}%`;
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM sessions
+         WHERE project_id = ?
+           AND (
+             title LIKE ? ESCAPE '\\'
+             OR summary LIKE ? ESCAPE '\\'
+             OR data LIKE ? ESCAPE '\\'
+           )
+         ORDER BY started_at DESC
+         LIMIT ?`,
+      )
+      .all(projectId, pattern, pattern, pattern, limit) as SessionRow[];
+    return rows.map(rowToSession);
+  }
+
   close(): void {
     this.db.close();
   }
+}
+
+function escapeLikePattern(value: string): string {
+  return value.replace(/[\\%_]/g, (match) => `\\${match}`);
 }
 
 function rowToSession(r: SessionRow): Session {
