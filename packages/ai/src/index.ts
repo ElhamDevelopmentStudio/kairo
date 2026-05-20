@@ -1,6 +1,22 @@
 export { ResponseCache } from "./cache/response-cache.ts";
 export { embedText } from "./embed/embed-text.ts";
 export {
+  checkAgentGateways,
+  checkCodexGateway,
+  codexExecCommand,
+  codexLoginStatusCommand,
+  listAgentGateways,
+} from "./gateway/index.ts";
+export type {
+  AgentGatewayCheck,
+  AgentGatewayDefinition,
+  AgentGatewayName,
+  AgentGatewayStatus,
+  CommandSpec,
+  ProcessResult,
+  ProcessRunner,
+} from "./gateway/index.ts";
+export {
   createAiProvider,
   listProviderSetups,
   type AiProvider,

@@ -459,7 +459,7 @@ architecture shifts are detected.
 
 ### 3.7 — Agent runtime gateways
 
-- [ ] **Goal:** evaluate and add gateway support for already-authenticated AI
+- [x] **Goal:** evaluate and add gateway support for already-authenticated AI
   agent runtimes without mixing them into provider API-key config.
 - **Files:**
   - `packages/ai/src/gateway/` — gateway interfaces for external agent runtimes.
@@ -474,6 +474,9 @@ architecture shifts are detected.
   they should reuse existing user auth from each tool, avoid storing tokens, and
   run only through explicit bounded commands after the core AI provider layer is
   stable.
+- **Done:** Added a separate `@kairo/ai/gateway` layer, Codex CLI readiness
+  detection, planned Claude Code/Cursor extension points, doctor reporting, and
+  a provider-vs-gateway decision note.
 
 **Milestone:** open a real codebase, search "auth rewrite", get the right
 session. Read `.kairo/timeline.md` — it reads like a human wrote it.
