@@ -5,7 +5,7 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -19,9 +19,12 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
-        "kairo-primary": "btn-kairo-primary",
-        "kairo-secondary": "btn-kairo-secondary",
-        "kairo-outline": "btn-kairo-outline",
+        "kairo-primary":
+          "rounded-[3px] bg-kairo-yellow text-black shadow-[var(--kairo-button-glow)] hover:bg-kairo-yellow/90",
+        "kairo-secondary":
+          "rounded-[3px] border-white/15 bg-transparent text-kairo-white hover:border-white/30 hover:bg-white/[0.04]",
+        "kairo-outline":
+          "rounded-[3px] border-kairo-yellow/70 bg-transparent text-kairo-yellow hover:bg-kairo-yellow hover:text-black",
       },
       size: {
         default:
@@ -35,9 +38,9 @@ const buttonVariants = cva(
         "icon-sm":
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
-        "home-primary": "btn-home-primary",
-        "home-secondary": "btn-home-secondary",
-        "home-header": "btn-home-header",
+        "home-primary": "h-[55px] w-[218px] text-[16px]",
+        "home-secondary": "h-[55px] w-[225px] text-[16px]",
+        "home-header": "h-[47px] min-w-[224px] px-5 text-[16px]",
       },
     },
     defaultVariants: {

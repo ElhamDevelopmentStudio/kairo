@@ -6,9 +6,9 @@ import { type TimelineItem, timelineItems } from "./timeline-data";
 
 function TimelineDate({ item }: { item: TimelineItem }) {
   return (
-    <div className="timeline-date">
+    <div className="timeline-date pt-[29px] text-[14px] leading-[1.7]">
       <div>{item.date}</div>
-      <div className="timeline-time">{item.time}</div>
+      <div className="text-[12px]">{item.time}</div>
     </div>
   );
 }
@@ -35,24 +35,28 @@ function TimelineMarker({
 
 function TimelineSummary({ item }: { item: TimelineItem }) {
   return (
-    <div className="timeline-summary">
-      <h2 className="timeline-title">{item.title}</h2>
-      <p className="timeline-description">{item.description}</p>
-      <div className="timeline-badge">{item.badge}</div>
+    <div className="pt-[31px] pl-[34px]">
+      <h2 className="timeline-title font-sans text-[18px]">{item.title}</h2>
+      <p className="mt-[7px] text-[14px] text-kairo-copy leading-[1.45]">{item.description}</p>
+      <div className="timeline-badge mt-[12px] h-[27px] rounded-[2px] px-[11px] text-[12px] tracking-[0.12em]">
+        {item.badge}
+      </div>
     </div>
   );
 }
 
 function TimelineDetails({ item }: { item: TimelineItem }) {
   return (
-    <div className="timeline-details">
-      <div className="timeline-metadata">
+    <div className="relative min-h-[126px] pt-[28px] pl-[32px] text-[13px] text-kairo-copy leading-[1.8]">
+      <div className="timeline-metadata top-[28px] right-0 left-[32px]">
         <div>{item.stats}</div>
         {item.files?.map((file) => (
           <div key={file}>{file}</div>
         ))}
       </div>
-      <p className="timeline-note">{item.note}</p>
+      <p className="timeline-note top-[31px] right-0 left-[-22px] pl-[22px] text-[14px] leading-[1.75]">
+        {item.note}
+      </p>
     </div>
   );
 }
@@ -67,7 +71,7 @@ function TimelineRow({
   isLast: boolean;
 }) {
   return (
-    <article className="timeline-row">
+    <article className="timeline-row grid min-h-[126px] grid-cols-[104px_70px_minmax(0,1fr)_248px] font-mono">
       <TimelineDate item={item} />
       <TimelineMarker index={index} isLast={isLast} item={item} />
       <TimelineSummary item={item} />
