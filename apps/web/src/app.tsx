@@ -1,10 +1,15 @@
 import { DashboardPage } from "@/features/dashboard";
 import { HomePage } from "@/pages/home";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 export function App() {
-  if (window.location.pathname.startsWith("/dashboard")) {
-    return <DashboardPage />;
-  }
-
-  return <HomePage />;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route element={<HomePage />} path="/" />
+        <Route element={<DashboardPage />} path="/dashboard/*" />
+        <Route element={<Navigate replace to="/" />} path="*" />
+      </Routes>
+    </BrowserRouter>
+  );
 }

@@ -1,6 +1,7 @@
 import type { KairoEvent, Session } from "@kairo/shared";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { DashboardPage } from "./dashboard-page";
@@ -25,17 +26,14 @@ describe("DashboardPage", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<DashboardPage />);
+    renderDashboard("/dashboard");
     await screen.findByText("Dashboard Wiring");
 
-    await userEvent.click(screen.getByRole("button", { name: /dashboard wiring/i }));
+    await userEvent.click(screen.getByRole("link", { name: /dashboard wiring/i }));
 
     await waitFor(() => {
-      expect(window.location.pathname).toBe("/dashboard/sessions/dashboard-wiring");
+      expect(screen.getByText("The browser no longer needs SQLite access.")).toBeInTheDocument();
     });
-    expect(
-      await screen.findByText("The browser no longer needs SQLite access."),
-    ).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/timeline?limit=200",
       expect.objectContaining({ headers: { Accept: "application/json" } }),
@@ -46,6 +44,16 @@ describe("DashboardPage", () => {
     );
   });
 });
+
+function renderDashboard(initialEntry: string) {
+  render(
+    <MemoryRouter initialEntries={[initialEntry]}>
+      <Routes>
+        <Route element={<DashboardPage />} path="/dashboard/*" />
+      </Routes>
+    </MemoryRouter>,
+  );
+}
 
 function jsonResponse(body: unknown): Response {
   return {
