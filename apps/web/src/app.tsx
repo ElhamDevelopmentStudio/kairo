@@ -1,15 +1,7 @@
-import { DashboardPage } from "@/features/dashboard";
-import { HomePage } from "@/pages/home";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { RouterProvider } from "react-router-dom";
+
+import { router } from "./router";
 
 export function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<HomePage />} path="/" />
-        <Route element={<DashboardPage />} path="/dashboard/*" />
-        <Route element={<Navigate replace to="/" />} path="*" />
-      </Routes>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }

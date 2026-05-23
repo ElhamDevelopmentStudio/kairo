@@ -1,16 +1,12 @@
 import type { ArchitectureShift, Session } from "@kairo/shared";
 import { useEffect, useState } from "react";
-import { Link, NavLink, Navigate, Route, Routes } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import { fetchTimeline } from "./api";
-import { OverviewPage } from "./overview-page";
-import { SearchPage } from "./search-page";
-import { SessionPage } from "./session-page";
-import { TimelinePage } from "./timeline-page";
 import { DashboardDataContext } from "./use-dashboard-data";
 
 export function DashboardPage() {
@@ -72,13 +68,7 @@ export function DashboardPage() {
           </nav>
         </header>
 
-        <Routes>
-          <Route element={<OverviewPage />} index />
-          <Route element={<TimelinePage />} path="timeline" />
-          <Route element={<SearchPage />} path="search" />
-          <Route element={<SessionPage />} path="sessions/:slug" />
-          <Route element={<Navigate replace to="/dashboard" />} path="*" />
-        </Routes>
+        <Outlet />
       </main>
     </DashboardDataContext.Provider>
   );

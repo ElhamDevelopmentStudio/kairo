@@ -1,10 +1,10 @@
 import type { KairoEvent, Session } from "@kairo/shared";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { RouterProvider, createMemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { DashboardPage } from "./dashboard-page";
+import { routes } from "@/router";
 
 describe("DashboardPage", () => {
   afterEach(() => {
@@ -46,13 +46,9 @@ describe("DashboardPage", () => {
 });
 
 function renderDashboard(initialEntry: string) {
-  render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <Routes>
-        <Route element={<DashboardPage />} path="/dashboard/*" />
-      </Routes>
-    </MemoryRouter>,
-  );
+  const router = createMemoryRouter(routes, { initialEntries: [initialEntry] });
+
+  render(<RouterProvider router={router} />);
 }
 
 function jsonResponse(body: unknown): Response {
