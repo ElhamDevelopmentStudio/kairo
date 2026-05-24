@@ -9,6 +9,8 @@ import {
   type AiProvider,
   type AiProviderConfig,
   AiProviderError,
+  type CompleteInput,
+  type CompleteResult,
   type EmbedInput,
   type EmbedResult,
   type JsonTransport,
@@ -28,14 +30,15 @@ export function createGeminiProvider(
 
   return {
     name: "gemini",
-    async summarize(input: SummarizeInput): Promise<SummarizeResult> {
+    async complete(input: CompleteInput): Promise<CompleteResult> {
       if (!apiKey) throw new AiProviderError("Missing Gemini API key");
       const response = requireObject(
         await jsonRequest(
           transport,
           `${baseUrl}/v1beta/models/${model}:generateContent`,
           {
-            contents: [{ parts: [{ text: input.prompt ?? JSON.stringify(input) }] }],
+            ...(input.system ? { systemInstruction: { parts: [{ text: input.system }] } } : {}),
+            contents: [{ parts: [{ text: input.prompt }] }],
           },
           {
             "x-goog-api-key": apiKey,
@@ -51,6 +54,9 @@ export function createGeminiProvider(
         model,
         provider: "gemini",
       };
+    },
+    async summarize(input: SummarizeInput): Promise<SummarizeResult> {
+      return this.complete({ prompt: input.prompt ?? JSON.stringify(input) });
     },
     async embed(input: EmbedInput): Promise<EmbedResult> {
       if (!apiKey) throw new AiProviderError("Missing Gemini API key");

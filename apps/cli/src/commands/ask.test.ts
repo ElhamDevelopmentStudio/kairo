@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 describe("runAsk", () => {
-  it("answers project-memory questions from real stored session data", () => {
+  it("answers project-memory questions from real stored session data", async () => {
     const workspace = new Workspace(root);
     const config = workspace.init("demo");
     const store = new EventStore(workspace.dbPath);
@@ -37,7 +37,7 @@ describe("runAsk", () => {
       store.close();
     }
 
-    const answer = runAsk("How did we fix payment CORS?", {}, root);
+    const answer = await runAsk("How did we fix payment CORS?", { ai: false }, root);
 
     expect(answer.citations[0]).toMatchObject({
       reference: "session:cors-fix",

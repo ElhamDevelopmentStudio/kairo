@@ -43,6 +43,32 @@ describe("createAiProvider", () => {
     });
   });
 
+  it("uses MiniMax as an OpenAI-compatible completion provider", async () => {
+    const calls: Array<{ url: string; body: unknown }> = [];
+    const provider = createAiProvider(
+      { provider: "minimax", model: "MiniMax-M2.7" },
+      { MINIMAX_API_KEY: "minimax-key" },
+      async (url, init) => {
+        calls.push({ url, body: JSON.parse(String(init.body)) as unknown });
+        return { choices: [{ message: { content: "natural answer" } }] };
+      },
+    );
+
+    await expect(
+      provider.complete({
+        system: "Use only evidence.",
+        prompt: "Why did the API change?",
+      }),
+    ).resolves.toMatchObject({
+      text: "natural answer",
+      model: "MiniMax-M2.7",
+      provider: "minimax",
+    });
+    expect(calls[0]).toMatchObject({
+      url: "https://api.minimax.io/v1/chat/completions",
+    });
+  });
+
   it("lists common providers first and remaining setup entries alphabetically", () => {
     expect(listProviderSetups().map((provider) => provider.name)).toEqual([
       "openai",

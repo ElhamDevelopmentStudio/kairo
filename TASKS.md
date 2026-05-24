@@ -569,10 +569,11 @@ evidence backs that answer.
   Preserve raw source evidence as the answer substrate: summaries and synthetic
   documents may improve retrieval, but they must never replace commits, diffs,
   terminal events, hook payloads, ADRs, or session records as citations.
-- **Done:** Added deterministic local project-memory answering through
-  `@kairo/core`, `kairo ask`, and the `kairo_ask` MCP tool. Answers are grounded
-  in stored sessions, architecture shifts, and raw commit/event evidence,
-  include citations, and abstain when no matching evidence exists.
+- **Done:** Added local retrieval through `@kairo/core`, then provider-backed
+  natural-language answering through `@kairo/ai`, `kairo ask`, and the
+  `kairo_ask` MCP tool. MiniMax is the default init provider. Answers are
+  grounded in stored sessions, architecture shifts, and raw commit/event
+  evidence, include citations, and abstain when no matching evidence exists.
 
 ### 5.2 — Error and fix recall memory
 

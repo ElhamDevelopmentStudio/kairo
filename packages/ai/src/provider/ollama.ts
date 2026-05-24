@@ -2,6 +2,8 @@ import { jsonRequest, requireNumberArray, requireObject, requireString } from ".
 import type {
   AiProvider,
   AiProviderConfig,
+  CompleteInput,
+  CompleteResult,
   EmbedInput,
   EmbedResult,
   JsonTransport,
@@ -20,7 +22,7 @@ export function createOllamaProvider(
 
   return {
     name: "ollama",
-    async summarize(input: SummarizeInput): Promise<SummarizeResult> {
+    async complete(input: CompleteInput): Promise<CompleteResult> {
       const response = requireObject(
         await jsonRequest(
           transport,
@@ -28,7 +30,10 @@ export function createOllamaProvider(
           {
             model,
             stream: false,
-            messages: [{ role: "user", content: input.prompt ?? JSON.stringify(input) }],
+            messages: [
+              ...(input.system ? [{ role: "system", content: input.system }] : []),
+              { role: "user", content: input.prompt },
+            ],
           },
           config.headers ?? {},
         ),
@@ -39,6 +44,9 @@ export function createOllamaProvider(
         model,
         provider: "ollama",
       };
+    },
+    async summarize(input: SummarizeInput): Promise<SummarizeResult> {
+      return this.complete({ prompt: input.prompt ?? JSON.stringify(input) });
     },
     async embed(input: EmbedInput): Promise<EmbedResult> {
       const response = requireObject(

@@ -5,6 +5,8 @@ export {
   type AiProvider,
   type AiProviderConfig,
   type AiProviderName,
+  type CompleteInput,
+  type CompleteResult,
   type EmbedInput,
   type EmbedResult,
   type ProviderSetup,

@@ -7,6 +7,9 @@ describe("embedText", () => {
       embedText("hello", {
         provider: {
           name: "ollama",
+          async complete() {
+            return { text: "", model: "test", provider: "ollama" };
+          },
           async summarize() {
             return { text: "", model: "test", provider: "ollama" };
           },

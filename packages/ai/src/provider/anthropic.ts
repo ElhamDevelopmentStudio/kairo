@@ -3,6 +3,8 @@ import {
   type AiProvider,
   type AiProviderConfig,
   AiProviderError,
+  type CompleteInput,
+  type CompleteResult,
   type EmbedInput,
   type EmbedResult,
   type JsonTransport,
@@ -21,7 +23,7 @@ export function createAnthropicProvider(
 
   return {
     name: "anthropic",
-    async summarize(input: SummarizeInput): Promise<SummarizeResult> {
+    async complete(input: CompleteInput): Promise<CompleteResult> {
       if (!apiKey) throw new AiProviderError("Missing Anthropic API key");
       const response = requireObject(
         await jsonRequest(
@@ -30,7 +32,8 @@ export function createAnthropicProvider(
           {
             model,
             max_tokens: 1024,
-            messages: [{ role: "user", content: input.prompt ?? JSON.stringify(input) }],
+            ...(input.system ? { system: input.system } : {}),
+            messages: [{ role: "user", content: input.prompt }],
           },
           {
             "x-api-key": apiKey,
@@ -45,6 +48,9 @@ export function createAnthropicProvider(
         model,
         provider: "anthropic",
       };
+    },
+    async summarize(input: SummarizeInput): Promise<SummarizeResult> {
+      return this.complete({ prompt: input.prompt ?? JSON.stringify(input) });
     },
     async embed(_input: EmbedInput): Promise<EmbedResult> {
       throw new AiProviderError("Anthropic does not expose a native embeddings API");

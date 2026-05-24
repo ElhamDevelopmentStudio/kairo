@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 describe("askProjectMemory", () => {
-  it("returns a grounded answer from real workspace sessions", () => {
+  it("returns a grounded answer from real workspace sessions", async () => {
     const workspace = new Workspace(root);
     const config = workspace.init("demo");
     const store = new EventStore(workspace.dbPath);
@@ -36,7 +36,12 @@ describe("askProjectMemory", () => {
       store.close();
     }
 
-    const answer = askProjectMemory({ workspace }, "Why did dashboard routing change?", 5);
+    const answer = await askProjectMemory(
+      { workspace },
+      "Why did dashboard routing change?",
+      5,
+      false,
+    );
 
     expect(answer?.answer).toContain("Dashboard routing split");
     expect(answer?.citations[0]).toMatchObject({
@@ -45,12 +50,12 @@ describe("askProjectMemory", () => {
     });
   });
 
-  it("returns null without a workspace or question", () => {
-    expect(askProjectMemory({ workspace: null }, "Why?", 5)).toBeNull();
+  it("returns null without a workspace or question", async () => {
+    await expect(askProjectMemory({ workspace: null }, "Why?", 5)).resolves.toBeNull();
 
     const workspace = new Workspace(root);
     workspace.init("demo");
-    expect(askProjectMemory({ workspace }, "   ", 5)).toBeNull();
+    await expect(askProjectMemory({ workspace }, "   ", 5)).resolves.toBeNull();
   });
 });
 

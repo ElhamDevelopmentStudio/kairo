@@ -8,6 +8,9 @@ describe("summarizeSession", () => {
       summarizeSession(session, [], {
         provider: {
           name: "ollama",
+          async complete() {
+            return { text: "", model: "test", provider: "ollama" };
+          },
           async summarize(input) {
             expect(input.prompt).toContain("strict JSON");
             return { text: JSON.stringify(summaryFixture), model: "test", provider: "ollama" };

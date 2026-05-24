@@ -18,6 +18,17 @@ export interface SummarizeInput {
   prompt?: string;
 }
 
+export interface CompleteInput {
+  prompt: string;
+  system?: string;
+}
+
+export interface CompleteResult {
+  text: string;
+  model: string;
+  provider: AiProviderName;
+}
+
 export interface SummarizeResult {
   text: string;
   model: string;
@@ -36,6 +47,7 @@ export interface EmbedResult {
 
 export interface AiProvider {
   readonly name: AiProviderName;
+  complete(input: CompleteInput): Promise<CompleteResult>;
   summarize(input: SummarizeInput): Promise<SummarizeResult>;
   embed(input: EmbedInput): Promise<EmbedResult>;
 }

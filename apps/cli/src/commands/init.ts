@@ -51,7 +51,7 @@ export const initCommand = new Command("init")
   .option("--uninstall", "remove Kairo hooks while preserving other hooks")
   .option(
     "--ai-provider <provider>",
-    "AI provider for summaries: anthropic | openai | openrouter | minimax | ollama | none",
+    "AI provider for summaries and answers: minimax | anthropic | openai | openrouter | ollama | none",
   )
   .option("--ai-auth <mode>", "AI auth mode: api-key | headless | none")
   .action(async (opts: InitOptions) => {
@@ -133,16 +133,16 @@ async function withPromptedAiProvider(opts: InitOptions): Promise<InitOptions> {
   const readline = createInterface({ input: process.stdin, output: process.stdout });
   try {
     const answer = await readline.question(
-      `AI provider [${INTERACTIVE_PROVIDER_CHOICES.join(" / ")}] (default: anthropic): `,
+      `AI provider [${INTERACTIVE_PROVIDER_CHOICES.join(" / ")}] (default: minimax): `,
     );
-    return { ...opts, aiProvider: answer.trim() || "anthropic" };
+    return { ...opts, aiProvider: answer.trim() || "minimax" };
   } finally {
     readline.close();
   }
 }
 
 function aiConfigFromOptions(
-  providerChoice = "anthropic",
+  providerChoice = "minimax",
   authChoice?: string,
 ): WorkspaceAiConfigType | null {
   if (providerChoice === "none") return null;

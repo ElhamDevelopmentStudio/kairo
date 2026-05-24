@@ -1,26 +1,38 @@
+import { answerMemoryWithAi } from "@kairo/ai";
 import { EventStore, Workspace, answerProjectMemory } from "@kairo/core";
 import type { MemoryAnswer, MemoryCitation } from "@kairo/shared";
 import { Command } from "commander";
 import kleur from "kleur";
+import { resolveAiConfig } from "../internal/ai-config.ts";
 
 export const askCommand = new Command("ask")
   .description("Ask a grounded question about stored project memory")
   .argument("<question>")
   .option("--limit <count>", "maximum evidence citations", parseLimit, 5)
-  .action((question: string, opts: AskOptions) => {
-    console.log(renderAskAnswer(runAsk(question, opts)));
+  .option("--no-ai", "use deterministic local wording instead of the configured provider")
+  .action(async (question: string, opts: AskOptions) => {
+    console.log(renderAskAnswer(await runAsk(question, opts)));
   });
 
 export interface AskOptions {
   limit?: number;
+  ai?: boolean;
 }
 
-export function runAsk(question: string, opts: AskOptions = {}, cwd = process.cwd()): MemoryAnswer {
+export async function runAsk(
+  question: string,
+  opts: AskOptions = {},
+  cwd = process.cwd(),
+): Promise<MemoryAnswer> {
   const workspace = Workspace.find(cwd);
   const config = workspace.readConfig();
   const store = new EventStore(workspace.dbPath);
   try {
-    return answerProjectMemory(store, config.projectId, question, { limit: opts.limit ?? 5 });
+    const grounded = answerProjectMemory(store, config.projectId, question, {
+      limit: opts.limit ?? 5,
+    });
+    if (opts.ai === false || grounded.citations.length === 0) return grounded;
+    return await answerMemoryWithAi(grounded, { config: resolveAiConfig(config.ai) });
   } finally {
     store.close();
   }

@@ -10,6 +10,8 @@ import {
   type AiProviderConfig,
   AiProviderError,
   type AiProviderName,
+  type CompleteInput,
+  type CompleteResult,
   type EmbedInput,
   type EmbedResult,
   type JsonTransport,
@@ -38,7 +40,7 @@ export function createOpenAICompatibleProvider(
 
   return {
     name: defaults.name,
-    async summarize(input: SummarizeInput): Promise<SummarizeResult> {
+    async complete(input: CompleteInput): Promise<CompleteResult> {
       const response = requireObject(
         await jsonRequest(
           transport,
@@ -46,8 +48,8 @@ export function createOpenAICompatibleProvider(
           {
             model,
             messages: [
-              { role: "system", content: "Summarize Kairo development sessions concisely." },
-              { role: "user", content: input.prompt ?? defaultSummaryPrompt(input) },
+              ...(input.system ? [{ role: "system", content: input.system }] : []),
+              { role: "user", content: input.prompt },
             ],
             temperature: 0.2,
           },
@@ -61,6 +63,12 @@ export function createOpenAICompatibleProvider(
         model,
         provider: defaults.name,
       };
+    },
+    async summarize(input: SummarizeInput): Promise<SummarizeResult> {
+      return this.complete({
+        system: "Summarize Kairo development sessions concisely.",
+        prompt: input.prompt ?? defaultSummaryPrompt(input),
+      });
     },
     async embed(input: EmbedInput): Promise<EmbedResult> {
       const response = requireObject(

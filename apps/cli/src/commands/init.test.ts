@@ -36,16 +36,16 @@ describe("runInit", () => {
     expect(readFileSync(codexPath, "utf8")).toBe(firstCodex);
   });
 
-  it("writes Anthropic AI config by default", () => {
+  it("writes MiniMax AI config by default", () => {
     runInit({ name: "demo" }, projectRoot);
     const config = JSON.parse(readFileSync(join(projectRoot, ".kairo", "config.json"), "utf8"));
 
     expect(config.ai).toEqual({
-      provider: "anthropic",
-      model: "claude-sonnet-4-5",
-      apiKeyEnv: "ANTHROPIC_API_KEY",
+      provider: "minimax",
+      model: "MiniMax-M2.7",
+      apiKeyEnv: "MINIMAX_API_KEY",
       authMode: "api-key",
-      baseUrl: "https://api.anthropic.com",
+      baseUrl: "https://api.minimax.io/v1",
     });
   });
 
