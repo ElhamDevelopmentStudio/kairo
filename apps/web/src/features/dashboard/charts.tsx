@@ -22,60 +22,69 @@ export function PulseChart({
     recentSessions.length === 0 ? placeholderPoints() : pointsFromSessions(recentSessions);
 
   return (
-    <section className="relative min-h-[430px] overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+    <section className="relative overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-sm">
       <ChartGrid />
-      <div className="absolute inset-x-5 top-5 flex items-center justify-between">
-        <div>
-          <div className="font-medium text-sm">Weekly pulse</div>
-          <div className="mt-1 text-muted-foreground text-xs">
-            Recent work, decisions, and code movement
-          </div>
-        </div>
-        <div className="rounded-full border border-border bg-background/80 px-3 py-1 text-muted-foreground text-xs">
-          {decisions.length} decisions
-        </div>
-      </div>
-
-      <svg
-        aria-label="Recent activity chart"
-        className="absolute inset-x-0 bottom-0 h-56 w-full text-muted-foreground"
-        role="img"
-        viewBox="0 0 720 220"
-      >
-        <path d="M50 180H690" stroke="currentColor" strokeOpacity="0.18" />
-        <path d="M50 130H690" stroke="currentColor" strokeDasharray="5 8" strokeOpacity="0.18" />
-        <path d="M50 80H690" stroke="currentColor" strokeDasharray="5 8" strokeOpacity="0.18" />
-        <ActivityBars points={points} />
-        <polyline
-          fill="none"
-          points={points.map((point) => `${point.x},${point.y}`).join(" ")}
-          stroke="#5b6ee1"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-        />
-      </svg>
-
-      <div className="relative z-10 mt-24 max-w-xl rounded-r-lg border border-border border-l-0 bg-background/90 p-5 shadow-2xl backdrop-blur">
-        <div className="font-medium text-lg">Latest work</div>
-        <div className="mt-5 space-y-5">
-          {recentSessions.map((session) => (
-            <div key={session.id}>
-              <div className="flex items-center gap-2">
-                <span className="size-2 rounded-full bg-primary" />
-                <span className="font-medium">{displaySessionTitle(session)}</span>
+      <div className="relative z-10 grid gap-6 p-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="min-w-0">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="font-medium text-sm">Weekly pulse</div>
+              <div className="mt-1 text-muted-foreground text-xs">
+                Recent work, decisions, and code movement
               </div>
-              <p className="mt-2 text-muted-foreground text-sm leading-6">
-                {session.summary ??
-                  `${session.files.length} files changed across this work window.`}
-              </p>
             </div>
-          ))}
-          {recentSessions.length === 0 && (
-            <p className="text-muted-foreground text-sm">
-              No work sessions have been captured yet.
-            </p>
-          )}
+            <div className="rounded-full border border-border bg-background/80 px-3 py-1 text-muted-foreground text-xs">
+              {decisions.length} decisions
+            </div>
+          </div>
+
+          <svg
+            aria-label="Recent activity chart"
+            className="mt-8 h-64 w-full text-muted-foreground"
+            role="img"
+            viewBox="0 0 720 220"
+          >
+            <path d="M50 180H690" stroke="currentColor" strokeOpacity="0.18" />
+            <path
+              d="M50 130H690"
+              stroke="currentColor"
+              strokeDasharray="5 8"
+              strokeOpacity="0.18"
+            />
+            <path d="M50 80H690" stroke="currentColor" strokeDasharray="5 8" strokeOpacity="0.18" />
+            <ActivityBars points={points} />
+            <polyline
+              fill="none"
+              points={points.map((point) => `${point.x},${point.y}`).join(" ")}
+              stroke="#5b6ee1"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+            />
+          </svg>
+        </div>
+
+        <div className="rounded-lg border border-border bg-background/90 p-5 shadow-xl backdrop-blur">
+          <div className="font-medium text-lg">Latest work</div>
+          <div className="mt-5 space-y-5">
+            {recentSessions.map((session) => (
+              <div key={session.id}>
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-primary" />
+                  <span className="font-medium">{displaySessionTitle(session)}</span>
+                </div>
+                <p className="mt-2 text-muted-foreground text-sm leading-6">
+                  {session.summary ??
+                    `${session.files.length} files changed across this work window.`}
+                </p>
+              </div>
+            ))}
+            {recentSessions.length === 0 && (
+              <p className="text-muted-foreground text-sm">
+                No work sessions have been captured yet.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </section>
@@ -162,10 +171,7 @@ export function CycleProgressChart({ sessions }: { sessions: Session[] }) {
 
         return (
           <div
-            className={cn(
-              "overflow-hidden rounded-lg border border-border bg-card p-5 shadow-sm",
-              index > 0 && "lg:translate-y-6",
-            )}
+            className="overflow-hidden rounded-lg border border-border bg-card p-5 shadow-sm"
             key={session.id}
           >
             <div className="flex items-center justify-between">

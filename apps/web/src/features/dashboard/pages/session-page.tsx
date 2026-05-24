@@ -11,6 +11,7 @@ import {
   SkeletonList,
   StatTile,
 } from "../components";
+import { FileTree } from "../file-tree";
 import {
   eventLabel,
   eventMeta,
@@ -137,13 +138,7 @@ export function SessionPage() {
 
             <div className="space-y-6">
               <DataPanel title="Files">
-                <div className="flex flex-wrap gap-2 p-5">
-                  {detail.session.files.length === 0 ? (
-                    <p className="text-muted-foreground text-sm">No file paths were recorded.</p>
-                  ) : (
-                    detail.session.files.map((file) => <FilePill key={file}>{file}</FilePill>)
-                  )}
-                </div>
+                <FileTree paths={detail.session.files} />
               </DataPanel>
 
               <DataPanel title="Commits">

@@ -1,12 +1,5 @@
-import {
-  DataPanel,
-  EmptyState,
-  ErrorState,
-  FilePill,
-  PageHeader,
-  SkeletonList,
-} from "../components";
-import { formatShiftKind, formatShortDate } from "../format";
+import { DataPanel, EmptyState, ErrorState, PageHeader, SkeletonList } from "../components";
+import { ArchitectureDecisionTabs } from "../decision-views";
 import { useArchitectureShifts } from "../hooks";
 
 export function ArchitecturePage() {
@@ -23,7 +16,7 @@ export function ArchitecturePage() {
         title="Decisions that changed the system"
       />
 
-      <DataPanel title="Recorded decisions">
+      <DataPanel>
         {architectureQuery.isLoading ? (
           <SkeletonList rows={6} />
         ) : architectureQuery.isError ? (
@@ -36,30 +29,7 @@ export function ArchitecturePage() {
             title="No architecture decisions recorded"
           />
         ) : (
-          <div className="divide-y divide-border">
-            {shifts.map((shift) => (
-              <article className="px-5 py-5" key={shift.id}>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="text-muted-foreground text-xs">
-                      {formatShiftKind(shift.kind)} · {formatShortDate(shift.detectedAt)}
-                    </div>
-                    <h2 className="mt-2 font-medium text-foreground">{shift.title}</h2>
-                  </div>
-                </div>
-                <p className="mt-3 max-w-3xl text-muted-foreground text-sm leading-6">
-                  {shift.summary}
-                </p>
-                {shift.affectedPaths.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {shift.affectedPaths.slice(0, 8).map((path) => (
-                      <FilePill key={path}>{path}</FilePill>
-                    ))}
-                  </div>
-                )}
-              </article>
-            ))}
-          </div>
+          <ArchitectureDecisionTabs shifts={shifts} />
         )}
       </DataPanel>
     </>
