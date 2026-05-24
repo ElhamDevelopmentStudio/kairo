@@ -49,6 +49,17 @@ describe("createDashboardApp", () => {
     await expect(response.json()).resolves.toEqual({ error: "Session not found" });
   });
 
+  it("returns a structured API error when workspace data is unavailable", async () => {
+    const workspace = new Workspace(mkdtempSync(join(tmpdir(), "kairo-serve-unready-")));
+    const app = createDashboardApp({ workspace });
+
+    const response = await app.request("/api/health");
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({
+      error: "Dashboard data unavailable",
+    });
+  });
+
   it("searches sessions by text and clamps invalid limits", async () => {
     const { workspace, session } = createWorkspaceFixture();
     const app = createDashboardApp({ workspace });

@@ -43,6 +43,20 @@ export const serveCommand = new Command("serve")
 export function createDashboardApp({ workspace, webDistPath }: DashboardAppOptions): Hono {
   const app = new Hono();
 
+  app.onError((error, c) => {
+    const detail = dashboardErrorDetail(error);
+    if (process.env.NODE_ENV !== "test") {
+      console.error(`Dashboard API unavailable: ${detail}`);
+    }
+    return c.json(
+      {
+        error: "Dashboard data unavailable",
+        detail,
+      },
+      503,
+    );
+  });
+
   app.get("/api/health", (c) => {
     const config = workspace.readConfig();
     return c.json({
@@ -136,6 +150,11 @@ export function createDashboardApp({ workspace, webDistPath }: DashboardAppOptio
   });
 
   return app;
+}
+
+function dashboardErrorDetail(error: unknown): string {
+  const message = error instanceof Error ? error.message : "Unknown dashboard API error";
+  return message.split("\n")[0] ?? message;
 }
 
 function openProjectStore(workspace: Workspace): { store: EventStore; projectId: string } {

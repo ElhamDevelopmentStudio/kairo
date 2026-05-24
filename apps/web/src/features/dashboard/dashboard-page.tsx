@@ -7,7 +7,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { IconSvgElement } from "@hugeicons/react";
 import { useEffect, useState } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 
 import { HugeIcon } from "@/components/huge-icon";
 import { Logo } from "@/components/logo";
@@ -33,12 +33,7 @@ export function DashboardPage() {
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-border border-r bg-sidebar/95 p-4 lg:block">
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Logo className="text-sidebar-foreground" variant="sm" />
-              <Link className="font-medium text-sidebar-foreground text-sm" to="/dashboard">
-                Kairo
-              </Link>
-            </div>
+            <Logo className="text-sidebar-foreground" variant="sm" />
             <Button
               aria-label="Toggle color mode"
               onClick={() => setIsDark(!isDark)}
@@ -58,10 +53,12 @@ export function DashboardPage() {
               <span
                 className={cn(
                   "size-2 rounded-full",
-                  health.isError ? "bg-destructive" : "bg-emerald-500",
+                  health.isError || health.data?.ok === false ? "bg-destructive" : "bg-emerald-500",
                 )}
               />
-              {health.isError ? "Connection needs attention" : "Dashboard connected"}
+              {health.isError || health.data?.ok === false
+                ? "Connection needs attention"
+                : "Dashboard connected"}
             </div>
           </div>
 
@@ -81,12 +78,7 @@ export function DashboardPage() {
 
       <header className="sticky top-0 z-20 border-border border-b bg-background/90 backdrop-blur lg:hidden">
         <div className="flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-3">
-            <Logo variant="sm" />
-            <Link className="font-medium text-sm" to="/dashboard">
-              Kairo
-            </Link>
-          </div>
+          <Logo variant="sm" />
           <Button
             aria-label="Toggle color mode"
             onClick={() => setIsDark(!isDark)}
