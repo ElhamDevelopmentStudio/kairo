@@ -1,5 +1,6 @@
 import { existsSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+import type { AgentIngestConfig } from "@kairo/shared";
 import { ensureDir, readJson, writeJson } from "@kairo/utils/fs";
 import {
   DEFAULT_WORKSPACE_AI_CONFIG,
@@ -14,6 +15,7 @@ const DB_FILE = "kairo.db";
 
 export interface WorkspaceInitOptions {
   ai?: WorkspaceAiConfig | null;
+  agentIngest?: AgentIngestConfig;
 }
 
 const DEFAULT_IGNORE = [
@@ -87,6 +89,7 @@ export class Workspace {
       ignore: [...DEFAULT_IGNORE],
       sessionIdleGapMinutes: 30,
       ai: options.ai === undefined ? DEFAULT_WORKSPACE_AI_CONFIG : options.ai,
+      agentIngest: options.agentIngest ?? { enabled: false, providers: [] },
     };
     writeJson(this.configPath, config);
     writeFileSync(

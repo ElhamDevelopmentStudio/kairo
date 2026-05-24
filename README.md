@@ -372,6 +372,36 @@ pnpm --filter @kairo/cli dev init
 pnpm --filter @kairo/cli dev doctor
 ```
 
+# Guided Onboarding
+
+`kairo init` opens a short ASCII-styled setup flow when run in a terminal. You
+can skip it, or opt into each capability one at a time:
+
+- local agent transcript import
+- AI provider setup for natural-language answers
+- auth mode selection where the provider supports it
+
+Agent transcript import is intentionally explicit because it reads local
+assistant history. Kairo currently imports JSONL transcripts for:
+
+- Codex: `~/.codex/sessions/**/*.jsonl` when present
+- Claude Code: `~/.claude/projects/<project-path>/*.jsonl`
+
+Other sources such as Kilo Code, GitHub Copilot, Continue, Cline, Roo Code, and
+Cursor are selectable during onboarding so the workspace records your intent,
+but their IDE/database adapters are separate follow-up work.
+
+Do not run Kairo with `sudo` for normal onboarding. Transcript folders should be
+readable by your user account. If an IDE stores history in a protected location,
+fix that folder's permissions or export the transcript; elevated runs can expose
+secrets and create root-owned `.kairo` files.
+
+Manual import uses the same source list:
+
+```bash
+kairo ingest agents --providers codex,claude-code
+```
+
 # How it integrates with your AI workflow
 
 Kairo runs **alongside** Claude Code, Codex, Cursor — it does not replace them.
@@ -407,4 +437,3 @@ Tauri desktop shell and a Vite + React dashboard are deferred to a later phase.
 # License
 
 MIT
-

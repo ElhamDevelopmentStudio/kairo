@@ -32,12 +32,13 @@ describe("Workspace.init", () => {
     expect(config.ignore).toContain(".git/**");
     expect(config.sessionIdleGapMinutes).toBe(30);
     expect(config.ai).toEqual({
-      provider: "anthropic",
-      model: "claude-sonnet-4-5",
-      apiKeyEnv: "ANTHROPIC_API_KEY",
-      baseUrl: "https://api.anthropic.com",
+      provider: "minimax",
+      model: "MiniMax-M2.7",
+      apiKeyEnv: "MINIMAX_API_KEY",
+      baseUrl: "https://api.minimax.io/v1",
       authMode: "api-key",
     });
+    expect(config.agentIngest).toEqual({ enabled: false, providers: [] });
   });
 
   it("can initialize with AI disabled", () => {
@@ -65,10 +66,14 @@ describe("Workspace.readConfig", () => {
   it("normalizes older configs without AI settings", () => {
     const ws = new Workspace(projectRoot);
     const written = ws.init("demo");
-    const { ai: _ai, ...legacyConfig } = written;
+    const { ai: _ai, agentIngest: _agentIngest, ...legacyConfig } = written;
     writeFileSync(ws.configPath, JSON.stringify(legacyConfig, null, 2));
 
-    expect(ws.readConfig()).toEqual({ ...legacyConfig, ai: null });
+    expect(ws.readConfig()).toEqual({
+      ...legacyConfig,
+      ai: null,
+      agentIngest: { enabled: false, providers: [] },
+    });
   });
 
   it("rejects invalid AI providers", () => {

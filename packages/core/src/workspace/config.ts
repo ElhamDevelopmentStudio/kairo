@@ -1,4 +1,4 @@
-import { AiProviderName } from "@kairo/shared";
+import { AgentIngestConfig, AiProviderName } from "@kairo/shared";
 import { z } from "zod";
 
 export const WorkspaceAiAuthModeSchema = z.enum(["api-key", "headless", "none"]);
@@ -24,14 +24,15 @@ export const WorkspaceConfigSchema = z
     ignore: z.array(z.string()),
     sessionIdleGapMinutes: z.number().positive().optional(),
     ai: WorkspaceAiConfigSchema.nullable().default(null),
+    agentIngest: AgentIngestConfig,
   })
   .strict();
 export type WorkspaceConfig = z.infer<typeof WorkspaceConfigSchema>;
 
 export const DEFAULT_WORKSPACE_AI_CONFIG: WorkspaceAiConfig = {
-  provider: "anthropic",
-  model: "claude-sonnet-4-5",
-  apiKeyEnv: "ANTHROPIC_API_KEY",
-  baseUrl: "https://api.anthropic.com",
+  provider: "minimax",
+  model: "MiniMax-M2.7",
+  apiKeyEnv: "MINIMAX_API_KEY",
+  baseUrl: "https://api.minimax.io/v1",
   authMode: "api-key",
 };

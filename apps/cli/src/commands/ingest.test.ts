@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { EventStore, Workspace } from "@kairo/core";
 import type { KairoEvent } from "@kairo/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { runIngest } from "./ingest.ts";
+import { runIngest, runIngestAgents } from "./ingest.ts";
 
 let repoRoot: string;
 
@@ -142,6 +142,60 @@ describe("runIngest", () => {
       expect(readFileSync(workspace.timelinePath, "utf8")).toContain(session.slug);
     } finally {
       reopened.close();
+    }
+  });
+
+  it("imports Claude Code JSONL transcripts into rendered sessions", async () => {
+    const workspace = new Workspace(repoRoot);
+    const config = workspace.init("demo", {
+      agentIngest: { enabled: true, providers: ["claude-code"] },
+    });
+    const home = mkdtempSync(join(tmpdir(), "kairo-agent-home-"));
+    const claudeProject = join(
+      home,
+      ".claude",
+      "projects",
+      repoRoot.replaceAll("/", "-").replaceAll(":", "-"),
+    );
+    mkdirSync(claudeProject, { recursive: true });
+    writeFileSync(
+      join(claudeProject, "session.jsonl"),
+      [
+        JSON.stringify({
+          timestamp: "2026-05-18T10:00:00.000Z",
+          message: { role: "user", content: `Please edit ${join(repoRoot, "src/a.ts")}` },
+        }),
+        JSON.stringify({
+          timestamp: "2026-05-18T10:05:00.000Z",
+          message: { role: "assistant", content: "Updated the module." },
+        }),
+      ].join("\n"),
+    );
+
+    try {
+      const result = await runIngestAgents({ homeDir: home }, repoRoot);
+
+      expect(result.events).toHaveLength(1);
+      expect(result.events[0]).toMatchObject({
+        projectId: config.projectId,
+        kind: "ai.activity",
+        payload: {
+          tool: "claude-code",
+          filesTouched: ["src/a.ts"],
+        },
+      });
+
+      const store = new EventStore(workspace.dbPath);
+      try {
+        const [session] = store.recentSessions(config.projectId);
+        expect(session).toBeDefined();
+        if (!session) return;
+        expect(readFileSync(workspace.sessionPath(session.slug), "utf8")).toContain("claude-code");
+      } finally {
+        store.close();
+      }
+    } finally {
+      rmSync(home, { recursive: true, force: true });
     }
   });
 });

@@ -1,4 +1,5 @@
 import { writeFileSync } from "node:fs";
+import { createInterface } from "node:readline/promises";
 import {
   EventStore,
   GitObserver,
@@ -10,18 +11,42 @@ import {
 import { AIIngestPayload, GitIngestPayload, type KairoEvent } from "@kairo/shared";
 import { Command } from "commander";
 import kleur from "kleur";
+import {
+  AGENT_SOURCE_DEFINITIONS,
+  type AgentSourceDefinition,
+  importAgentTranscripts,
+  parseAgentProviders,
+} from "../internal/agent-sources.ts";
 
 export const ingestCommand = new Command("ingest")
   .description("Ingest an event (called by hooks)")
-  .argument("<source>", "event source: git | fs | terminal | ai")
+  .argument("[source]", "event source: git | fs | terminal | ai | agents")
   .option("--payload <json>", "JSON payload")
-  .action(async (source: string, opts: IngestOptions) => {
-    const event = await runIngest(source, opts);
+  .option("--providers <list>", "agent transcript providers for `kairo ingest agents`")
+  .action(async (source: string | undefined, opts: IngestOptions) => {
+    const resolvedSource = source ?? "agents";
+    if (resolvedSource === "agents") {
+      const result = await runIngestAgents(await withAgentProviderPrompt(opts));
+      console.log(kleur.green(`✓ ingested ${result.events.length} agent transcript events`));
+      for (const skipped of result.skipped) {
+        console.log(kleur.yellow(`  skipped ${skipped.label}: ${skipped.note}`));
+      }
+      return;
+    }
+
+    const event = await runIngest(resolvedSource, opts);
     console.log(kleur.green(`✓ ingested ${event.kind} ${event.id}`));
   });
 
 export interface IngestOptions {
   payload?: string;
+  providers?: string;
+  homeDir?: string;
+}
+
+export interface IngestAgentsResult {
+  events: KairoEvent[];
+  skipped: AgentSourceDefinition[];
 }
 
 export async function runIngest(
@@ -49,6 +74,45 @@ export async function runIngest(
   }
 
   return result.event;
+}
+
+export async function runIngestAgents(
+  opts: IngestOptions,
+  cwd = process.cwd(),
+): Promise<IngestAgentsResult> {
+  const workspace = Workspace.find(cwd);
+  const config = workspace.readConfig();
+  const providers =
+    opts.providers !== undefined
+      ? parseAgentProviders(opts.providers)
+      : config.agentIngest.enabled
+        ? config.agentIngest.providers
+        : [];
+
+  if (providers.length === 0) {
+    throw new Error("No agent transcript providers selected");
+  }
+
+  const imported = importAgentTranscripts({
+    projectId: config.projectId,
+    projectRoot: workspace.root,
+    providers,
+    ...(opts.homeDir === undefined ? {} : { homeDir: opts.homeDir }),
+  });
+  const store = new EventStore(workspace.dbPath);
+
+  try {
+    for (const event of imported.events) {
+      store.append(event);
+    }
+    if (imported.events.length > 0) {
+      renderSessionsFromStore(store, workspace, config.projectId);
+    }
+  } finally {
+    store.close();
+  }
+
+  return imported;
 }
 
 interface IngestResult {
@@ -120,5 +184,24 @@ function parseJson(rawPayload: string): unknown {
     return JSON.parse(rawPayload);
   } catch {
     throw new Error("Invalid --payload JSON");
+  }
+}
+
+async function withAgentProviderPrompt(opts: IngestOptions): Promise<IngestOptions> {
+  if (opts.providers !== undefined || !process.stdin.isTTY || !process.stdout.isTTY) return opts;
+
+  const readline = createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    console.log(kleur.bold("Agent transcript sources"));
+    AGENT_SOURCE_DEFINITIONS.forEach((choice, index) => {
+      const status = choice.status === "importable" ? "ready" : "adapter pending";
+      console.log(`  ${index + 1}. ${choice.label} (${choice.id}) — ${status}`);
+    });
+    const providers = await readline.question(
+      "Choose one or more by number/name, comma-separated: ",
+    );
+    return { ...opts, providers };
+  } finally {
+    readline.close();
   }
 }

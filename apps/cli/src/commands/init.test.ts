@@ -27,6 +27,7 @@ describe("runInit", () => {
     expect(first).toMatchObject({
       alreadyInitialized: false,
       projectName: "demo",
+      agentProviders: [],
     });
     expect(second).toMatchObject({
       alreadyInitialized: true,
@@ -46,6 +47,18 @@ describe("runInit", () => {
       apiKeyEnv: "MINIMAX_API_KEY",
       authMode: "api-key",
       baseUrl: "https://api.minimax.io/v1",
+    });
+    expect(config.agentIngest).toEqual({ enabled: false, providers: [] });
+  });
+
+  it("stores selected agent transcript providers", () => {
+    const result = runInit({ name: "demo", agentProviders: "codex,claude-code" }, projectRoot);
+    const config = JSON.parse(readFileSync(join(projectRoot, ".kairo", "config.json"), "utf8"));
+
+    expect(result.agentProviders).toEqual(["codex", "claude-code"]);
+    expect(config.agentIngest).toEqual({
+      enabled: true,
+      providers: ["codex", "claude-code"],
     });
   });
 
