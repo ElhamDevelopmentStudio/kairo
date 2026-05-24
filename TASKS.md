@@ -549,9 +549,9 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
 
 ## Phase 5 — Project memory intelligence
 
-**Goal:** turn Kairo from a searchable project history into an answer engine for
-why the project changed, how past problems were solved, and what evidence backs
-that answer.
+**Goal:** turn Kairo from a searchable project history into a local evidence
+engine for why the project changed, how past problems were solved, and what
+evidence backs that answer.
 
 ### 5.1 — Natural-language project memory Q&A
 
@@ -566,6 +566,9 @@ that answer.
 - **Tests:** recorded retrieval fixtures; no network calls in tests.
 - **Notes:** This is not generic chat. Answers must be grounded in stored Kairo
   evidence and should say when the memory does not contain enough information.
+  Preserve raw source evidence as the answer substrate: summaries and synthetic
+  documents may improve retrieval, but they must never replace commits, diffs,
+  terminal events, hook payloads, ADRs, or session records as citations.
 
 ### 5.2 — Error and fix recall memory
 
@@ -593,18 +596,24 @@ that answer.
   uncited factual claims are emitted when evidence is missing.
 - **Notes:** Prefer concise citations over long copied source text.
 
-### 5.4 — Memory retrieval ranking
+### 5.4 — Hybrid memory retrieval ranking
 
-- [ ] **Goal:** rank candidate memory by semantic similarity, recency, file/path
-  overlap, architecture relevance, and problem/fix confidence.
+- [ ] **Goal:** rank candidate memory by semantic similarity, BM25/keyword
+  overlap, recency, temporal query parsing, file/path/package overlap,
+  architecture relevance, and problem/fix confidence.
 - **Files:** `packages/core/src/memory/retrieval.ts`,
-  `packages/core/src/search/semantic.ts`, `packages/core/src/problem-memory/`.
+  `packages/core/src/search/semantic.ts`, `packages/core/src/problem-memory/`,
+  `packages/core/src/search/bm25.ts`.
 - **Acceptance:** similar error queries and architecture-why queries retrieve
-  the correct prior sessions above weaker keyword-only matches.
+  the correct prior sessions above weaker keyword-only matches; questions with
+  phrases like "last week", "before the dashboard split", or "when this error
+  first appeared" use temporal signals instead of embedding similarity alone.
 - **Tests:** deterministic ranking fixtures covering synonyms, renamed files,
-  recurring stack traces, and architecture terms.
-- **Notes:** Keep keyword fallback for offline use; semantic retrieval should
-  improve ranking, not become the only path.
+  recurring stack traces, architecture terms, temporal references, and exact
+  keyword anchors.
+- **Notes:** Keep keyword/BM25 fallback for offline use; semantic retrieval
+  should improve ranking, not become the only path. Retrieval signals are boosts,
+  not hard filters, so a wrong classifier cannot hide the correct evidence.
 
 ### 5.5 — Dashboard memory assistant
 
@@ -630,6 +639,101 @@ that answer.
 - **Tests:** fixtures with one explicit ADR and one inferred architecture shift.
 - **Notes:** Do not invent rationale. If only inferred evidence exists, label it
   as inference.
+
+### 5.7 — Raw evidence preservation and memory schemas
+
+- [ ] **Goal:** define first-class memory records while preserving raw evidence
+  as the source of truth.
+- **Files:** `packages/shared/src/memory.ts`, `packages/shared/src/problem.ts`,
+  `packages/core/src/memory/`, EventStore migrations.
+- **Acceptance:** Kairo stores `SessionMemory`, `DecisionMemory`,
+  `ProblemMemory`, `FixMemory`, `ArchitectureShiftMemory`, `SymbolMemory`, and
+  `AgentRunMemory` records with stable links back to raw sessions, commits,
+  file paths, terminal events, hook payloads, ADRs, or architecture shifts.
+- **Tests:** schema tests and migration fixtures prove memory records can be
+  rebuilt from raw evidence without losing citation anchors.
+- **Notes:** Treat summaries, labels, topics, and extracted entities as indexes
+  over evidence, not as replacements for evidence.
+
+### 5.8 — Synthetic bridge documents
+
+- [ ] **Goal:** generate cached retrieval helper documents that bridge vocabulary
+  gaps without becoming answer sources.
+- **Files:** `packages/core/src/memory/bridge-docs.ts`,
+  `packages/ai/src/answer/`, `packages/core/src/search/semantic.ts`.
+- **Acceptance:** each finalized session can produce compact bridge docs for
+  touched features, problems fixed, decisions made, risks introduced, files,
+  packages, symbols, and notable commands; search maps bridge-doc hits back to
+  the underlying memory/evidence IDs.
+- **Tests:** fixtures where the query uses different wording than the original
+  session still retrieve the right evidence through bridge docs.
+- **Notes:** Bridge docs may be AI-generated or deterministic. They are retrieval
+  accelerators only; answers must cite the underlying raw evidence.
+
+### 5.9 — Temporal project knowledge graph
+
+- [ ] **Goal:** model project entities and relationships over time so Kairo can
+  answer "why", "when", and "what changed after X" questions.
+- **Files:** `packages/shared/src/knowledge-graph.ts`,
+  `packages/core/src/knowledge-graph/`, EventStore migrations,
+  `apps/cli/src/commands/ask.ts`.
+- **Acceptance:** Kairo can store and query entities such as packages, modules,
+  files, symbols, APIs, models, database tables, env vars, commands, errors,
+  decisions, and agents with relationships like `fixes`, `caused_by`,
+  `supersedes`, `depends_on`, `implements`, `touches`, and `explained_by`;
+  relationships support validity windows and source citations.
+- **Tests:** fixtures prove as-of queries, superseded decisions, renamed files,
+  and fix/error relationships return time-correct evidence.
+- **Notes:** Keep the graph local and SQLite-backed. Graph facts need confidence
+  and source references, especially when inferred from architecture shifts.
+
+### 5.10 — Optional LLM rerank and answer grounding
+
+- [ ] **Goal:** use an optional AI reranker/reader to improve hard retrieval
+  cases without making AI required for core memory lookup.
+- **Files:** `packages/ai/src/answer/rerank.ts`,
+  `packages/core/src/memory/retrieval.ts`, `apps/cli/src/commands/ask.ts`.
+- **Acceptance:** when an AI provider or runtime gateway is available, `kairo ask`
+  can rerank the top candidates and select the best evidence; when unavailable,
+  timeout, or invalid, Kairo returns the deterministic hybrid ranking unchanged.
+- **Tests:** fake-provider fixtures cover successful rerank, timeout, invalid
+  selection, and no-provider fallback.
+- **Notes:** Ask the model for the single best evidence candidate or citation set,
+  not an unconstrained answer. The final answer still goes through citation
+  enforcement.
+
+### 5.11 — Source adapter contract for memory inputs
+
+- [ ] **Goal:** make future memory sources pluggable without hardcoding every
+  tool/export format into core.
+- **Files:** `packages/core/src/sources/`, `packages/shared/src/source.ts`,
+  `apps/cli/src/commands/import.ts`, `apps/mcp/src/tools/import.ts`.
+- **Acceptance:** first-party adapters exist for Kairo sessions, git history,
+  terminal events, ADRs, Claude Code/Codex hook transcripts, and dashboard-free
+  local project files; each adapter declares its metadata schema, privacy class,
+  supported ingest mode, incremental cursor/version token, and transformations.
+- **Tests:** conformance tests prove adapters are incremental, privacy-aware,
+  and honest about transformations such as truncation, redaction, or line
+  normalization.
+- **Notes:** Prefer explicit adapters over `if source_type === ...` branches in
+  core. This keeps Kairo open to Cursor, GitHub PRs/issues, CI logs, Obsidian,
+  and other sources later.
+
+### 5.12 — Memory retrieval benchmarks
+
+- [ ] **Goal:** measure intelligence-layer quality with reproducible local
+  fixtures before tuning retrieval heuristics.
+- **Files:** `benchmarks/memory/`, `packages/core/src/memory/*.test.ts`,
+  `docs/benchmarks/memory.md`.
+- **Acceptance:** benchmark fixtures cover architecture-why questions,
+  problem/fix recall, temporal questions, renamed files, exact error strings,
+  assistant/agent transcript recall, and decision citations; output reports
+  recall@k, citation coverage, unsupported-answer abstention, and latency.
+- **Tests:** benchmark runner is deterministic, offline by default, and can run
+  against both deterministic hybrid retrieval and optional AI rerank fixtures.
+- **Notes:** Tune only against declared fixtures and keep a held-out set. Avoid
+  optimizing a heuristic because it fixes one inspected miss unless the fixture
+  category explains the broader failure mode.
 
 **Milestone:** ask Kairo why something changed or how a past error was fixed,
 and get a concise answer with evidence links back into project memory.
