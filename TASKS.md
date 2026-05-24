@@ -81,7 +81,7 @@ phase plugs into a clean skeleton.
   - Root `package.json`: `"doctor": "turbo run typecheck lint test --concurrency=10"`.
 - **Acceptance:** `pnpm doctor` runs typecheck + lint + test for every workspace package; exits 0.
 - **Tests:** none new.
-- **Notes:** This becomes the CI entrypoint in Phase 6.
+- **Notes:** This becomes the CI entrypoint in Phase 7.
 
 ### 0.6 — Centralize cross-package types ✅
 
@@ -99,10 +99,10 @@ phase plugs into a clean skeleton.
 **Phase 0 notes (2026-05-18):**
 - Dropped TypeScript project references / `composite: true`. v0 runs from source via
   `tsx` and Vitest; project refs added build/incremental complexity without payoff.
-  Re-introduce when Phase 6 adds npm publishing.
+  Re-introduce when Phase 7 adds npm publishing.
 - `tsconfig.base.json` sets `allowImportingTsExtensions: true` + `noEmit: true` so
   imports can use `.ts` suffixes (required by Node ESM resolver under tsx/Vitest).
-  This implies `pnpm build` is currently a no-op typecheck — Phase 6 will override
+  This implies `pnpm build` is currently a no-op typecheck — Phase 7 will override
   `noEmit` per package when wiring publishing.
 - Restructured `packages/core` modules into folders per AGENTS.md §4.3 (workspace,
   event-store, observers/git, observers/file, session-reconstructor). Each has
@@ -547,11 +547,100 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
 
 ---
 
-## Phase 5 — Tauri desktop shell
+## Phase 5 — Project memory intelligence
+
+**Goal:** turn Kairo from a searchable project history into an answer engine for
+why the project changed, how past problems were solved, and what evidence backs
+that answer.
+
+### 5.1 — Natural-language project memory Q&A
+
+- [ ] **Goal:** ask questions like "Why did we switch from REST to GraphQL?"
+  and get a grounded answer from Kairo's stored sessions, architecture shifts,
+  commits, files, and decisions.
+- **Files:** `packages/core/src/memory/`, `packages/ai/src/answer/`,
+  `apps/cli/src/commands/ask.ts`, `apps/mcp/src/tools/ask.ts`.
+- **Acceptance:** `kairo ask "why did we switch to graphql from rest?"` retrieves
+  relevant sessions/architecture shifts and returns a concise answer with
+  source references.
+- **Tests:** recorded retrieval fixtures; no network calls in tests.
+- **Notes:** This is not generic chat. Answers must be grounded in stored Kairo
+  evidence and should say when the memory does not contain enough information.
+
+### 5.2 — Error and fix recall memory
+
+- [ ] **Goal:** remember previously solved errors and explain how they were fixed
+  when the same or similar error appears later.
+- **Files:** `packages/shared/src/problem.ts`, `packages/core/src/problem-memory/`,
+  terminal observation/reconstruction code, `apps/cli/src/commands/ask.ts`.
+- **Acceptance:** a query like `kairo ask "we fixed AN_ERROR before, how?"`
+  returns the prior session, suspected root cause, files changed, commits, and
+  fix summary.
+- **Tests:** fixtures with terminal error events, related fix commits, and a
+  later similar query.
+- **Notes:** Add a first-class `ProblemMemory` / `FixMemory` shape instead of
+  relying only on raw terminal text. Redaction rules still apply before storage.
+
+### 5.3 — Evidence citations and traceable answers
+
+- [ ] **Goal:** every synthesized memory answer cites the sessions, commits,
+  files, architecture shifts, ADRs, or terminal events it used.
+- **Files:** `packages/shared/src/memory.ts`, `packages/core/src/memory/`,
+  `packages/ai/src/answer/`.
+- **Acceptance:** answer output includes stable references such as session slug,
+  commit SHA, file path, event ID, and architecture shift ID where available.
+- **Tests:** answer synthesis fixtures verify citation presence and that no
+  uncited factual claims are emitted when evidence is missing.
+- **Notes:** Prefer concise citations over long copied source text.
+
+### 5.4 — Memory retrieval ranking
+
+- [ ] **Goal:** rank candidate memory by semantic similarity, recency, file/path
+  overlap, architecture relevance, and problem/fix confidence.
+- **Files:** `packages/core/src/memory/retrieval.ts`,
+  `packages/core/src/search/semantic.ts`, `packages/core/src/problem-memory/`.
+- **Acceptance:** similar error queries and architecture-why queries retrieve
+  the correct prior sessions above weaker keyword-only matches.
+- **Tests:** deterministic ranking fixtures covering synonyms, renamed files,
+  recurring stack traces, and architecture terms.
+- **Notes:** Keep keyword fallback for offline use; semantic retrieval should
+  improve ranking, not become the only path.
+
+### 5.5 — Dashboard memory assistant
+
+- [ ] **Goal:** add an "Ask Kairo" surface to `/dashboard` for project-memory Q&A.
+- **Files:** `apps/web/src/features/memory/`, `apps/web/src/features/dashboard/`,
+  `apps/cli/src/commands/serve.ts`.
+- **Acceptance:** dashboard users can ask a project-history question, see a
+  synthesized answer, inspect citations, and jump to related sessions.
+- **Tests:** component tests for query entry, loading/error states, cited answer
+  rendering, and session navigation.
+- **Notes:** This should feel like a local project memory browser, not a generic
+  chatbot. It must work with the same local `kairo serve` API boundary.
+
+### 5.6 — Decision memory from ADRs and inferred changes
+
+- [ ] **Goal:** index explicit ADRs plus inferred decisions from architecture
+  shifts so Kairo can answer decision-oriented questions.
+- **Files:** `docs/decisions/`, `packages/core/src/memory/decisions.ts`,
+  `packages/shared/src/memory.ts`.
+- **Acceptance:** questions about why a technology, boundary, or architecture
+  direction changed can cite ADRs when present and architecture shifts when
+  ADRs are missing.
+- **Tests:** fixtures with one explicit ADR and one inferred architecture shift.
+- **Notes:** Do not invent rationale. If only inferred evidence exists, label it
+  as inference.
+
+**Milestone:** ask Kairo why something changed or how a past error was fixed,
+and get a concise answer with evidence links back into project memory.
+
+---
+
+## Phase 6 — Tauri desktop shell
 
 **Goal:** real desktop app, tray icon, autostart, Node observer sidecar supervised by the Rust core.
 
-### 5.1 — `apps/desktop` Tauri skeleton
+### 6.1 — `apps/desktop` Tauri skeleton
 
 - [ ] **Goal:** Tauri shell wraps `apps/web`.
 - **Files:** `apps/desktop/` — `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`,
@@ -562,9 +651,9 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
   the dashboard in a native window with HMR for the renderer.
 - **Notes:** Tauri 2. Use the system WebView (WKWebView on macOS, WebView2 on
   Windows, WebKitGTK on Linux). The Rust core is thin — its job is to host the
-  WebView, expose `invoke` commands, and supervise the Node sidecar (5.3).
+  WebView, expose `invoke` commands, and supervise the Node sidecar (6.3).
 
-### 5.2 — Tray icon + autostart
+### 6.2 — Tray icon + autostart
 
 - [ ] **Goal:** menubar icon, "open dashboard", "pause observation", autostart on login.
 - **Files:** `apps/desktop/src-tauri/src/tray.rs`, `apps/desktop/src-tauri/src/autostart.rs`,
@@ -573,7 +662,7 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
 - **Notes:** Use Tauri 2's built-in `tray` APIs and `tauri-plugin-autostart`
   for cross-platform login-item handling — no per-OS code paths required.
 
-### 5.3 — Observer sidecar management
+### 6.3 — Observer sidecar management
 
 - [ ] **Goal:** the Rust core spawns and supervises a Node sidecar that runs the
   `@kairo/core` observers for each registered project.
@@ -590,7 +679,7 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
   isn't needed, you can also reuse the existing `kairo watch` CLI as the sidecar
   binary directly.
 
-### 5.4 — Session boundary notifications
+### 6.4 — Session boundary notifications
 
 - [ ] **Goal:** OS notification when a session finalizes.
 - **Files:** `apps/desktop/src-tauri/src/notifications.rs`, capability entry
@@ -602,128 +691,39 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
 
 ---
 
-## Phase 6 — Distribution
+## Phase 7 — Distribution
 
 **Goal:** `npm install -g @kairo/cli` works; releases are automated.
 
-### 6.1 — npm publish config
+### 7.1 — npm publish config
 
 - [ ] **Goal:** `@kairo/cli` and `@kairo/mcp` are publishable.
 - **Files:** `apps/cli/package.json` (`"publishConfig"`), `apps/mcp/package.json`.
 - **Acceptance:** dry-run `npm publish` works.
 
-### 6.2 — Changesets
+### 7.2 — Changesets
 
 - [ ] **Goal:** versioning is automated.
 - **Files:** `.changeset/config.json`.
 - **Acceptance:** `pnpm changeset` flow works for bumping versions.
 
-### 6.3 — CI
+### 7.3 — CI
 
 - [ ] **Goal:** GitHub Actions runs `pnpm doctor` on every PR.
 - **Files:** `.github/workflows/ci.yml`.
 - **Acceptance:** PR runs typecheck, lint, test in CI.
 
-### 6.4 — Release workflow
+### 7.4 — Release workflow
 
 - [ ] **Goal:** tag → npm publish + Tauri build artifacts (`.dmg`, `.AppImage`, `.msi`) via `tauri build` (using `tauri-apps/tauri-action` in CI).
 - **Files:** `.github/workflows/release.yml`.
 
-### 6.5 — Docs site
+### 7.5 — Docs site
 
 - [ ] **Goal:** docs.kairo.dev (or similar) — quickstart, guides, API ref.
 - **Files:** `apps/docs/` (Astro Starlight or similar).
 
 **Milestone:** anyone can `npm install -g @kairo/cli`, then `kairo init && kairo sweep`, and have it work.
-
----
-
-## Post-MVP — Project memory intelligence
-
-**Goal:** turn Kairo from a searchable project history into an answer engine for
-why the project changed, how past problems were solved, and what evidence backs
-that answer.
-
-### PM.1 — Natural-language project memory Q&A
-
-- [ ] **Goal:** ask questions like "Why did we switch from REST to GraphQL?"
-  and get a grounded answer from Kairo's stored sessions, architecture shifts,
-  commits, files, and decisions.
-- **Files:** `packages/core/src/memory/`, `packages/ai/src/answer/`,
-  `apps/cli/src/commands/ask.ts`, `apps/mcp/src/tools/ask.ts`.
-- **Acceptance:** `kairo ask "why did we switch to graphql from rest?"` retrieves
-  relevant sessions/architecture shifts and returns a concise answer with
-  source references.
-- **Tests:** recorded retrieval fixtures; no network calls in tests.
-- **Notes:** This is not generic chat. Answers must be grounded in stored Kairo
-  evidence and should say when the memory does not contain enough information.
-
-### PM.2 — Error and fix recall memory
-
-- [ ] **Goal:** remember previously solved errors and explain how they were fixed
-  when the same or similar error appears later.
-- **Files:** `packages/shared/src/problem.ts`, `packages/core/src/problem-memory/`,
-  terminal observation/reconstruction code, `apps/cli/src/commands/ask.ts`.
-- **Acceptance:** a query like `kairo ask "we fixed AN_ERROR before, how?"`
-  returns the prior session, suspected root cause, files changed, commits, and
-  fix summary.
-- **Tests:** fixtures with terminal error events, related fix commits, and a
-  later similar query.
-- **Notes:** Add a first-class `ProblemMemory` / `FixMemory` shape instead of
-  relying only on raw terminal text. Redaction rules still apply before storage.
-
-### PM.3 — Evidence citations and traceable answers
-
-- [ ] **Goal:** every synthesized memory answer cites the sessions, commits,
-  files, architecture shifts, ADRs, or terminal events it used.
-- **Files:** `packages/shared/src/memory.ts`, `packages/core/src/memory/`,
-  `packages/ai/src/answer/`.
-- **Acceptance:** answer output includes stable references such as session slug,
-  commit SHA, file path, event ID, and architecture shift ID where available.
-- **Tests:** answer synthesis fixtures verify citation presence and that no
-  uncited factual claims are emitted when evidence is missing.
-- **Notes:** Prefer concise citations over long copied source text.
-
-### PM.4 — Memory retrieval ranking
-
-- [ ] **Goal:** rank candidate memory by semantic similarity, recency, file/path
-  overlap, architecture relevance, and problem/fix confidence.
-- **Files:** `packages/core/src/memory/retrieval.ts`,
-  `packages/core/src/search/semantic.ts`, `packages/core/src/problem-memory/`.
-- **Acceptance:** similar error queries and architecture-why queries retrieve
-  the correct prior sessions above weaker keyword-only matches.
-- **Tests:** deterministic ranking fixtures covering synonyms, renamed files,
-  recurring stack traces, and architecture terms.
-- **Notes:** Keep keyword fallback for offline use; semantic retrieval should
-  improve ranking, not become the only path.
-
-### PM.5 — Dashboard memory assistant
-
-- [ ] **Goal:** add an "Ask Kairo" surface to `/dashboard` for project-memory Q&A.
-- **Files:** `apps/web/src/features/memory/`, `apps/web/src/features/dashboard/`,
-  `apps/cli/src/commands/serve.ts`.
-- **Acceptance:** dashboard users can ask a project-history question, see a
-  synthesized answer, inspect citations, and jump to related sessions.
-- **Tests:** component tests for query entry, loading/error states, cited answer
-  rendering, and session navigation.
-- **Notes:** This should feel like a local project memory browser, not a generic
-  chatbot. It must work with the same local `kairo serve` API boundary.
-
-### PM.6 — Decision memory from ADRs and inferred changes
-
-- [ ] **Goal:** index explicit ADRs plus inferred decisions from architecture
-  shifts so Kairo can answer decision-oriented questions.
-- **Files:** `docs/decisions/`, `packages/core/src/memory/decisions.ts`,
-  `packages/shared/src/memory.ts`.
-- **Acceptance:** questions about why a technology, boundary, or architecture
-  direction changed can cite ADRs when present and architecture shifts when
-  ADRs are missing.
-- **Tests:** fixtures with one explicit ADR and one inferred architecture shift.
-- **Notes:** Do not invent rationale. If only inferred evidence exists, label it
-  as inference.
-
-**Milestone:** ask Kairo why something changed or how a past error was fixed,
-and get a concise answer with evidence links back into project memory.
 
 ---
 
