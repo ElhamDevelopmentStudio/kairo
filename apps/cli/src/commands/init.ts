@@ -58,6 +58,7 @@ export const initCommand = new Command("init")
     "AI provider for summaries and answers: minimax | anthropic | openai | openrouter | ollama | none",
   )
   .option("--ai-auth <mode>", "AI auth mode: api-key | headless | none")
+  .option("--ai-key-env <name>", "environment variable name that stores the AI API key")
   .action(async (opts: InitOptions) => {
     const result = runInit(await withOnboarding(opts));
     if (result.uninstalled) {
@@ -92,6 +93,7 @@ export interface InitOptions {
   agentProviders?: string;
   aiProvider?: string;
   aiAuth?: string;
+  aiKeyEnv?: string;
 }
 
 export interface InitResult {
@@ -131,7 +133,7 @@ export function runInit(opts: InitOptions = {}, cwd = process.cwd()): InitResult
 
   const name = opts.name ?? basename(resolve(cwd));
   const config = ws.init(name, {
-    ai: aiConfigFromOptions(opts.aiProvider, opts.aiAuth),
+    ai: aiConfigFromOptions(opts.aiProvider, opts.aiAuth, opts.aiKeyEnv),
     agentIngest: agentIngestConfigFromOptions(opts.agentProviders),
   });
   installKairoHooks(cwd);
@@ -184,13 +186,14 @@ async function withOnboarding(opts: InitOptions): Promise<InitOptions> {
 
     const provider = await chooseProvider(readline);
     const setup = listProviderSetups().find((item) => item.name === provider);
-    const authMode = setup === undefined ? undefined : await chooseAuth(readline, setup);
+    const auth = setup === undefined ? {} : await chooseAuth(readline, setup);
 
     return {
       ...opts,
       agentProviders,
       aiProvider: provider,
-      ...(authMode === undefined ? {} : { aiAuth: authMode }),
+      ...(auth.authMode === undefined ? {} : { aiAuth: auth.authMode }),
+      ...(auth.apiKeyEnv === undefined ? {} : { aiKeyEnv: auth.apiKeyEnv }),
     };
   } finally {
     readline.close();
@@ -208,6 +211,7 @@ function agentIngestConfigFromOptions(agentProviders: string | undefined) {
 function aiConfigFromOptions(
   providerChoice = "minimax",
   authChoice?: string,
+  apiKeyEnvChoice?: string,
 ): WorkspaceAiConfigType | null {
   if (providerChoice === "none") return null;
 
@@ -217,11 +221,15 @@ function aiConfigFromOptions(
   }
 
   const authMode = resolveAuthMode(authChoice, setup);
+  const apiKeyEnv =
+    authMode === "api-key" && setup.apiKeyEnv !== null
+      ? resolveApiKeyEnv(apiKeyEnvChoice, setup.apiKeyEnv)
+      : undefined;
   return {
     provider: setup.name,
     model: DEFAULT_MODEL_BY_PROVIDER[setup.name],
     ...(setup.baseUrl !== null ? { baseUrl: setup.baseUrl } : {}),
-    ...(authMode === "api-key" && setup.apiKeyEnv !== null ? { apiKeyEnv: setup.apiKeyEnv } : {}),
+    ...(apiKeyEnv === undefined ? {} : { apiKeyEnv }),
     authMode,
   };
 }
@@ -231,6 +239,11 @@ function resolveAuthMode(
   setup: ReturnType<typeof listProviderSetups>[number],
 ): WorkspaceAiAuthModeType {
   if (authChoice !== undefined) {
+    if (looksLikeSecret(authChoice)) {
+      throw new Error(
+        "Do not paste API keys into auth mode. Choose `api-key`, then export the key in your shell.",
+      );
+    }
     if (authChoice !== "api-key" && authChoice !== "headless" && authChoice !== "none") {
       throw new Error(`Unsupported AI auth mode: ${authChoice}`);
     }
@@ -245,6 +258,25 @@ function resolveAuthMode(
 
   if (setup.apiKeyEnv !== null) return "api-key";
   return "none";
+}
+
+function resolveApiKeyEnv(apiKeyEnvChoice: string | undefined, defaultEnv: string): string {
+  if (apiKeyEnvChoice === undefined || apiKeyEnvChoice.trim().length === 0) return defaultEnv;
+  const candidate = apiKeyEnvChoice.trim();
+  if (looksLikeSecret(candidate)) {
+    throw new Error(
+      "Do not paste raw API keys into Kairo config. Export the key in your shell and enter only the environment variable name.",
+    );
+  }
+  if (!/^[A-Z_][A-Z0-9_]*$/.test(candidate)) {
+    throw new Error("AI API key environment variable must look like MINIMAX_API_KEY");
+  }
+  return candidate;
+}
+
+function looksLikeSecret(value: string): boolean {
+  const normalized = value.trim();
+  return /^(sk-|sk_|sk-[A-Za-z0-9_-]{12,}|[A-Za-z0-9_-]{40,})/.test(normalized);
 }
 
 function renderLogo(): string {
@@ -306,13 +338,26 @@ async function chooseProvider(readline: ReturnType<typeof createInterface>): Pro
 async function chooseAuth(
   readline: ReturnType<typeof createInterface>,
   setup: ReturnType<typeof listProviderSetups>[number],
-): Promise<string | undefined> {
+): Promise<{ authMode?: WorkspaceAiAuthModeType; apiKeyEnv?: string }> {
   const modes = ["api-key"];
   if (setup.headlessAuth !== null) modes.push("headless");
   if (setup.apiKeyEnv === null) modes.unshift("none");
   const defaultMode = setup.apiKeyEnv === null ? "none" : "api-key";
   const answer = (
-    await readline.question(`Auth mode [${modes.join(" / ")}] (default: ${defaultMode}): `)
+    await readline.question(
+      `Auth mode [${modes.join(" / ")}] (default: ${defaultMode}; do not paste API keys): `,
+    )
   ).trim();
-  return answer.length === 0 ? defaultMode : answer;
+  const authMode = resolveAuthMode(answer.length === 0 ? defaultMode : answer, setup);
+  if (authMode !== "api-key" || setup.apiKeyEnv === null) return { authMode };
+
+  console.log("Kairo stores the environment variable name, not the secret value.");
+  console.log(`Before using AI answers, export your key as ${kleur.cyan(setup.apiKeyEnv)}.`);
+  const apiKeyEnv = (
+    await readline.question(`API key environment variable (default: ${setup.apiKeyEnv}): `)
+  ).trim();
+  return {
+    authMode,
+    apiKeyEnv: resolveApiKeyEnv(apiKeyEnv, setup.apiKeyEnv),
+  };
 }

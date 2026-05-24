@@ -82,6 +82,34 @@ describe("runInit", () => {
     });
   });
 
+  it("stores a custom API key environment variable name", () => {
+    runInit(
+      { name: "demo", aiProvider: "minimax", aiAuth: "api-key", aiKeyEnv: "CUSTOM_MINIMAX_KEY" },
+      projectRoot,
+    );
+    const config = JSON.parse(readFileSync(join(projectRoot, ".kairo", "config.json"), "utf8"));
+
+    expect(config.ai).toMatchObject({
+      provider: "minimax",
+      apiKeyEnv: "CUSTOM_MINIMAX_KEY",
+      authMode: "api-key",
+    });
+  });
+
+  it("rejects raw API keys without echoing the secret", () => {
+    const rawKey = "sk-test-secret-value-that-should-not-be-stored-or-echoed";
+
+    expect(() =>
+      runInit({ name: "demo", aiProvider: "minimax", aiAuth: rawKey }, projectRoot),
+    ).toThrow(/Do not paste API keys/);
+    expect(() =>
+      runInit(
+        { name: "demo", aiProvider: "minimax", aiAuth: "api-key", aiKeyEnv: rawKey },
+        projectRoot,
+      ),
+    ).toThrow(/Do not paste raw API keys/);
+  });
+
   it("writes MiniMax 2.7 provider settings", () => {
     runInit({ name: "demo", aiProvider: "minimax" }, projectRoot);
     const config = JSON.parse(readFileSync(join(projectRoot, ".kairo", "config.json"), "utf8"));

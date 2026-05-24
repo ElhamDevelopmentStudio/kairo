@@ -380,6 +380,7 @@ can skip it, or opt into each capability one at a time:
 - local agent transcript import
 - AI provider setup for natural-language answers
 - auth mode selection where the provider supports it
+- API-key environment variable selection without storing raw secrets
 
 Agent transcript import is intentionally explicit because it reads local
 assistant history. Kairo currently imports JSONL transcripts for:
@@ -400,6 +401,14 @@ Manual import uses the same source list:
 
 ```bash
 kairo ingest agents --providers codex,claude-code
+```
+
+For API-key providers, export the key before running AI-backed commands. Kairo
+stores the environment variable name in `.kairo/config.json`, not the secret:
+
+```bash
+export MINIMAX_API_KEY="..."
+kairo init
 ```
 
 # How it integrates with your AI workflow
