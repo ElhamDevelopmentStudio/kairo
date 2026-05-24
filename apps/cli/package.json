@@ -7,7 +7,7 @@
     "kairo": "./src/bin.ts"
   },
   "scripts": {
-    "dev": "tsx src/bin.ts",
+    "dev": "tsx src/bin.ts serve --no-open --port 4170",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src",
     "test": "vitest run",

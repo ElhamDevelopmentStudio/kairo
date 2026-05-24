@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { extname, join, normalize, resolve, sep } from "node:path";
+import { basename, extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { serve } from "@hono/node-server";
 import { EventStore, Workspace, renderSession } from "@kairo/core";
@@ -58,11 +58,11 @@ export function createDashboardApp({ workspace, webDistPath }: DashboardAppOptio
   });
 
   app.get("/api/health", (c) => {
-    const config = workspace.readConfig();
+    const project = resolveDashboardProject(workspace);
     return c.json({
       ok: true,
-      projectId: config.projectId,
-      projectName: config.projectName,
+      projectId: project.projectId,
+      projectName: project.projectName,
     });
   });
 
@@ -157,11 +157,46 @@ function dashboardErrorDetail(error: unknown): string {
   return message.split("\n")[0] ?? message;
 }
 
+function resolveDashboardProject(
+  workspace: Workspace,
+  existingStore?: EventStore,
+): { projectId: string; projectName: string } {
+  try {
+    const config = workspace.readConfig();
+    return {
+      projectId: config.projectId,
+      projectName: config.projectName,
+    };
+  } catch (configError) {
+    const store = existingStore ?? new EventStore(workspace.dbPath);
+    try {
+      const projectId = store.projectIds()[0];
+      if (projectId === undefined) {
+        throw configError;
+      }
+      return {
+        projectId,
+        projectName: basename(workspace.root),
+      };
+    } finally {
+      if (existingStore === undefined) {
+        store.close();
+      }
+    }
+  }
+}
+
 function openProjectStore(workspace: Workspace): { store: EventStore; projectId: string } {
-  return {
-    store: new EventStore(workspace.dbPath),
-    projectId: workspace.readConfig().projectId,
-  };
+  const store = new EventStore(workspace.dbPath);
+  try {
+    return {
+      store,
+      projectId: resolveDashboardProject(workspace, store).projectId,
+    };
+  } catch (error) {
+    store.close();
+    throw error;
+  }
 }
 
 function eventsForSession(store: EventStore, projectId: string, session: Session): KairoEvent[] {

@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { EventStore, Workspace } from "@kairo/core";
@@ -57,6 +57,25 @@ describe("createDashboardApp", () => {
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toMatchObject({
       error: "Dashboard data unavailable",
+    });
+  });
+
+  it("falls back to the database project when workspace config is missing", async () => {
+    const { workspace, session } = createWorkspaceFixture();
+    unlinkSync(workspace.configPath);
+    const app = createDashboardApp({ workspace });
+
+    const health = await app.request("/api/health");
+    expect(health.status).toBe(200);
+    await expect(health.json()).resolves.toMatchObject({
+      ok: true,
+      projectId: session.projectId,
+    });
+
+    const sessions = await app.request("/api/sessions");
+    expect(sessions.status).toBe(200);
+    await expect(sessions.json()).resolves.toMatchObject({
+      sessions: [{ id: session.id }],
     });
   });
 

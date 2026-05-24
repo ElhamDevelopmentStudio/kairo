@@ -179,6 +179,20 @@ export class EventStore {
     return rows.map(rowToEvent);
   }
 
+  projectIds(): string[] {
+    const rows = this.db
+      .prepare(
+        `SELECT project_id FROM events
+         UNION
+         SELECT project_id FROM sessions
+         UNION
+         SELECT project_id FROM architecture_shifts
+         ORDER BY project_id ASC`,
+      )
+      .all() as { project_id: string }[];
+    return rows.map((row) => row.project_id);
+  }
+
   latestGitCommitSha(projectId: string): string | null {
     const rows = this.db
       .prepare(
