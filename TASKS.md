@@ -309,11 +309,11 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
 - **Files:** `apps/mcp/src/tools/search.ts`. SQLite `LIKE`-based search is fine here.
 - **Acceptance:** queries like "auth" return sessions whose any text field matches.
 - **Tests:** populated test DB + assertions.
-- **Notes:** **Semantic search is Phase 3.** Don't reach for embeddings yet.
+- **Notes:** **Semantic search is Phase 4.** Don't reach for embeddings yet.
 
 ### 2.6 — MCP `kairo_architecture_shifts` → empty-safe stub ✅
 
-- [x] **Goal:** the tool returns `[]` cleanly. Phase 3 will fill it.
+- [x] **Goal:** the tool returns `[]` cleanly. Phase 4 will fill it.
 - **Files:** `apps/mcp/src/tools/architecture-shifts.ts`.
 - **Acceptance:** Claude Code calls it; gets an empty array (or whatever is in
   the (still-empty) shifts table) rather than an error.
@@ -357,12 +357,76 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
 
 ---
 
-## Phase 3 — Intelligence layer
+## Phase 3 — Local web dashboard
+
+**Goal:** open Kairo in a browser, see a timeline.
+
+### 3.1 — `apps/web` skeleton
+
+- [x] **Goal:** Vite + React + Tailwind + shadcn skeleton.
+- **Files:** `apps/web/`.
+- **Acceptance:** `pnpm --filter @kairo/web dev` boots Vite, shows a placeholder page.
+- **Tests:** none yet.
+- **Notes:** No Next.js. The web app is static; `kairo serve` hosts it.
+- **Done:** Added the Vite React app with Tailwind v4, shadcn-compatible UI
+  scaffolding, and an operational placeholder dashboard.
+
+### 3.2 — Decide API surface
+
+- [x] **Goal:** how does the web UI read EventStore?
+- **Options:**
+  - (a) **In-process:** `kairo serve` spins up a tiny Hono server reading SQLite directly. (Simple.)
+  - (b) **Sqlite WASM in browser:** Web reads `.kairo/kairo.db` directly via wa-sqlite. (Stricter local-first, more setup.)
+- **Acceptance:** decision recorded in `docs/decisions/0001-web-data-source.md` with rationale.
+- **Notes:** Recommend (a) for v1 — simpler. (b) becomes a later option when
+  Tauri-shelling, since the WebView can `invoke` a Rust command that reads SQLite directly.
+- **Done:** Chose option (a): `kairo serve` will expose a small in-process local
+  API that reads SQLite through `@kairo/core`. Browser-side SQLite remains
+  deferred for possible Tauri command integration.
+
+### 3.3 — Timeline view
+
+- [x] **Goal:** vertical timeline with phase grouping, architecture markers.
+- **Files:** `apps/web/src/features/timeline/`.
+- **Acceptance:** sessions render chronologically with summaries.
+- **Tests:** component tests via Vitest + React Testing Library.
+- **Done:** Added the `/dashboard` timeline view with month grouping,
+  chronological sessions, summary cards, and related architecture markers.
+
+### 3.4 — Session detail view
+
+- [x] **Goal:** click a session, see commits, files, summary, architecture impact.
+- **Files:** `apps/web/src/features/session/`.
+- **Acceptance:** detail page renders all fields from the Session shape.
+- **Done:** Added session detail routing at `/dashboard/sessions/:slug`,
+  loading state, full Session field rendering, events, and rendered markdown.
+
+### 3.5 — Search UI
+
+- [x] **Goal:** search bar hooked to semantic search.
+- **Files:** `apps/web/src/features/search/`.
+- **Acceptance:** typing returns ranked sessions.
+- **Done:** Added debounced dashboard search wired to `/api/search`, with
+  result selection feeding the session detail route.
+
+### 3.6 — `kairo serve` boots web + api
+
+- [x] **Goal:** one command starts everything.
+- **Files:** `apps/cli/src/commands/serve.ts`.
+- **Acceptance:** `kairo serve` opens browser to `http://localhost:4170`.
+- **Done:** Added the in-process Hono API, static web asset serving with SPA
+  fallback, browser launch, and focused route/static-file coverage.
+
+**Milestone:** `kairo serve` → browser → click around your project's history.
+
+---
+
+## Phase 4 — Intelligence layer
 
 **Goal:** session summaries are written in human prose; semantic search works;
 architecture shifts are detected.
 
-### 3.1 — Create `packages/ai` ✅
+### 4.1 — Create `packages/ai` ✅
 
 - [x] **Goal:** provider-abstracted AI calls live in one package.
 - **Files:**
@@ -382,7 +446,7 @@ architecture shifts are detected.
   alphabetically, with custom OpenAI-compatible support and no-network provider
   tests.
 
-### 3.2 — Session summarization ✅
+### 4.2 — Session summarization ✅
 
 - [x] **Goal:** given a session's events, produce title, intent, themes, summary, architecture impact.
 - **Files:** `packages/ai/src/summarize/summarize-session.ts`.
@@ -394,7 +458,7 @@ architecture shifts are detected.
   Sweep now applies structured summaries when a summarizer or AI env is
   available, and reuses existing summary fields for unchanged session IDs.
 
-### 3.3 — Provider config ✅
+### 4.3 — Provider config ✅
 
 - [x] **Goal:** users pick their provider in `.kairo/config.json` or via env vars.
 - **Files:**
@@ -414,7 +478,7 @@ architecture shifts are detected.
   default or accepts `--ai-provider` / `--ai-auth`, and `sweep` passes config
   through to `@kairo/ai` while still allowing `KAIRO_AI_*` env overrides.
 
-### 3.4 — Architecture shift detection ✅
+### 4.4 — Architecture shift detection ✅
 
 - [x] **Goal:** heuristics over event clusters identify framework migrations,
   package extractions, directory restructures.
@@ -431,7 +495,7 @@ architecture shifts are detected.
   directory restructure, and dependency shifts. `kairo sweep` stores detected
   shifts in SQLite, and MCP now returns persisted architecture shifts.
 
-### 3.5 — Semantic search via sqlite-vec
+### 4.5 — Semantic search via sqlite-vec
 
 - [x] **Goal:** `kairo search "auth rewrite"` returns the right session even if
   those words don't appear verbatim.
@@ -448,7 +512,7 @@ architecture shifts are detected.
   Implemented semantic indexing during sweep with keyword fallback for offline or
   unavailable embedding providers.
 
-### 3.6 — `kairo wake` uses AI prose
+### 4.6 — `kairo wake` uses AI prose
 
 - [x] **Goal:** wake output is a human-prose paragraph, not bullet dumps.
 - **Files:** `apps/cli/src/commands/wake.ts`.
@@ -457,7 +521,7 @@ architecture shifts are detected.
 - **Done:** `kairo wake` now asks the configured AI provider for a one-paragraph
   briefing and falls back to deterministic prose when AI is unavailable.
 
-### 3.7 — Agent runtime gateways
+### 4.7 — Agent runtime gateways
 
 - [x] **Goal:** evaluate and add gateway support for already-authenticated AI
   agent runtimes without mixing them into provider API-key config.
@@ -480,70 +544,6 @@ architecture shifts are detected.
 
 **Milestone:** open a real codebase, search "auth rewrite", get the right
 session. Read `.kairo/timeline.md` — it reads like a human wrote it.
-
----
-
-## Phase 4 — Local web dashboard
-
-**Goal:** open Kairo in a browser, see a timeline.
-
-### 4.1 — `apps/web` skeleton
-
-- [x] **Goal:** Vite + React + Tailwind + shadcn skeleton.
-- **Files:** `apps/web/`.
-- **Acceptance:** `pnpm --filter @kairo/web dev` boots Vite, shows a placeholder page.
-- **Tests:** none yet.
-- **Notes:** No Next.js. The web app is static; `kairo serve` hosts it.
-- **Done:** Added the Vite React app with Tailwind v4, shadcn-compatible UI
-  scaffolding, and an operational placeholder dashboard.
-
-### 4.2 — Decide API surface
-
-- [x] **Goal:** how does the web UI read EventStore?
-- **Options:**
-  - (a) **In-process:** `kairo serve` spins up a tiny Hono server reading SQLite directly. (Simple.)
-  - (b) **Sqlite WASM in browser:** Web reads `.kairo/kairo.db` directly via wa-sqlite. (Stricter local-first, more setup.)
-- **Acceptance:** decision recorded in `docs/decisions/0001-web-data-source.md` with rationale.
-- **Notes:** Recommend (a) for v1 — simpler. (b) becomes a later option when
-  Tauri-shelling, since the WebView can `invoke` a Rust command that reads SQLite directly.
-- **Done:** Chose option (a): `kairo serve` will expose a small in-process local
-  API that reads SQLite through `@kairo/core`. Browser-side SQLite remains
-  deferred for possible Tauri command integration.
-
-### 4.3 — Timeline view
-
-- [x] **Goal:** vertical timeline with phase grouping, architecture markers.
-- **Files:** `apps/web/src/features/timeline/`.
-- **Acceptance:** sessions render chronologically with summaries.
-- **Tests:** component tests via Vitest + React Testing Library.
-- **Done:** Added the `/dashboard` timeline view with month grouping,
-  chronological sessions, summary cards, and related architecture markers.
-
-### 4.4 — Session detail view
-
-- [x] **Goal:** click a session, see commits, files, summary, architecture impact.
-- **Files:** `apps/web/src/features/session/`.
-- **Acceptance:** detail page renders all fields from the Session shape.
-- **Done:** Added session detail routing at `/dashboard/sessions/:slug`,
-  loading state, full Session field rendering, events, and rendered markdown.
-
-### 4.5 — Search UI
-
-- [x] **Goal:** search bar hooked to semantic search.
-- **Files:** `apps/web/src/features/search/`.
-- **Acceptance:** typing returns ranked sessions.
-- **Done:** Added debounced dashboard search wired to `/api/search`, with
-  result selection feeding the session detail route.
-
-### 4.6 — `kairo serve` boots web + api
-
-- [x] **Goal:** one command starts everything.
-- **Files:** `apps/cli/src/commands/serve.ts`.
-- **Acceptance:** `kairo serve` opens browser to `http://localhost:4170`.
-- **Done:** Added the in-process Hono API, static web asset serving with SPA
-  fallback, browser launch, and focused route/static-file coverage.
-
-**Milestone:** `kairo serve` → browser → click around your project's history.
 
 ---
 
