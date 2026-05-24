@@ -553,9 +553,9 @@ session. Read `.kairo/timeline.md` — it reads like a human wrote it.
 engine for why the project changed, how past problems were solved, and what
 evidence backs that answer.
 
-### 5.1 — Natural-language project memory Q&A
+### 5.1 — Natural-language project memory Q&A ✅
 
-- [ ] **Goal:** ask questions like "Why did we switch from REST to GraphQL?"
+- [x] **Goal:** ask questions like "Why did we switch from REST to GraphQL?"
   and get a grounded answer from Kairo's stored sessions, architecture shifts,
   commits, files, and decisions.
 - **Files:** `packages/core/src/memory/`, `packages/ai/src/answer/`,
@@ -569,6 +569,10 @@ evidence backs that answer.
   Preserve raw source evidence as the answer substrate: summaries and synthetic
   documents may improve retrieval, but they must never replace commits, diffs,
   terminal events, hook payloads, ADRs, or session records as citations.
+- **Done:** Added deterministic local project-memory answering through
+  `@kairo/core`, `kairo ask`, and the `kairo_ask` MCP tool. Answers are grounded
+  in stored sessions, architecture shifts, and raw commit/event evidence,
+  include citations, and abstain when no matching evidence exists.
 
 ### 5.2 — Error and fix recall memory
 
@@ -617,15 +621,19 @@ evidence backs that answer.
 
 ### 5.5 — Dashboard memory assistant
 
-- [ ] **Goal:** add an "Ask Kairo" surface to `/dashboard` for project-memory Q&A.
+- [ ] **Goal:** add an optional "Ask Kairo" surface to the dashboard package for
+  project-memory Q&A without making the CLI depend on the frontend.
 - **Files:** `apps/web/src/features/memory/`, `apps/web/src/features/dashboard/`,
-  `apps/cli/src/commands/serve.ts`.
-- **Acceptance:** dashboard users can ask a project-history question, see a
-  synthesized answer, inspect citations, and jump to related sessions.
+  optional dashboard API/client boundary.
+- **Acceptance:** dashboard users can ask a project-history question against an
+  existing `.kairo/` workspace, see a synthesized answer, inspect citations,
+  and jump to related sessions; `@kairo/cli` remains installable and usable
+  without React, Vite, or dashboard assets.
 - **Tests:** component tests for query entry, loading/error states, cited answer
   rendering, and session navigation.
 - **Notes:** This should feel like a local project memory browser, not a generic
-  chatbot. It must work with the same local `kairo serve` API boundary.
+  chatbot. Keep it as an optional visualization surface over the same core
+  memory APIs used by CLI and MCP.
 
 ### 5.6 — Decision memory from ADRs and inferred changes
 
@@ -734,6 +742,94 @@ evidence backs that answer.
 - **Notes:** Tune only against declared fixtures and keep a held-out set. Avoid
   optimizing a heuristic because it fixes one inspected miss unless the fixture
   category explains the broader failure mode.
+
+### 5.13 — Project operating model memory
+
+- [ ] **Goal:** maintain a compact, source-backed model of how the project works
+  today.
+- **Files:** `packages/shared/src/project-model.ts`,
+  `packages/core/src/project-model/`, `apps/cli/src/commands/status.ts`,
+  `apps/mcp/src/tools/project-model.ts`.
+- **Acceptance:** Kairo can report current architecture, conventions, fragile
+  areas, active risks, recurring failures, preferred implementation patterns,
+  important commands, and recently superseded decisions with citations.
+- **Tests:** fixtures prove the project model updates after architecture shifts,
+  repeated errors, new ADRs, and convention-changing sessions.
+- **Notes:** This is the "what should a contributor know before touching this
+  repo?" memory layer. It is derived from lower-level memories and can be
+  rebuilt, so it should not become the only source of truth.
+
+### 5.14 — Supersession and contradiction handling
+
+- [ ] **Goal:** detect when project facts, decisions, or conventions replace
+  older ones.
+- **Files:** `packages/shared/src/memory.ts`,
+  `packages/core/src/memory/supersession.ts`,
+  `packages/core/src/knowledge-graph/`, `apps/cli/src/commands/ask.ts`.
+- **Acceptance:** answers can say "this used to be true, but was superseded by
+  X" for decisions, architecture boundaries, commands, env vars, package
+  choices, and implementation conventions; stale facts are still traceable.
+- **Tests:** fixtures cover conflicting ADRs, changed setup commands, renamed
+  modules, replaced dependencies, and frontend/CLI boundary changes.
+- **Notes:** Prefer explicit supersession from ADRs and commits. When inferred,
+  carry confidence and label the result as inferred.
+
+### 5.15 — Symbol-time intelligence
+
+- [ ] **Goal:** answer historical questions about files, symbols, APIs, and
+  modules, not only sessions.
+- **Files:** `packages/shared/src/symbol.ts`, `packages/core/src/symbol-index/`,
+  `packages/core/src/knowledge-graph/`, `apps/cli/src/commands/ask.ts`.
+- **Acceptance:** Kairo can answer "why does this function exist?", "when did
+  this API contract change?", "what broke last time we touched this file?", and
+  "which session introduced this pattern?" with file/symbol/commit citations.
+- **Tests:** fixtures cover renamed files, moved symbols, changed exported APIs,
+  and recurring failures tied to a file or symbol.
+- **Notes:** Start with TypeScript-friendly static extraction and git history.
+  Deeper language-server integration can come later through source adapters.
+
+### 5.16 — Project reflection commands
+
+- [ ] **Goal:** expose proactive intelligence reports, not only user-asked Q&A.
+- **Files:** `apps/cli/src/commands/reflect.ts`,
+  `packages/core/src/reflect/`, `apps/mcp/src/tools/reflect.ts`.
+- **Acceptance:** commands such as `kairo reflect risks`,
+  `kairo reflect architecture`, `kairo reflect repeated-errors`,
+  `kairo reflect contributor-map`, and `kairo reflect release-readiness`
+  generate concise reports with citations and confidence.
+- **Tests:** fixtures cover each reflection mode, unsupported evidence gaps, and
+  deterministic offline output.
+- **Notes:** Reflection should summarize evidence already captured by Kairo. It
+  should not invent work items or recommendations without backing evidence.
+
+### 5.17 — Memory checks for CI and reviews
+
+- [ ] **Goal:** turn project memory into lightweight checks that help teams avoid
+  repeated mistakes.
+- **Files:** `apps/cli/src/commands/check.ts`, `packages/core/src/checks/`,
+  `.github/workflows/` examples in docs.
+- **Acceptance:** `kairo check memory` can flag repeated errors, missing
+  decision records for broad architecture shifts, stale setup docs, and changes
+  that touch known fragile areas; output is advisory and citation-backed.
+- **Tests:** fixtures cover repeated-error detection, missing-ADR warnings,
+  stale-command warnings, and no-op clean runs.
+- **Notes:** Keep checks quiet by default. The goal is useful project memory, not
+  noisy governance.
+
+### 5.18 — Source adapter contribution kit
+
+- [ ] **Goal:** make memory-source contributions obvious, bounded, and easy to
+  review.
+- **Files:** `docs/sources/adapter-authoring.md`,
+  `packages/core/src/sources/template/`, adapter conformance fixtures,
+  `TASKS.md`.
+- **Acceptance:** contributors can add a new source adapter by following a
+  template with declared schema, privacy class, cursor/versioning behavior,
+  transformation policy, tests, and sample fixture data.
+- **Tests:** template adapter passes the same conformance suite as first-party
+  adapters.
+- **Notes:** This task builds on 5.11. 5.11 defines the runtime contract; this
+  task creates the contributor workflow and examples.
 
 **Milestone:** ask Kairo why something changed or how a past error was fixed,
 and get a concise answer with evidence links back into project memory.

@@ -11,6 +11,8 @@ export type {
 export { detectArchitectureShifts } from "./architecture/index.ts";
 export type { ArchitectureDetectorInput } from "./architecture/index.ts";
 export { EventStore } from "./event-store/index.ts";
+export { answerProjectMemory } from "./memory/index.ts";
+export type { AnswerProjectMemoryOptions } from "./memory/index.ts";
 export {
   installKairoHooks,
   mergeKairoHooks,

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import { askCommand } from "./commands/ask.ts";
 import { doctorCommand } from "./commands/doctor.ts";
 import { ingestCommand } from "./commands/ingest.ts";
 import { initCommand } from "./commands/init.ts";
@@ -18,6 +19,7 @@ program
   .version("0.0.0");
 
 program.addCommand(initCommand);
+program.addCommand(askCommand);
 program.addCommand(doctorCommand);
 program.addCommand(ingestCommand);
 program.addCommand(timelineCommand);
