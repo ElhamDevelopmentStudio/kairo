@@ -1,8 +1,11 @@
 import { DashboardPage } from "@/features/dashboard";
-import { OverviewPage } from "@/features/dashboard/overview-page";
-import { SearchPage } from "@/features/dashboard/search-page";
-import { SessionPage } from "@/features/dashboard/session-page";
-import { TimelinePage } from "@/features/dashboard/timeline-page";
+import { ArchitecturePage } from "@/features/dashboard/pages/architecture-page";
+import { OverviewPage } from "@/features/dashboard/pages/overview-page";
+import { RouteErrorPage } from "@/features/dashboard/pages/route-error-page";
+import { SearchPage } from "@/features/dashboard/pages/search-page";
+import { SessionPage } from "@/features/dashboard/pages/session-page";
+import { SessionsPage } from "@/features/dashboard/pages/sessions-page";
+import { TimelinePage } from "@/features/dashboard/pages/timeline-page";
 import { HomePage } from "@/pages/home";
 import { Navigate, createBrowserRouter } from "react-router-dom";
 import type { RouteObject } from "react-router-dom";
@@ -10,6 +13,7 @@ import type { RouteObject } from "react-router-dom";
 export const routes: RouteObject[] = [
   {
     element: <HomePage />,
+    errorElement: <RouteErrorPage />,
     path: "/",
   },
   {
@@ -27,8 +31,16 @@ export const routes: RouteObject[] = [
         path: "search",
       },
       {
+        element: <SessionsPage />,
+        path: "sessions",
+      },
+      {
         element: <SessionPage />,
         path: "sessions/:slug",
+      },
+      {
+        element: <ArchitecturePage />,
+        path: "architecture",
       },
       {
         element: <Navigate replace to="/dashboard" />,
@@ -36,6 +48,7 @@ export const routes: RouteObject[] = [
       },
     ],
     element: <DashboardPage />,
+    errorElement: <RouteErrorPage />,
     path: "/dashboard",
   },
   {
