@@ -69,6 +69,19 @@ describe("runInit", () => {
     });
   });
 
+  it("writes MiniMax 2.7 provider settings", () => {
+    runInit({ name: "demo", aiProvider: "minimax" }, projectRoot);
+    const config = JSON.parse(readFileSync(join(projectRoot, ".kairo", "config.json"), "utf8"));
+
+    expect(config.ai).toMatchObject({
+      provider: "minimax",
+      model: "MiniMax-M2.7",
+      apiKeyEnv: "MINIMAX_API_KEY",
+      baseUrl: "https://api.minimax.io/v1",
+      authMode: "api-key",
+    });
+  });
+
   it("allows headless auth only where the catalog supports it", () => {
     runInit({ name: "demo", aiProvider: "vertex-ai", aiAuth: "headless" }, projectRoot);
     const config = JSON.parse(readFileSync(join(projectRoot, ".kairo", "config.json"), "utf8"));

@@ -20,6 +20,7 @@ import {
   formatRelativeTime,
 } from "../format";
 import { useArchitectureShifts, useSessionDetail } from "../hooks";
+import { displaySessionTitle } from "../session-title";
 
 export function SessionPage() {
   const { slug } = useParams();
@@ -43,7 +44,7 @@ export function SessionPage() {
       <PageHeader
         description="A readable record of one work session: what changed, what it affected, and the audit trail behind it."
         eyebrow="Session detail"
-        title={detail?.session.title ?? "Loading session"}
+        title={detail === undefined ? "Loading session" : displaySessionTitle(detail.session)}
       />
 
       {sessionQuery.isLoading ? (

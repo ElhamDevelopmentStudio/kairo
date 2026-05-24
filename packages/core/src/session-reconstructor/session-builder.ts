@@ -30,7 +30,7 @@ export function buildSessionFromEvents(projectId: string, events: KairoEvent[]):
   return {
     id: deterministicSessionId(projectId, eventIds),
     projectId,
-    title: `Session ${slug}`,
+    title: titleFromEvents(events, files),
     slug,
     startedAt: start,
     endedAt: end,
@@ -43,6 +43,47 @@ export function buildSessionFromEvents(projectId: string, events: KairoEvent[]):
     architectureImpact: null,
     eventIds,
   };
+}
+
+function titleFromEvents(events: KairoEvent[], files: Set<string>): string {
+  const commitMessage = events.find((event) => event.kind === "git.commit")?.payload.message;
+  if (commitMessage !== undefined) {
+    return readableCommitTitle(commitMessage);
+  }
+
+  const aiSummary = events.find((event) => event.kind === "ai.activity")?.payload.summary?.trim();
+  if (aiSummary !== undefined && aiSummary.length > 0) {
+    return truncateTitle(aiSummary);
+  }
+
+  const firstFile = [...files][0];
+  if (firstFile !== undefined) {
+    return `Work in ${readablePathArea(firstFile)}`;
+  }
+
+  return "Captured work session";
+}
+
+function readableCommitTitle(message: string): string {
+  const firstLine = message.split("\n")[0]?.trim() ?? "";
+  const withoutType = firstLine.replace(/^[a-z]+(?:\([^)]+\))?!?:\s*/i, "");
+  return truncateTitle(capitalize(withoutType.length > 0 ? withoutType : firstLine));
+}
+
+function readablePathArea(path: string): string {
+  const [first, second] = path.split("/");
+  const area = second === undefined ? first : `${first}/${second}`;
+  return (area ?? path).replaceAll("-", " ");
+}
+
+function capitalize(value: string): string {
+  return value.length === 0
+    ? "Captured work session"
+    : `${value[0]?.toUpperCase()}${value.slice(1)}`;
+}
+
+function truncateTitle(value: string): string {
+  return value.length > 72 ? `${value.slice(0, 69).trim()}...` : value;
 }
 
 function deterministicSessionId(projectId: string, eventIds: string[]): string {

@@ -12,7 +12,14 @@ import type { AiProviderName } from "@kairo/shared";
 import { Command } from "commander";
 import kleur from "kleur";
 
-const INTERACTIVE_PROVIDER_CHOICES = ["anthropic", "openai", "openrouter", "ollama", "none"];
+const INTERACTIVE_PROVIDER_CHOICES = [
+  "anthropic",
+  "openai",
+  "openrouter",
+  "minimax",
+  "ollama",
+  "none",
+];
 const DEFAULT_MODEL_BY_PROVIDER: Partial<Record<AiProviderName, string>> = {
   "amazon-bedrock": "amazon.nova-pro-v1:0",
   "azure-openai": "gpt-5.5",
@@ -26,7 +33,7 @@ const DEFAULT_MODEL_BY_PROVIDER: Partial<Record<AiProviderName, string>> = {
   groq: "llama-3.3-70b-versatile",
   kilo: "moonshotai/kimi-k2",
   "lm-studio": "local-model",
-  minimax: "MiniMax-M2",
+  minimax: "MiniMax-M2.7",
   mistral: "mistral-large-latest",
   moonshot: "kimi-k2-0711-preview",
   ollama: "llama3.1",
@@ -44,7 +51,7 @@ export const initCommand = new Command("init")
   .option("--uninstall", "remove Kairo hooks while preserving other hooks")
   .option(
     "--ai-provider <provider>",
-    "AI provider for summaries: anthropic | openai | openrouter | ollama | none",
+    "AI provider for summaries: anthropic | openai | openrouter | minimax | ollama | none",
   )
   .option("--ai-auth <mode>", "AI auth mode: api-key | headless | none")
   .action(async (opts: InitOptions) => {

@@ -72,6 +72,29 @@ describe("SessionReconstructor", () => {
     expect(sessions[0]?.files.sort()).toEqual(["src/a.ts", "src/b.ts"]);
   });
 
+  it("uses readable session titles instead of generated slugs", () => {
+    const r = new SessionReconstructor("p1", { idleGapMinutes: 30, minEventsForSession: 1 });
+    const sessions = r.reconstruct([
+      {
+        id: "44444444-4444-4444-8444-444444444444",
+        projectId: "p1",
+        occurredAt: "2026-05-18T10:10:00.000Z",
+        observedAt: "2026-05-18T10:10:01.000Z",
+        source: "git",
+        kind: "git.commit",
+        payload: {
+          sha: "abc123",
+          parentShas: [],
+          author: "Ada",
+          message: "feat: connect dashboard charts",
+          files: [{ path: "apps/web/src/dashboard.tsx", status: "M", additions: 20, deletions: 2 }],
+        },
+      },
+    ]);
+
+    expect(sessions[0]?.title).toBe("Connect dashboard charts");
+  });
+
   it("includes files touched by AI activity", () => {
     const r = new SessionReconstructor("p1", { idleGapMinutes: 30, minEventsForSession: 1 });
     const sessions = r.reconstruct([

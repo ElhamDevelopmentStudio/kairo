@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { DataPanel, EmptyState, ErrorState, PageHeader, SkeletonList } from "../components";
 import { formatDateGroup, formatIntent, formatRelativeTime } from "../format";
 import { useTimeline } from "../hooks";
+import { displaySessionTitle } from "../session-title";
 
 export function TimelinePage() {
   const timeline = useTimeline();
@@ -72,7 +73,7 @@ function TimelineEntry({
       <div className="text-muted-foreground text-sm">{formatRelativeTime(session.startedAt)}</div>
       <div>
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="font-medium text-foreground">{session.title}</h2>
+          <h2 className="font-medium text-foreground">{displaySessionTitle(session)}</h2>
           <Badge className="rounded-md" variant="secondary">
             {formatIntent(session.intent)}
           </Badge>

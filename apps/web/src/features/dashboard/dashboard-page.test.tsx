@@ -38,7 +38,7 @@ describe("DashboardPage", () => {
     });
 
     renderDashboard("/dashboard");
-    await screen.findByText("Dashboard Wiring");
+    await screen.findAllByText("Dashboard Wiring");
 
     await userEvent.click(screen.getByRole("link", { name: /dashboard wiring/i }));
 

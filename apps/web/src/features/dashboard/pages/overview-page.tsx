@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 
+import { CycleProgressChart, InitiativeTimelineChart, PulseChart } from "../charts";
 import {
   DataPanel,
   DecisionRow,
@@ -10,7 +11,6 @@ import {
   PageHeader,
   SessionRow,
   SkeletonList,
-  StatTile,
 } from "../components";
 import { useProjectHealth, useTimeline } from "../hooks";
 
@@ -19,8 +19,6 @@ export function OverviewPage() {
   const timeline = useTimeline();
   const sessions = timeline.data?.sessions ?? [];
   const decisions = timeline.data?.architectureShifts ?? [];
-  const fileCount = new Set(sessions.flatMap((session) => session.files)).size;
-  const commitCount = sessions.reduce((total, session) => total + session.commitShas.length, 0);
 
   return (
     <>
@@ -35,16 +33,17 @@ export function OverviewPage() {
         title="What changed recently"
       />
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatTile detail="Captured work sessions" label="Sessions" value={sessions.length} />
-        <StatTile detail="Touched by recent sessions" label="Files" value={fileCount} />
-        <StatTile detail="Commits represented" label="Commits" value={commitCount} />
-        <StatTile
-          detail="Recorded architecture decisions"
-          label="Decisions"
-          value={decisions.length}
-        />
-      </div>
+      {timeline.isLoading ? (
+        <SkeletonList rows={5} />
+      ) : timeline.isError ? (
+        <ErrorState message="Kairo could not load recent work. Check that the local dashboard server is still running." />
+      ) : (
+        <div className="space-y-6">
+          <PulseChart decisions={decisions} sessions={sessions} />
+          <InitiativeTimelineChart decisions={decisions} sessions={sessions} />
+          <CycleProgressChart sessions={sessions} />
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
         <DataPanel title="Recent work">
