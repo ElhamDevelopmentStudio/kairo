@@ -1,40 +1,13 @@
-import type {
-  ArchitectureShift,
-  KairoEvent,
-  MemoryAnswer,
-  MemoryCitation,
-  ProblemMemory,
-  Session,
-} from "@kairo/shared";
+import type { KairoEvent, MemoryAnswer, MemoryCitation, ProblemMemory } from "@kairo/shared";
 import type { EventStore } from "../event-store/index.ts";
-import { extractProblemMemories } from "../problem-memory/index.ts";
+import { type MemoryCandidate, retrieveMemoryCandidates } from "./retrieval.ts";
 
 export interface AnswerProjectMemoryOptions {
   limit?: number;
   candidateLimit?: number;
+  now?: string;
+  semanticSessionScores?: Map<string, number>;
 }
-
-type Candidate =
-  | {
-      kind: "session";
-      item: Session;
-      score: number;
-    }
-  | {
-      kind: "architecture_shift";
-      item: ArchitectureShift;
-      score: number;
-    }
-  | {
-      kind: "event";
-      item: KairoEvent;
-      score: number;
-    }
-  | {
-      kind: "problem";
-      item: ProblemMemory;
-      score: number;
-    };
 
 export function answerProjectMemory(
   store: EventStore,
@@ -52,24 +25,14 @@ export function answerProjectMemory(
     };
   }
 
-  const limit = options.limit ?? 5;
-  const candidateLimit = options.candidateLimit ?? 200;
-  const terms = tokenize(trimmed);
-  const sessions = store.recentSessions(projectId, candidateLimit);
-  const events = store.eventsForProject(projectId);
-  const candidates = rankCandidates(
-    [
-      ...sessions.map((item) => scoreSession(item, terms)),
-      ...store
-        .recentArchitectureShifts(projectId, candidateLimit)
-        .map((item) => scoreArchitectureShift(item, terms)),
-      ...events.slice(-candidateLimit).map((item) => scoreEvent(item, terms)),
-      ...extractProblemMemories(projectId, events, sessions).map((item) =>
-        scoreProblemMemory(item, terms, isProblemQuestion(trimmed)),
-      ),
-    ],
-    limit,
-  );
+  const candidates = retrieveMemoryCandidates(store, projectId, trimmed, {
+    limit: options.limit ?? 5,
+    candidateLimit: options.candidateLimit ?? 200,
+    ...(options.now === undefined ? {} : { now: options.now }),
+    ...(options.semanticSessionScores === undefined
+      ? {}
+      : { semanticSessionScores: options.semanticSessionScores }),
+  });
 
   if (candidates.length === 0) {
     return {
@@ -90,118 +53,7 @@ export function answerProjectMemory(
   };
 }
 
-function rankCandidates(candidates: Candidate[], limit: number): Candidate[] {
-  return candidates
-    .filter((candidate) => candidate.score > 0)
-    .sort((a, b) => b.score - a.score || startedAt(b).localeCompare(startedAt(a)))
-    .slice(0, limit);
-}
-
-function scoreSession(session: Session, terms: string[]): Candidate {
-  const fields = [
-    weightedText(session.title, 4),
-    weightedText(session.summary, 3),
-    weightedText(session.architectureImpact, 3),
-    weightedText(session.intent, 2),
-    weightedText(session.themes.join(" "), 2),
-    weightedText(session.affectedAreas.join(" "), 2),
-    weightedText(session.files.join(" "), 2),
-    weightedText(session.commitShas.join(" "), 1),
-  ];
-  return { kind: "session", item: session, score: scoreFields(fields, terms) };
-}
-
-function scoreArchitectureShift(shift: ArchitectureShift, terms: string[]): Candidate {
-  const fields = [
-    weightedText(shift.title, 4),
-    weightedText(shift.summary, 4),
-    weightedText(shift.kind, 2),
-    weightedText(shift.affectedPaths.join(" "), 2),
-  ];
-  return { kind: "architecture_shift", item: shift, score: scoreFields(fields, terms) };
-}
-
-function scoreEvent(event: KairoEvent, terms: string[]): Candidate {
-  if (event.kind === "git.commit") {
-    const fields = [
-      weightedText(event.payload.message, 4),
-      weightedText(event.payload.files.map((file) => file.path).join(" "), 2),
-      weightedText(event.payload.branch ?? "", 1),
-      weightedText(event.payload.sha, 1),
-    ];
-    return { kind: "event", item: event, score: scoreFields(fields, terms) };
-  }
-
-  if (event.kind === "ai.activity") {
-    const fields = [
-      weightedText(event.payload.summary ?? "", 4),
-      weightedText(event.payload.tool, 2),
-      weightedText(event.payload.filesTouched.join(" "), 2),
-    ];
-    return { kind: "event", item: event, score: scoreFields(fields, terms) };
-  }
-
-  if (event.kind === "terminal.command") {
-    const fields = [weightedText(event.payload.command, 3), weightedText(event.payload.cwd, 1)];
-    return { kind: "event", item: event, score: scoreFields(fields, terms) };
-  }
-
-  if (event.kind === "fs.change") {
-    const fields = [
-      weightedText(event.payload.path, 3),
-      weightedText(event.payload.renamedFrom ?? "", 2),
-      weightedText(event.payload.op, 1),
-    ];
-    return { kind: "event", item: event, score: scoreFields(fields, terms) };
-  }
-
-  const fields = [
-    weightedText(event.payload.branch, 2),
-    weightedText(event.payload.fromBranch ?? "", 2),
-    weightedText(event.payload.sha ?? "", 1),
-    weightedText(event.payload.op, 1),
-  ];
-  return { kind: "event", item: event, score: scoreFields(fields, terms) };
-}
-
-function scoreProblemMemory(
-  memory: ProblemMemory,
-  terms: string[],
-  problemQuestion: boolean,
-): Candidate {
-  const fields = [
-    weightedText(memory.errorSignature, 5),
-    weightedText(memory.errorMessage, 5),
-    weightedText(memory.fixSummary ?? "", 4),
-    weightedText(memory.suspectedRootCause ?? "", 3),
-    weightedText(memory.command, 3),
-    weightedText(memory.files.join(" "), 2),
-    weightedText(memory.relatedCommitShas.join(" "), 1),
-  ];
-  const score = scoreFields(fields, terms) + (problemQuestion ? 4 : 0);
-  return { kind: "problem", item: memory, score };
-}
-
-function scoreFields(fields: Array<{ text: string; weight: number }>, terms: string[]): number {
-  if (terms.length === 0) return 0;
-
-  let score = 0;
-  const seen = new Set<string>();
-  for (const term of terms) {
-    for (const field of fields) {
-      if (!field.text.includes(term)) continue;
-      score += field.weight;
-      seen.add(term);
-    }
-  }
-  return score + seen.size * 2;
-}
-
-function weightedText(value: string | null, weight: number): { text: string; weight: number } {
-  return { text: normalize(value ?? ""), weight };
-}
-
-function candidateToCitation(candidate: Candidate): MemoryCitation {
+function candidateToCitation(candidate: MemoryCandidate): MemoryCitation {
   if (candidate.kind === "problem") {
     return {
       kind: "problem",
@@ -289,7 +141,7 @@ function renderAnswer(question: string, citations: MemoryCitation[]): string {
     const supportingProblems = rest
       .filter((citation) => citation.kind === "session" || citation.kind === "commit")
       .slice(0, 2)
-      .map((citation) => citation.title);
+      .map((citation) => `${citationReference(citation)} ${citation.title}`);
     const supporting =
       supportingProblems.length === 0
         ? ""
@@ -301,7 +153,7 @@ function renderAnswer(question: string, citations: MemoryCitation[]): string {
       ? ""
       : ` Supporting evidence also appears in ${rest
           .slice(0, 2)
-          .map((citation) => citation.title)
+          .map((citation) => `${citationReference(citation)} ${citation.title}`)
           .join(", ")}.`;
   return `Based on stored project memory, the strongest evidence is the ${source} ${primaryReference} "${primary.title}": ${basis}.${supporting}`;
 }
@@ -311,12 +163,6 @@ function confidenceFor(citations: MemoryCitation[]): MemoryAnswer["confidence"] 
   if (citations.length >= 3 && (citations[0]?.score ?? 0) >= 12) return "high";
   if (citations.length >= 1 && (citations[0]?.score ?? 0) >= 6) return "medium";
   return "low";
-}
-
-function startedAt(candidate: Candidate): string {
-  if (candidate.kind === "session") return candidate.item.startedAt;
-  if (candidate.kind === "architecture_shift") return candidate.item.detectedAt;
-  return candidate.item.occurredAt;
 }
 
 function firstLine(value: string): string | null {
@@ -399,43 +245,3 @@ function citationReference(citation: MemoryCitation): string {
     ? `[${citation.reference}]`
     : `[${[citation.reference, ...secondary].join("; ")}]`;
 }
-
-function isProblemQuestion(question: string): boolean {
-  return /\b(error|fix|fixed|failed|failure|exception|traceback|bug|broke|broken|before|again)\b/i.test(
-    question,
-  );
-}
-
-function tokenize(value: string): string[] {
-  const tokens = normalize(value)
-    .split(/[^a-z0-9_./-]+/)
-    .map((token) => token.trim())
-    .filter((token) => token.length >= 2 && !STOP_WORDS.has(token));
-  return [...new Set(tokens)];
-}
-
-function normalize(value: string): string {
-  return value.toLowerCase();
-}
-
-const STOP_WORDS = new Set([
-  "a",
-  "an",
-  "and",
-  "are",
-  "did",
-  "for",
-  "from",
-  "how",
-  "the",
-  "this",
-  "to",
-  "was",
-  "we",
-  "what",
-  "when",
-  "where",
-  "why",
-  "before",
-  "again",
-]);

@@ -609,9 +609,9 @@ evidence backs that answer.
   evidence output includes event IDs, and AI-backed answers append stable
   evidence references when a provider omits citations.
 
-### 5.4 — Hybrid memory retrieval ranking
+### 5.4 — Hybrid memory retrieval ranking ✅
 
-- [ ] **Goal:** rank candidate memory by semantic similarity, BM25/keyword
+- [x] **Goal:** rank candidate memory by semantic similarity, BM25/keyword
   overlap, recency, temporal query parsing, file/path/package overlap,
   architecture relevance, and problem/fix confidence.
 - **Files:** `packages/core/src/memory/retrieval.ts`,
@@ -627,6 +627,9 @@ evidence backs that answer.
 - **Notes:** Keep keyword/BM25 fallback for offline use; semantic retrieval
   should improve ranking, not become the only path. Retrieval signals are boosts,
   not hard filters, so a wrong classifier cannot hide the correct evidence.
+- **Done:** Added shared hybrid retrieval ranking with deterministic fixtures for
+  temporal anchors, last-week recency, architecture relevance, recurring errors,
+  renamed/path anchors, and semantic score boosts.
 
 ### 5.5 — Dashboard memory assistant
 

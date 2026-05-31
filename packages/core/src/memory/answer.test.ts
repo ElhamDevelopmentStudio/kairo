@@ -53,15 +53,15 @@ describe("answerProjectMemory", () => {
     expect(answer.confidence).toBe("medium");
     expect(answer.citations).toEqual([
       expect.objectContaining({
+        kind: "architecture_shift",
+        title: "REST to GraphQL API redesign",
+      }),
+      expect.objectContaining({
         kind: "session",
         reference: "session:graphql-migration",
         eventIds: [],
         files: ["apps/api/src/graphql/schema.ts", "apps/api/src/rest/users.ts"],
         commitShas: ["abc1234"],
-      }),
-      expect.objectContaining({
-        kind: "architecture_shift",
-        title: "REST to GraphQL API redesign",
       }),
     ]);
   });
