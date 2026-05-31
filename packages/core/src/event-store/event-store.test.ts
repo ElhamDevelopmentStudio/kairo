@@ -371,4 +371,43 @@ describe("EventStore", () => {
     ]);
     expect(store.recentArchitectureShifts("missing")).toEqual([]);
   });
+
+  it("migrates memory record storage and preserves raw evidence anchors", () => {
+    store.upsertMemoryRecord({
+      id: "77777777-7777-4777-8777-777777777777",
+      projectId: "p1",
+      memoryKind: "session",
+      title: "API Boundary",
+      summary: "Stored session memory with raw evidence anchors.",
+      confidence: "high",
+      createdAt: "2026-05-18T10:00:00.000Z",
+      updatedAt: "2026-05-18T10:00:00.000Z",
+      evidence: [
+        {
+          kind: "session",
+          reference: "session:api-boundary",
+          id: "11111111-1111-4111-8111-111111111111",
+        },
+        { kind: "commit", reference: "commit:abc123", id: "abc123" },
+      ],
+      tags: ["session"],
+      sessionId: "11111111-1111-4111-8111-111111111111",
+      slug: "api-boundary",
+      startedAt: "2026-05-18T10:00:00.000Z",
+      endedAt: null,
+      files: ["apps/cli/src/commands/serve.ts"],
+      commitShas: ["abc123"],
+    });
+
+    expect(store.memoryRecords("p1")).toEqual([
+      expect.objectContaining({
+        memoryKind: "session",
+        evidence: expect.arrayContaining([
+          expect.objectContaining({ reference: "session:api-boundary" }),
+          expect.objectContaining({ reference: "commit:abc123" }),
+        ]),
+      }),
+    ]);
+    expect(store.projectIds()).toContain("p1");
+  });
 });

@@ -669,7 +669,7 @@ evidence backs that answer.
 
 ### 5.7 — Raw evidence preservation and memory schemas
 
-- [ ] **Goal:** define first-class memory records while preserving raw evidence
+- [x] **Goal:** define first-class memory records while preserving raw evidence
   as the source of truth.
 - **Files:** `packages/shared/src/memory.ts`, `packages/shared/src/problem.ts`,
   `packages/core/src/memory/`, EventStore migrations.
@@ -681,6 +681,10 @@ evidence backs that answer.
   rebuilt from raw evidence without losing citation anchors.
 - **Notes:** Treat summaries, labels, topics, and extracted entities as indexes
   over evidence, not as replacements for evidence.
+- **Done:** Added first-class memory schemas, SQLite `memory_records` storage,
+  and deterministic rebuild logic that derives session, decision, problem, fix,
+  architecture-shift, symbol, and agent-run records from raw sessions, events,
+  ADRs, and architecture shifts while preserving citation anchors.
 
 ### 5.8 — Synthetic bridge documents
 

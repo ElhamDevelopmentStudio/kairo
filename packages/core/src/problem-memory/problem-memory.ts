@@ -52,6 +52,28 @@ function buildProblemMemory(
   return {
     id: deterministicUuid("problem.memory", projectId, event.id, normalizeSignature(errorMessage)),
     projectId,
+    memoryKind: "problem",
+    title: normalizeSignature(errorMessage),
+    summary: fixSummary ?? `Observed terminal failure: ${errorMessage}`,
+    confidence: confidenceFor(fixCommits, relatedSessions),
+    createdAt: event.occurredAt,
+    updatedAt: fixedAt ?? event.occurredAt,
+    evidence: [
+      { kind: "terminal_event", reference: `event:${event.id}`, id: event.id },
+      ...fixCommits.map((commit) => ({
+        kind: "commit" as const,
+        reference: `commit:${commit.payload.sha.slice(0, 12)}`,
+        id: commit.id,
+        title: firstLine(commit.payload.message) ?? commit.payload.sha,
+      })),
+      ...relatedSessions.map((session) => ({
+        kind: "session" as const,
+        reference: `session:${session.slug}`,
+        id: session.id,
+        title: session.title,
+      })),
+    ],
+    tags: ["problem", fixCommits.length > 0 ? "fixed" : "observed"],
     errorSignature: normalizeSignature(errorMessage),
     errorMessage,
     command: event.payload.command,
@@ -65,7 +87,6 @@ function buildProblemMemory(
     relatedCommitShas,
     files,
     eventIds,
-    confidence: confidenceFor(fixCommits, relatedSessions),
   };
 }
 

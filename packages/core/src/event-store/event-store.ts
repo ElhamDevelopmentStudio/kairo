@@ -1,4 +1,4 @@
-import { ArchitectureShift, KairoEvent, Session } from "@kairo/shared";
+import { ArchitectureShift, KairoEvent, Session, StoredMemoryRecord } from "@kairo/shared";
 import { deterministicUuid } from "@kairo/utils/id";
 import Database from "better-sqlite3";
 import { load as loadSqliteVec } from "sqlite-vec";
@@ -47,6 +47,15 @@ interface SessionEmbeddingRow {
   content_hash: string;
   embedding: string;
   embedded_at: string;
+}
+
+interface MemoryRecordRow {
+  id: string;
+  project_id: string;
+  memory_kind: string;
+  title: string;
+  updated_at: string;
+  data: string;
 }
 
 interface VectorSearchRow {
@@ -139,6 +148,17 @@ export class EventStore {
         ON session_embeddings (project_id, session_id, model);
       CREATE INDEX IF NOT EXISTS session_embeddings_project_dim
         ON session_embeddings (project_id, dimension);
+
+      CREATE TABLE IF NOT EXISTS memory_records (
+        id          TEXT PRIMARY KEY,
+        project_id  TEXT NOT NULL,
+        memory_kind TEXT NOT NULL,
+        title       TEXT NOT NULL,
+        updated_at  TEXT NOT NULL,
+        data        TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS memory_records_project_kind_time
+        ON memory_records (project_id, memory_kind, updated_at);
     `);
   }
 
@@ -187,6 +207,8 @@ export class EventStore {
          SELECT project_id FROM sessions
          UNION
          SELECT project_id FROM architecture_shifts
+         UNION
+         SELECT project_id FROM memory_records
          ORDER BY project_id ASC`,
       )
       .all() as { project_id: string }[];
@@ -313,6 +335,49 @@ export class EventStore {
       )
       .all(projectId, limit) as ArchitectureShiftRow[];
     return rows.map(rowToArchitectureShift);
+  }
+
+  upsertMemoryRecord(record: StoredMemoryRecord): void {
+    const redacted = redactSecrets(record);
+    this.db
+      .prepare(
+        `INSERT INTO memory_records (
+          id, project_id, memory_kind, title, updated_at, data
+        ) VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          project_id = excluded.project_id,
+          memory_kind = excluded.memory_kind,
+          title = excluded.title,
+          updated_at = excluded.updated_at,
+          data = excluded.data`,
+      )
+      .run(
+        redacted.id,
+        redacted.projectId,
+        redacted.memoryKind,
+        redacted.title,
+        redacted.updatedAt,
+        JSON.stringify(redacted),
+      );
+  }
+
+  upsertMemoryRecords(records: StoredMemoryRecord[]): void {
+    const tx = this.db.transaction((items: StoredMemoryRecord[]) => {
+      for (const record of items) {
+        this.upsertMemoryRecord(record);
+      }
+    });
+    tx(records);
+  }
+
+  memoryRecords(projectId: string, limit = 200): StoredMemoryRecord[] {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM memory_records WHERE project_id = ?
+         ORDER BY updated_at DESC LIMIT ?`,
+      )
+      .all(projectId, limit) as MemoryRecordRow[];
+    return rows.map(rowToMemoryRecord);
   }
 
   appendSessionEmbedding(input: SessionEmbeddingInput): void {
@@ -508,6 +573,10 @@ function rowToEvent(r: EventRow): KairoEvent {
 
 function rowToArchitectureShift(r: ArchitectureShiftRow): ArchitectureShift {
   return ArchitectureShift.parse(JSON.parse(r.data));
+}
+
+function rowToMemoryRecord(r: MemoryRecordRow): StoredMemoryRecord {
+  return StoredMemoryRecord.parse(JSON.parse(r.data));
 }
 
 function tryLoadSqliteVec(db: Database.Database): boolean {
