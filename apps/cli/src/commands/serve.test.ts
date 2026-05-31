@@ -94,6 +94,39 @@ describe("createDashboardApp", () => {
     });
   });
 
+  it("answers dashboard memory questions with cited project evidence", async () => {
+    const { workspace, event, session } = createWorkspaceFixture();
+    const app = createDashboardApp({ workspace });
+
+    const empty = await app.request("/api/ask", {
+      body: JSON.stringify({ question: " " }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+    expect(empty.status).toBe(400);
+    await expect(empty.json()).resolves.toEqual({ error: "Question is required" });
+
+    const response = await app.request("/api/ask", {
+      body: JSON.stringify({ question: "Why did we add the local dashboard API?" }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body).toMatchObject({
+      answer: expect.stringContaining("Local dashboard API"),
+      question: "Why did we add the local dashboard API?",
+    });
+    expect(body.citations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          eventIds: [event.id],
+          reference: `session:${session.slug}`,
+        }),
+      ]),
+    );
+  });
+
   it("serves static dashboard files when a build directory is available", async () => {
     const { workspace } = createWorkspaceFixture();
     const webDistPath = mkdtempSync(join(tmpdir(), "kairo-web-dist-"));

@@ -631,9 +631,9 @@ evidence backs that answer.
   temporal anchors, last-week recency, architecture relevance, recurring errors,
   renamed/path anchors, and semantic score boosts.
 
-### 5.5 — Dashboard memory assistant
+### 5.5 — Dashboard memory assistant ✅
 
-- [ ] **Goal:** add an optional "Ask Kairo" surface to the dashboard package for
+- [x] **Goal:** add an optional "Ask Kairo" surface to the dashboard package for
   project-memory Q&A without making the CLI depend on the frontend.
 - **Files:** `apps/web/src/features/memory/`, `apps/web/src/features/dashboard/`,
   optional dashboard API/client boundary.
@@ -646,6 +646,9 @@ evidence backs that answer.
 - **Notes:** This should feel like a local project memory browser, not a generic
   chatbot. Keep it as an optional visualization surface over the same core
   memory APIs used by CLI and MCP.
+- **Done:** Added `/api/ask` to the local dashboard server and an optional
+  dashboard Ask page with cited answers, loading/error states, and links into
+  related sessions or decision views.
 
 ### 5.6 — Decision memory from ADRs and inferred changes
 

@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import {
+  askProjectMemory,
   fetchArchitectureShifts,
   fetchHealth,
   fetchSessionDetail,
@@ -17,6 +18,12 @@ export const dashboardQueryKeys = {
   sessions: ["dashboard", "sessions"] as const,
   timeline: ["dashboard", "timeline"] as const,
 };
+
+export function useAskProjectMemory() {
+  return useMutation({
+    mutationFn: askProjectMemory,
+  });
+}
 
 export function useProjectHealth() {
   return useQuery({

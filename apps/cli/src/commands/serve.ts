@@ -3,7 +3,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { basename, extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { serve } from "@hono/node-server";
-import { EventStore, Workspace, renderSession } from "@kairo/core";
+import { EventStore, Workspace, answerProjectMemory, renderSession } from "@kairo/core";
 import type { KairoEvent, Session } from "@kairo/shared";
 import { Command } from "commander";
 import { Hono } from "hono";
@@ -118,6 +118,27 @@ export function createDashboardApp({ workspace, webDistPath }: DashboardAppOptio
       return c.json({
         sessions: store.searchSessions(projectId, query, parseLimit(c.req.query("limit"), 20)),
       });
+    } finally {
+      store.close();
+    }
+  });
+
+  app.post("/api/ask", async (c) => {
+    const body = await c.req.json().catch(() => null);
+    const question =
+      typeof body === "object" &&
+      body !== null &&
+      "question" in body &&
+      typeof body.question === "string"
+        ? body.question.trim()
+        : "";
+    if (question.length === 0) {
+      return c.json({ error: "Question is required" }, 400);
+    }
+
+    const { store, projectId } = openProjectStore(workspace);
+    try {
+      return c.json(answerProjectMemory(store, projectId, question));
     } finally {
       store.close();
     }

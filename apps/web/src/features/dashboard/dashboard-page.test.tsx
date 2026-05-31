@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { routes } from "@/router";
 
 const apiMock = vi.hoisted(() => ({
+  askProjectMemory: vi.fn(),
   fetchArchitectureShifts: vi.fn(),
   fetchHealth: vi.fn(),
   fetchSessionDetail: vi.fn(),

@@ -1,4 +1,5 @@
 import {
+  AiChat02Icon,
   Calendar03Icon,
   FileSearchIcon,
   GitBranchIcon,
@@ -22,6 +23,7 @@ const navigation = [
   { icon: FileSearchIcon, label: "Sessions", to: "/dashboard/sessions" },
   { icon: GitBranchIcon, label: "Decisions", to: "/dashboard/architecture" },
   { icon: Search01Icon, label: "Search", to: "/dashboard/search" },
+  { icon: AiChat02Icon, label: "Ask", to: "/dashboard/ask" },
 ];
 
 export function DashboardPage() {

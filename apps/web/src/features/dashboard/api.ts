@@ -1,9 +1,10 @@
 import {
   ArchitectureShift as ArchitectureShiftSchema,
   KairoEvent as KairoEventSchema,
+  MemoryAnswer as MemoryAnswerSchema,
   Session as SessionSchema,
 } from "@kairo/shared";
-import type { ArchitectureShift, KairoEvent, Session } from "@kairo/shared";
+import type { ArchitectureShift, KairoEvent, MemoryAnswer, Session } from "@kairo/shared";
 import axios from "axios";
 import { z } from "zod";
 
@@ -39,6 +40,10 @@ const ArchitectureShiftsResponseSchema = z.object({
   architectureShifts: z.array(ArchitectureShiftSchema),
 });
 
+const AskMemoryRequestSchema = z.object({
+  question: z.string().min(1),
+});
+
 export type HealthResponse = z.infer<typeof HealthResponseSchema>;
 
 export interface TimelineResponse {
@@ -61,6 +66,8 @@ export type SearchResponse = SessionsResponse;
 export interface ArchitectureShiftsResponse {
   architectureShifts: ArchitectureShift[];
 }
+
+export type AskMemoryResponse = MemoryAnswer;
 
 export async function fetchHealth(): Promise<HealthResponse> {
   return parseResponse("/api/health", HealthResponseSchema);
@@ -85,6 +92,12 @@ export async function searchSessions(query: string, limit = 20): Promise<SearchR
 
 export async function fetchArchitectureShifts(limit = 100): Promise<ArchitectureShiftsResponse> {
   return parseResponse(`/api/architecture-shifts?limit=${limit}`, ArchitectureShiftsResponseSchema);
+}
+
+export async function askProjectMemory(question: string): Promise<AskMemoryResponse> {
+  const body = AskMemoryRequestSchema.parse({ question: question.trim() });
+  const response = await client.post<unknown>("/api/ask", body);
+  return MemoryAnswerSchema.parse(response.data);
 }
 
 async function parseResponse<T>(path: string, schema: z.ZodTypeAny): Promise<T> {

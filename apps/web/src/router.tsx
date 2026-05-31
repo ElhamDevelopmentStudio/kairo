@@ -6,6 +6,7 @@ import { SearchPage } from "@/features/dashboard/pages/search-page";
 import { SessionPage } from "@/features/dashboard/pages/session-page";
 import { SessionsPage } from "@/features/dashboard/pages/sessions-page";
 import { TimelinePage } from "@/features/dashboard/pages/timeline-page";
+import { MemoryAssistantPage } from "@/features/memory";
 import { HomePage } from "@/pages/home";
 import { Navigate, createBrowserRouter } from "react-router-dom";
 import type { RouteObject } from "react-router-dom";
@@ -29,6 +30,10 @@ export const routes: RouteObject[] = [
       {
         element: <SearchPage />,
         path: "search",
+      },
+      {
+        element: <MemoryAssistantPage />,
+        path: "ask",
       },
       {
         element: <SessionsPage />,
