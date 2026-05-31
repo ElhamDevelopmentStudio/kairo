@@ -12,7 +12,9 @@ import {
   SessionReconstructor,
   type TextEmbedder,
   Workspace,
+  buildKnowledgeGraph,
   detectArchitectureShifts,
+  extractDecisionMemories,
   indexSessionEmbeddings,
   renderSession,
   renderTimeline,
@@ -98,13 +100,27 @@ export async function runSweep(opts: SweepOptions = {}, cwd = process.cwd()): Pr
       );
     }
 
-    for (const shift of detectArchitectureShifts({
+    const architectureShifts = detectArchitectureShifts({
       projectId: config.projectId,
       sessions,
       events,
-    })) {
+    });
+    for (const shift of architectureShifts) {
       store.appendArchitectureShift(shift);
     }
+    const persistedShifts = store.recentArchitectureShifts(config.projectId, 200);
+    store.upsertKnowledgeGraph(
+      buildKnowledgeGraph({
+        projectId: config.projectId,
+        sessions,
+        events,
+        decisionMemories: extractDecisionMemories({
+          projectId: config.projectId,
+          architectureShifts: persistedShifts,
+          projectRoot: workspace.root,
+        }),
+      }),
+    );
 
     await maybeIndexSessionEmbeddings(store, sessions, opts.embedder, aiConfig);
 

@@ -705,9 +705,9 @@ evidence backs that answer.
   and semantic indexing now use bridge text while still mapping hits back to the
   original session evidence.
 
-### 5.9 — Temporal project knowledge graph
+### 5.9 — Temporal project knowledge graph ✅
 
-- [ ] **Goal:** model project entities and relationships over time so Kairo can
+- [x] **Goal:** model project entities and relationships over time so Kairo can
   answer "why", "when", and "what changed after X" questions.
 - **Files:** `packages/shared/src/knowledge-graph.ts`,
   `packages/core/src/knowledge-graph/`, EventStore migrations,
@@ -721,6 +721,10 @@ evidence backs that answer.
   and fix/error relationships return time-correct evidence.
 - **Notes:** Keep the graph local and SQLite-backed. Graph facts need confidence
   and source references, especially when inferred from architecture shifts.
+- **Done:** Added shared temporal graph schemas, SQLite-backed graph entity and
+  relationship storage, deterministic graph extraction from sessions, events,
+  decisions, errors, commits, files, agents, and renames, plus relationship-aware
+  retrieval for supersession and change-after questions.
 
 ### 5.10 — Optional LLM rerank and answer grounding
 

@@ -1,4 +1,11 @@
-import { ArchitectureShift, KairoEvent, Session, StoredMemoryRecord } from "@kairo/shared";
+import {
+  ArchitectureShift,
+  KairoEvent,
+  KnowledgeGraphEntity,
+  KnowledgeGraphRelationship,
+  Session,
+  StoredMemoryRecord,
+} from "@kairo/shared";
 import { deterministicUuid } from "@kairo/utils/id";
 import Database from "better-sqlite3";
 import { load as loadSqliteVec } from "sqlite-vec";
@@ -55,6 +62,27 @@ interface MemoryRecordRow {
   memory_kind: string;
   title: string;
   updated_at: string;
+  data: string;
+}
+
+interface KnowledgeGraphEntityRow {
+  id: string;
+  project_id: string;
+  kind: string;
+  canonical_ref: string;
+  first_seen_at: string;
+  last_seen_at: string;
+  data: string;
+}
+
+interface KnowledgeGraphRelationshipRow {
+  id: string;
+  project_id: string;
+  kind: string;
+  from_entity_id: string;
+  to_entity_id: string;
+  valid_from: string;
+  valid_to: string | null;
   data: string;
 }
 
@@ -159,6 +187,35 @@ export class EventStore {
       );
       CREATE INDEX IF NOT EXISTS memory_records_project_kind_time
         ON memory_records (project_id, memory_kind, updated_at);
+
+      CREATE TABLE IF NOT EXISTS knowledge_graph_entities (
+        id            TEXT PRIMARY KEY,
+        project_id    TEXT NOT NULL,
+        kind          TEXT NOT NULL,
+        canonical_ref TEXT NOT NULL,
+        first_seen_at TEXT NOT NULL,
+        last_seen_at  TEXT NOT NULL,
+        data          TEXT NOT NULL
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS knowledge_graph_entities_project_ref
+        ON knowledge_graph_entities (project_id, canonical_ref);
+      CREATE INDEX IF NOT EXISTS knowledge_graph_entities_project_kind_time
+        ON knowledge_graph_entities (project_id, kind, last_seen_at);
+
+      CREATE TABLE IF NOT EXISTS knowledge_graph_relationships (
+        id             TEXT PRIMARY KEY,
+        project_id     TEXT NOT NULL,
+        kind           TEXT NOT NULL,
+        from_entity_id TEXT NOT NULL,
+        to_entity_id   TEXT NOT NULL,
+        valid_from     TEXT NOT NULL,
+        valid_to       TEXT,
+        data           TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS knowledge_graph_relationships_project_kind_time
+        ON knowledge_graph_relationships (project_id, kind, valid_from);
+      CREATE INDEX IF NOT EXISTS knowledge_graph_relationships_entities
+        ON knowledge_graph_relationships (from_entity_id, to_entity_id);
     `);
   }
 
@@ -209,6 +266,10 @@ export class EventStore {
          SELECT project_id FROM architecture_shifts
          UNION
          SELECT project_id FROM memory_records
+         UNION
+         SELECT project_id FROM knowledge_graph_entities
+         UNION
+         SELECT project_id FROM knowledge_graph_relationships
          ORDER BY project_id ASC`,
       )
       .all() as { project_id: string }[];
@@ -378,6 +439,95 @@ export class EventStore {
       )
       .all(projectId, limit) as MemoryRecordRow[];
     return rows.map(rowToMemoryRecord);
+  }
+
+  upsertKnowledgeGraph(input: {
+    entities: KnowledgeGraphEntity[];
+    relationships: KnowledgeGraphRelationship[];
+  }): void {
+    const tx = this.db.transaction(
+      (entities: KnowledgeGraphEntity[], relationships: KnowledgeGraphRelationship[]) => {
+        for (const entity of entities) this.upsertKnowledgeGraphEntity(entity);
+        for (const relationship of relationships) {
+          this.upsertKnowledgeGraphRelationship(relationship);
+        }
+      },
+    );
+    tx(input.entities, input.relationships);
+  }
+
+  upsertKnowledgeGraphEntity(entity: KnowledgeGraphEntity): void {
+    const redacted = redactSecrets(entity);
+    this.db
+      .prepare(
+        `INSERT INTO knowledge_graph_entities (
+          id, project_id, kind, canonical_ref, first_seen_at, last_seen_at, data
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          project_id = excluded.project_id,
+          kind = excluded.kind,
+          canonical_ref = excluded.canonical_ref,
+          first_seen_at = excluded.first_seen_at,
+          last_seen_at = excluded.last_seen_at,
+          data = excluded.data`,
+      )
+      .run(
+        redacted.id,
+        redacted.projectId,
+        redacted.kind,
+        redacted.canonicalRef,
+        redacted.firstSeenAt,
+        redacted.lastSeenAt,
+        JSON.stringify(redacted),
+      );
+  }
+
+  upsertKnowledgeGraphRelationship(relationship: KnowledgeGraphRelationship): void {
+    const redacted = redactSecrets(relationship);
+    this.db
+      .prepare(
+        `INSERT INTO knowledge_graph_relationships (
+          id, project_id, kind, from_entity_id, to_entity_id, valid_from, valid_to, data
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          project_id = excluded.project_id,
+          kind = excluded.kind,
+          from_entity_id = excluded.from_entity_id,
+          to_entity_id = excluded.to_entity_id,
+          valid_from = excluded.valid_from,
+          valid_to = excluded.valid_to,
+          data = excluded.data`,
+      )
+      .run(
+        redacted.id,
+        redacted.projectId,
+        redacted.kind,
+        redacted.fromEntityId,
+        redacted.toEntityId,
+        redacted.validFrom,
+        redacted.validTo,
+        JSON.stringify(redacted),
+      );
+  }
+
+  knowledgeGraphEntities(projectId: string, limit = 500): KnowledgeGraphEntity[] {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM knowledge_graph_entities WHERE project_id = ?
+         ORDER BY last_seen_at DESC LIMIT ?`,
+      )
+      .all(projectId, limit) as KnowledgeGraphEntityRow[];
+    return rows.map(rowToKnowledgeGraphEntity);
+  }
+
+  knowledgeGraphRelationships(projectId: string, limit = 500): KnowledgeGraphRelationship[] {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM knowledge_graph_relationships WHERE project_id = ?
+         ORDER BY valid_from DESC LIMIT ?`,
+      )
+      .all(projectId, limit) as KnowledgeGraphRelationshipRow[];
+    return rows.map(rowToKnowledgeGraphRelationship);
   }
 
   appendSessionEmbedding(input: SessionEmbeddingInput): void {
@@ -577,6 +727,16 @@ function rowToArchitectureShift(r: ArchitectureShiftRow): ArchitectureShift {
 
 function rowToMemoryRecord(r: MemoryRecordRow): StoredMemoryRecord {
   return StoredMemoryRecord.parse(JSON.parse(r.data));
+}
+
+function rowToKnowledgeGraphEntity(r: KnowledgeGraphEntityRow): KnowledgeGraphEntity {
+  return KnowledgeGraphEntity.parse(JSON.parse(r.data));
+}
+
+function rowToKnowledgeGraphRelationship(
+  r: KnowledgeGraphRelationshipRow,
+): KnowledgeGraphRelationship {
+  return KnowledgeGraphRelationship.parse(JSON.parse(r.data));
 }
 
 function tryLoadSqliteVec(db: Database.Database): boolean {

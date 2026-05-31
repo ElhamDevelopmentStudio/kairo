@@ -410,4 +410,70 @@ describe("EventStore", () => {
     ]);
     expect(store.projectIds()).toContain("p1");
   });
+
+  it("stores temporal knowledge graph entities and relationships", () => {
+    store.upsertKnowledgeGraph({
+      entities: [
+        {
+          id: "88888888-8888-4888-8888-888888888888",
+          projectId: "p1",
+          kind: "file",
+          name: "answer.ts",
+          canonicalRef: "file:packages/core/src/memory/answer.ts",
+          firstSeenAt: "2026-05-18T10:00:00.000Z",
+          lastSeenAt: "2026-05-18T10:00:00.000Z",
+          confidence: "high",
+          evidence: [{ kind: "file", reference: "file:packages/core/src/memory/answer.ts" }],
+          tags: ["file"],
+        },
+        {
+          id: "99999999-9999-4999-8999-999999999999",
+          projectId: "p1",
+          kind: "decision",
+          name: "Local API boundary",
+          canonicalRef: "decision:adr:docs/decisions/0001.md",
+          firstSeenAt: "2026-05-18T10:00:00.000Z",
+          lastSeenAt: "2026-05-18T10:00:00.000Z",
+          confidence: "high",
+          evidence: [{ kind: "adr", reference: "adr:docs/decisions/0001.md" }],
+          tags: ["decision"],
+        },
+      ],
+      relationships: [
+        {
+          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          projectId: "p1",
+          kind: "explained_by",
+          fromEntityId: "88888888-8888-4888-8888-888888888888",
+          toEntityId: "99999999-9999-4999-8999-999999999999",
+          validFrom: "2026-05-18T10:00:00.000Z",
+          validTo: null,
+          confidence: "high",
+          evidence: [
+            { kind: "file", reference: "file:packages/core/src/memory/answer.ts" },
+            { kind: "adr", reference: "adr:docs/decisions/0001.md" },
+          ],
+          tags: ["decision", "file"],
+        },
+      ],
+    });
+
+    expect(store.knowledgeGraphEntities("p1")).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "file",
+          canonicalRef: "file:packages/core/src/memory/answer.ts",
+        }),
+      ]),
+    );
+    expect(store.knowledgeGraphRelationships("p1")).toEqual([
+      expect.objectContaining({
+        kind: "explained_by",
+        evidence: expect.arrayContaining([
+          expect.objectContaining({ reference: "adr:docs/decisions/0001.md" }),
+        ]),
+      }),
+    ]);
+    expect(store.projectIds()).toContain("p1");
+  });
 });

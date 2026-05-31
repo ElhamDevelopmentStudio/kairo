@@ -7,6 +7,7 @@ export const MemoryCitationKind = z.enum([
   "commit",
   "event",
   "problem",
+  "relationship",
 ]);
 export type MemoryCitationKind = z.infer<typeof MemoryCitationKind>;
 

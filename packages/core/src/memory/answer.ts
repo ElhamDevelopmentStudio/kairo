@@ -78,6 +78,26 @@ function candidateToCitation(candidate: MemoryCandidate): MemoryCitation {
     };
   }
 
+  if (candidate.kind === "relationship") {
+    return {
+      kind: "relationship",
+      id: candidate.item.relationship.id,
+      title: `${candidate.item.from.name} ${candidate.item.relationship.kind.replaceAll("_", " ")} ${candidate.item.to.name}`,
+      reference: `relationship:${candidate.item.relationship.id}`,
+      excerpt: relationshipExcerpt(candidate.item),
+      files: candidate.item.relationship.evidence
+        .filter((evidence) => evidence.kind === "file")
+        .map((evidence) => evidence.reference.replace(/^file:/, "")),
+      commitShas: candidate.item.relationship.evidence
+        .filter((evidence) => evidence.kind === "commit")
+        .map((evidence) => evidence.id ?? evidence.reference.replace(/^commit:/, "")),
+      eventIds: candidate.item.relationship.evidence
+        .filter((evidence) => evidence.kind === "event" && evidence.id !== undefined)
+        .map((evidence) => evidence.id ?? ""),
+      score: candidate.score,
+    };
+  }
+
   if (candidate.kind === "architecture_shift") {
     return {
       kind: "architecture_shift",
@@ -238,6 +258,7 @@ function sourceLabel(kind: MemoryCitation["kind"]): string {
   if (kind === "commit") return "commit";
   if (kind === "event") return "event";
   if (kind === "problem") return "problem memory";
+  if (kind === "relationship") return "project relationship";
   return "session";
 }
 
@@ -264,4 +285,12 @@ function renderProblemExcerpt(memory: ProblemMemory): string {
       : `Related commits: ${memory.relatedCommitShas.slice(0, 3).join(", ")}`,
   ].filter((part): part is string => part !== null);
   return parts.join(" ");
+}
+
+function relationshipExcerpt(
+  candidate: Extract<MemoryCandidate, { kind: "relationship" }>["item"],
+): string {
+  const from = `${candidate.from.kind} "${candidate.from.name}"`;
+  const to = `${candidate.to.kind} "${candidate.to.name}"`;
+  return `${from} ${candidate.relationship.kind.replaceAll("_", " ")} ${to}.`;
 }

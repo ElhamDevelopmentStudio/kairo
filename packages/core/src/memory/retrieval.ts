@@ -2,10 +2,13 @@ import type {
   ArchitectureShift,
   DecisionMemory,
   KairoEvent,
+  KnowledgeGraphEntity,
+  KnowledgeGraphRelationship,
   ProblemMemory,
   Session,
 } from "@kairo/shared";
 import type { EventStore } from "../event-store/index.ts";
+import { buildKnowledgeGraph } from "../knowledge-graph/index.ts";
 import { extractProblemMemories } from "../problem-memory/index.ts";
 import { bm25Search, tokenizeSearchText } from "../search/bm25.ts";
 import { sessionBridgeSearchText } from "./bridge-docs.ts";
@@ -43,7 +46,18 @@ export type MemoryCandidate =
       kind: "problem";
       item: ProblemMemory;
       score: number;
+    }
+  | {
+      kind: "relationship";
+      item: GraphRelationshipCandidate;
+      score: number;
     };
+
+export interface GraphRelationshipCandidate {
+  relationship: KnowledgeGraphRelationship;
+  from: KnowledgeGraphEntity;
+  to: KnowledgeGraphEntity;
+}
 
 interface CandidateDocument {
   id: string;
@@ -69,12 +83,24 @@ export function retrieveMemoryCandidates(
   const events = store.eventsForProject(projectId);
   const shifts = store.recentArchitectureShifts(projectId, candidateLimit);
   const problems = extractProblemMemories(projectId, events, sessions);
+  const graphRelationships = RELATIONSHIP_QUERY_PATTERN.test(trimmed)
+    ? graphRelationshipCandidates(
+        store,
+        projectId,
+        sessions,
+        events,
+        options.decisionMemories ?? [],
+        problems,
+        candidateLimit,
+      )
+    : [];
   const documents = [
     ...sessions.map((session) => sessionDocument(session, events, problems)),
     ...(options.decisionMemories ?? []).map(decisionDocument),
     ...shifts.map(architectureShiftDocument),
     ...events.slice(-candidateLimit).map(eventDocument),
     ...problems.map(problemDocument),
+    ...graphRelationships.map(graphRelationshipDocument),
   ];
   const context = retrievalContext(trimmed, documents, options.now ?? new Date().toISOString());
   const bm25Scores = new Map(
@@ -116,6 +142,7 @@ function scoreDocument(
   score += architectureScore(document, context);
   score += decisionScore(document, context);
   score += problemScore(document, context);
+  score += relationshipScore(document, context);
   return score;
 }
 
@@ -129,6 +156,7 @@ interface RetrievalContext {
   lastWeekStart: number | null;
   anchorTime: number | null;
   firstAppeared: boolean;
+  relationshipQuestion: boolean;
 }
 
 function retrievalContext(
@@ -155,6 +183,7 @@ function retrievalContext(
     firstAppeared: /\b(first appeared|first happen|initially appeared|introduced)\b/i.test(
       question,
     ),
+    relationshipQuestion: RELATIONSHIP_QUERY_PATTERN.test(question),
   };
 }
 
@@ -347,7 +376,24 @@ function problemScore(document: CandidateDocument, context: RetrievalContext): n
   if (document.candidate.kind === "event" && document.candidate.item.kind === "terminal.command") {
     return 4;
   }
+  if (
+    document.candidate.kind === "relationship" &&
+    document.candidate.item.relationship.kind === "fixes"
+  ) {
+    return 7;
+  }
   return 0;
+}
+
+function relationshipScore(document: CandidateDocument, context: RetrievalContext): number {
+  if (document.candidate.kind !== "relationship") return 0;
+  const kind = document.candidate.item.relationship.kind;
+  if (kind === "touches" || kind === "depends_on") return -10;
+  if (!context.relationshipQuestion) return kind === "fixes" && context.problemQuestion ? -6 : -4;
+  if (kind === "supersedes") return 14;
+  if (kind === "renamed_from") return 12;
+  if (kind === "fixes") return 8;
+  return 4;
 }
 
 function beforeAnchorText(question: string): string | null {
@@ -386,15 +432,79 @@ function candidateTime(candidate: MemoryCandidate): string {
   if (candidate.kind === "architecture_shift") return candidate.item.detectedAt;
   if (candidate.kind === "decision") return candidate.item.occurredAt;
   if (candidate.kind === "problem") return candidate.item.occurredAt;
+  if (candidate.kind === "relationship") return candidate.item.relationship.validFrom;
   return candidate.item.occurredAt;
 }
 
 function weightFor(kind: MemoryCandidate["kind"]): number {
+  if (kind === "relationship") return 0.75;
   if (kind === "problem") return 1.5;
   if (kind === "decision") return 1.45;
   if (kind === "architecture_shift") return 1.35;
   if (kind === "session") return 1.2;
   return 1;
+}
+
+function graphRelationshipCandidates(
+  store: EventStore,
+  projectId: string,
+  sessions: Session[],
+  events: KairoEvent[],
+  decisionMemories: DecisionMemory[],
+  problemMemories: ProblemMemory[],
+  limit: number,
+): GraphRelationshipCandidate[] {
+  const persistedEntities = store.knowledgeGraphEntities(projectId, limit * 4);
+  const persistedRelationships = store.knowledgeGraphRelationships(projectId, limit * 4);
+  const graph =
+    persistedEntities.length > 0 || persistedRelationships.length > 0
+      ? { entities: persistedEntities, relationships: persistedRelationships }
+      : buildKnowledgeGraph({
+          projectId,
+          sessions,
+          events,
+          decisionMemories,
+          problemMemories,
+        });
+  const entitiesById = new Map(graph.entities.map((entity) => [entity.id, entity]));
+  return graph.relationships
+    .map((relationship) => {
+      const from = entitiesById.get(relationship.fromEntityId);
+      const to = entitiesById.get(relationship.toEntityId);
+      return from === undefined || to === undefined ? null : { relationship, from, to };
+    })
+    .filter((candidate): candidate is GraphRelationshipCandidate => candidate !== null);
+}
+
+function graphRelationshipDocument(candidate: GraphRelationshipCandidate): CandidateDocument {
+  return {
+    id: `relationship:${candidate.relationship.id}`,
+    candidate: { kind: "relationship", item: candidate, score: 0 },
+    text: [
+      candidate.relationship.kind,
+      relationshipPhrase(candidate),
+      candidate.from.kind,
+      candidate.from.name,
+      candidate.from.canonicalRef,
+      candidate.to.kind,
+      candidate.to.name,
+      candidate.to.canonicalRef,
+      ...candidate.relationship.tags,
+      ...candidate.relationship.evidence.map((evidence) => evidence.reference),
+    ].join("\n"),
+    files: relationshipFiles(candidate.relationship),
+    occurredAt: candidate.relationship.validFrom,
+  };
+}
+
+function relationshipPhrase(candidate: GraphRelationshipCandidate): string {
+  return `${candidate.from.name} ${candidate.relationship.kind.replaceAll("_", " ")} ${candidate.to.name}`;
+}
+
+function relationshipFiles(relationship: KnowledgeGraphRelationship): string[] {
+  return relationship.evidence
+    .filter((evidence) => evidence.kind === "file")
+    .map((evidence) => evidence.reference.replace(/^file:/, ""));
 }
 
 function normalize(value: string): string {
@@ -405,3 +515,5 @@ const PROBLEM_QUERY_PATTERN =
   /\b(error|fix|fixed|failed|failure|exception|traceback|bug|broke|broken|before|again)\b/i;
 const ARCHITECTURE_QUERY_PATTERN =
   /\b(architecture|architectural|why|decision|migration|migrate|refactor|split|boundary|redesign|shift)\b/i;
+const RELATIONSHIP_QUERY_PATTERN =
+  /\b(supersede|superseded|replace|replaced|rename|renamed|depends on|dependency|fixes|fixed by|caused by|what changed after)\b/i;

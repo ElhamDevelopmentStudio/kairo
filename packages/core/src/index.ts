@@ -18,6 +18,8 @@ export {
   rebuildMemoryRecords,
   sessionBridgeSearchText,
 } from "./memory/index.ts";
+export { buildKnowledgeGraph, queryKnowledgeGraph } from "./knowledge-graph/index.ts";
+export type { BuildKnowledgeGraphInput, KnowledgeGraphQuery } from "./knowledge-graph/index.ts";
 export type {
   AnswerProjectMemoryOptions,
   ExtractDecisionMemoriesInput,

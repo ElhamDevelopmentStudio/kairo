@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type {
   ArchitectureShift,
+  DecisionMemory,
   FileChangeEvent,
   GitCommitEvent,
   Session,
@@ -314,6 +315,41 @@ describe("retrieveMemoryCandidates", () => {
       item: expect.objectContaining({ slug: "cli-frontend-boundary" }),
     });
   });
+
+  it("uses relationship graph facts for supersession questions", () => {
+    const [top] = retrieveMemoryCandidates(
+      store,
+      "demo",
+      "what superseded direct sqlite dashboard reads?",
+      {
+        decisionMemories: [
+          decisionMemory({
+            id: "11111111-1111-4111-8111-111111111111",
+            title: "Use direct SQLite dashboard reads",
+            reference: "adr:docs/decisions/0001-dashboard-storage.md",
+            occurredAt: "2026-05-18T10:00:00.000Z",
+            files: ["apps/web/src/app.tsx"],
+          }),
+          decisionMemory({
+            id: "22222222-2222-4222-8222-222222222222",
+            title: "Use local API dashboard reads",
+            reference: "adr:docs/decisions/0002-dashboard-storage.md",
+            occurredAt: "2026-05-21T10:00:00.000Z",
+            files: ["apps/web/src/app.tsx"],
+          }),
+        ],
+      },
+    );
+
+    expect(top).toMatchObject({
+      kind: "relationship",
+      item: {
+        relationship: expect.objectContaining({ kind: "supersedes" }),
+        from: expect.objectContaining({ name: "Use local API dashboard reads" }),
+        to: expect.objectContaining({ name: "Use direct SQLite dashboard reads" }),
+      },
+    });
+  });
 });
 
 function session(overrides: Partial<Session> = {}): Session {
@@ -398,6 +434,29 @@ function fileChangeEvent(overrides: Partial<FileChangeEvent> = {}): FileChangeEv
       path: "apps/web/src/app.tsx",
       op: "modify",
     },
+    ...overrides,
+  };
+}
+
+function decisionMemory(overrides: Partial<DecisionMemory> = {}): DecisionMemory {
+  return {
+    id: "11111111-1111-4111-8111-111111111111",
+    projectId: "demo",
+    memoryKind: "decision",
+    title: "Decision",
+    summary: "Decision summary.",
+    confidence: "high",
+    createdAt: "2026-05-18T10:00:00.000Z",
+    updatedAt: "2026-05-18T10:00:00.000Z",
+    evidence: [{ kind: "adr", reference: "adr:docs/decisions/0001.md" }],
+    tags: ["decision"],
+    source: "adr",
+    reference: "adr:docs/decisions/0001.md",
+    inferred: false,
+    occurredAt: "2026-05-18T10:00:00.000Z",
+    consequences: [],
+    files: [],
+    relatedShiftIds: [],
     ...overrides,
   };
 }
