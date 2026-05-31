@@ -2,6 +2,7 @@ import { AiProviderName } from "@kairo/shared";
 import { createAmazonBedrockProvider } from "./amazon-bedrock.ts";
 import { createAnthropicProvider } from "./anthropic.ts";
 import { createCerebrasProvider } from "./cerebras.ts";
+import { createCodexProvider } from "./codex.ts";
 import { createCustomProvider } from "./custom.ts";
 import { createDeepSeekProvider } from "./deepseek.ts";
 import { createFireworksProvider } from "./fireworks.ts";
@@ -49,6 +50,8 @@ export function createAiProvider(
       return createAmazonBedrockProvider(resolvedConfig, env, transport);
     case "cerebras":
       return createCerebrasProvider(resolvedConfig, env, transport);
+    case "codex":
+      return createCodexProvider(resolvedConfig);
     case "custom":
       return createCustomProvider(resolvedConfig, env, transport);
     case "deepseek":

@@ -10,6 +10,7 @@ export const AiProviderName = z.enum([
   "azure-openai",
   "cerebras",
   "cohere",
+  "codex",
   "custom",
   "deepseek",
   "fireworks",

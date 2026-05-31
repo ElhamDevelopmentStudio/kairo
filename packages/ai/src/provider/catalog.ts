@@ -83,6 +83,15 @@ const PROVIDERS: ProviderSetup[] = [
     headlessAuth: null,
   },
   {
+    name: "codex",
+    label: "Codex CLI",
+    apiKeyEnv: null,
+    baseUrl: null,
+    status: "supported",
+    auth: "Local Codex CLI login",
+    headlessAuth: "codex login",
+  },
+  {
     name: "custom",
     label: "Custom OpenAI-compatible",
     apiKeyEnv: "KAIRO_AI_API_KEY",

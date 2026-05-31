@@ -80,6 +80,7 @@ describe("createAiProvider", () => {
       "azure-openai",
       "cerebras",
       "cohere",
+      "codex",
       "custom",
       "deepseek",
       "fireworks",
