@@ -9,9 +9,10 @@ describe("answerMemoryWithAi", () => {
         name: "minimax",
         async complete(input) {
           expect(input.system).toContain("using only Kairo evidence");
+          expect(input.system).toContain("simple user-facing language");
           expect(input.prompt).toContain("commit:abc123");
           return {
-            text: "The API moved to GraphQL to reduce duplicated REST request shaping, as shown by commit:abc123.",
+            text: "The API moved to GraphQL so the project could stop duplicating request-shaping logic across REST routes.",
             model: "MiniMax-M2.7",
             provider: "minimax",
           };
@@ -25,11 +26,11 @@ describe("answerMemoryWithAi", () => {
       },
     });
 
-    expect(answer.answer).toContain("reduce duplicated REST request shaping");
+    expect(answer.answer).toContain("stop duplicating request-shaping logic");
     expect(answer.citations).toEqual(grounded.citations);
   });
 
-  it("appends stable evidence references when the provider omits citations", async () => {
+  it("does not append evidence references to normal user-facing answers", async () => {
     const answer = await answerMemoryWithAi(grounded, {
       provider: {
         name: "minimax",
@@ -49,10 +50,10 @@ describe("answerMemoryWithAi", () => {
       },
     });
 
-    expect(answer.answer).toContain("Evidence:");
-    expect(answer.answer).toContain("commit:abc123");
-    expect(answer.answer).toContain("event:event-1");
-    expect(answer.answer).toContain("file:apps/api/src/graphql/schema.ts");
+    expect(answer.answer).not.toContain("Evidence:");
+    expect(answer.answer).not.toContain("commit:abc123");
+    expect(answer.answer).not.toContain("event:event-1");
+    expect(answer.answer).not.toContain("file:apps/api/src/graphql/schema.ts");
   });
 
   it("keeps abstention answers local when there is no evidence", async () => {

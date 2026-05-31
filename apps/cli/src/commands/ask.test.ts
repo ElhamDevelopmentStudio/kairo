@@ -44,9 +44,10 @@ describe("runAsk", () => {
       files: ["apps/server/src/payment.ts"],
       commitShas: ["abc1234"],
     });
-    expect(renderAskAnswer(answer)).toContain("session:cors-fix");
-    expect(renderAskAnswer(answer)).toContain("commits: abc1234");
-    expect(answer.answer).toContain("session:cors-fix");
+    expect(renderAskAnswer(answer)).not.toContain("Evidence");
+    expect(renderAskAnswer(answer, { showEvidence: true })).toContain("session:cors-fix");
+    expect(renderAskAnswer(answer, { showEvidence: true })).toContain("commits: abc1234");
+    expect(answer.answer).not.toContain("session:cors-fix");
   });
 
   it("answers decision questions from workspace ADR files", async () => {

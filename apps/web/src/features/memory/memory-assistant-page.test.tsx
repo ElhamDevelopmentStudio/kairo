@@ -26,7 +26,7 @@ describe("MemoryAssistantPage", () => {
     window.history.pushState(null, "", "/");
   });
 
-  it("submits a question, renders citations, and opens cited sessions", async () => {
+  it("submits a question and shows evidence only when requested", async () => {
     apiMock.fetchHealth.mockResolvedValue({ ok: true, projectName: "Kairo" });
     apiMock.askProjectMemory.mockResolvedValue(memoryAnswer);
     apiMock.fetchArchitectureShifts.mockResolvedValue({ architectureShifts: [architectureShift] });
@@ -44,8 +44,12 @@ describe("MemoryAssistantPage", () => {
     );
     await userEvent.click(screen.getByRole("button", { name: /ask/i }));
 
-    await screen.findByText(/strongest evidence is the session/i);
+    await screen.findByText(/browser could use the local server/i);
     expect(apiMock.askProjectMemory.mock.calls[0]?.[0]).toBe("Why did the dashboard API move?");
+    expect(screen.queryByText("session:dashboard-wiring")).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: /show evidence/i }));
+
     expect(screen.getByText("session:dashboard-wiring")).toBeInTheDocument();
     expect(screen.getByText("apps/web/src/app.tsx")).toBeInTheDocument();
 
@@ -154,7 +158,7 @@ const events: KairoEvent[] = [
 const memoryAnswer: MemoryAnswer = {
   question: "Why did the dashboard API move?",
   answer:
-    'Based on stored project memory, the strongest evidence is the session [session:dashboard-wiring; commit:abc123def; event:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa; file:apps/web/src/app.tsx] "Dashboard Wiring": Connected the dashboard to local API responses.',
+    "The dashboard API moved so the browser could use the local server instead of reading SQLite directly. That keeps database access in the backend layer and makes the web UI simpler.",
   confidence: "medium",
   citations: [
     {

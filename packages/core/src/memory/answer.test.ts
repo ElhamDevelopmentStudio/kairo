@@ -47,9 +47,9 @@ describe("answerProjectMemory", () => {
     const answer = answerProjectMemory(store, "demo", "Why did we switch from REST to GraphQL?");
 
     expect(answer.answer).toContain("GraphQL");
-    expect(answer.answer).toContain("session:graphql-migration");
-    expect(answer.answer).toContain("commit:abc1234");
-    expect(answer.answer).toContain("file:apps/api/src/graphql/schema.ts");
+    expect(answer.answer).not.toContain("session:graphql-migration");
+    expect(answer.answer).not.toContain("commit:abc1234");
+    expect(answer.answer).not.toContain("file:apps/api/src/graphql/schema.ts");
     expect(answer.confidence).toBe("medium");
     expect(answer.citations).toEqual([
       expect.objectContaining({
@@ -105,9 +105,9 @@ describe("answerProjectMemory", () => {
     const answer = answerProjectMemory(store, "demo", "Why did we switch from REST to GraphQL?");
 
     expect(answer.answer).toContain("GraphQL");
-    expect(answer.answer).toContain("commit:abcdef123456");
-    expect(answer.answer).toContain("event:33333333-3333-4333-8333-333333333333");
-    expect(answer.answer).toContain("file:apps/api/src/graphql/schema.ts");
+    expect(answer.answer).not.toContain("commit:abcdef123456");
+    expect(answer.answer).not.toContain("event:33333333-3333-4333-8333-333333333333");
+    expect(answer.answer).not.toContain("file:apps/api/src/graphql/schema.ts");
     expect(answer.confidence).toBe("medium");
     expect(answer.citations[0]).toMatchObject({
       kind: "commit",
@@ -139,7 +139,7 @@ describe("answerProjectMemory", () => {
     });
 
     expect(answer.answer).toContain("decision memory");
-    expect(answer.answer).toContain("adr:docs/decisions/0001-web-data-source.md");
+    expect(answer.answer).not.toContain("adr:docs/decisions/0001-web-data-source.md");
     expect(answer.answer).toContain("SQLite ownership stays in @kairo/core");
     expect(answer.citations[0]).toMatchObject({
       kind: "decision",
@@ -206,8 +206,8 @@ describe("answerProjectMemory", () => {
     const answer = answerProjectMemory(store, "demo", "we fixed AN_ERROR before, how?");
 
     expect(answer.answer).toContain("seen this problem before");
-    expect(answer.answer).toContain("problem:an_error");
-    expect(answer.answer).toContain("event:44444444-4444-4444-8444-444444444444");
+    expect(answer.answer).not.toContain("problem:an_error");
+    expect(answer.answer).not.toContain("event:44444444-4444-4444-8444-444444444444");
     expect(answer.answer).toContain("Exported the problem memory schema");
     expect(answer.confidence).toBe("high");
     expect(answer.citations[0]).toMatchObject({

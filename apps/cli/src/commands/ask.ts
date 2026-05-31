@@ -10,13 +10,17 @@ export const askCommand = new Command("ask")
   .argument("<question>")
   .option("--limit <count>", "maximum evidence citations", parseLimit, 5)
   .option("--no-ai", "use deterministic local wording instead of the configured provider")
+  .option("--evidence", "show citations and evidence used for the answer")
   .action(async (question: string, opts: AskOptions) => {
-    console.log(renderAskAnswer(await runAsk(question, opts)));
+    console.log(
+      renderAskAnswer(await runAsk(question, opts), { showEvidence: opts.evidence === true }),
+    );
   });
 
 export interface AskOptions {
   limit?: number;
   ai?: boolean;
+  evidence?: boolean;
 }
 
 export async function runAsk(
@@ -44,7 +48,10 @@ export async function runAsk(
   }
 }
 
-export function renderAskAnswer(answer: MemoryAnswer): string {
+export function renderAskAnswer(
+  answer: MemoryAnswer,
+  options: { showEvidence?: boolean } = {},
+): string {
   const lines = [
     kleur.bold("Answer"),
     answer.answer,
@@ -52,7 +59,8 @@ export function renderAskAnswer(answer: MemoryAnswer): string {
     kleur.bold(`Confidence: ${answer.confidence}`),
   ];
 
-  if (answer.citations.length === 0) return `${lines.join("\n")}\n`;
+  if (answer.citations.length === 0 || options.showEvidence !== true)
+    return `${lines.join("\n")}\n`;
 
   lines.push("", kleur.bold("Evidence"));
   for (const citation of answer.citations) {

@@ -30,13 +30,13 @@ export async function answerMemoryWithAi(
 
   const result = await provider.complete({
     system:
-      "You answer questions about a software project using only Kairo evidence. Be concise, direct, and natural. Do not invent facts. If the evidence is thin, say what is known and what is uncertain.",
+      "You answer questions about a software project using only Kairo evidence. Explain clearly in simple user-facing language. Do not expose internal IDs, commit hashes, file paths, event IDs, or citation mechanics unless the user explicitly asks for evidence. Do not invent facts. If the evidence is thin, say what is known and what is uncertain in plain words.",
     prompt: renderAnswerPrompt(grounded.question, grounded.citations),
   });
 
   const answer = {
     ...grounded,
-    answer: withEvidenceReferences(result.text.trim(), grounded.citations),
+    answer: result.text.trim(),
   };
   cache.set(key, answer);
   return answer;
@@ -61,22 +61,6 @@ function renderAnswerPrompt(question: string, citations: MemoryCitation[]): stri
       2,
     ),
     "",
-    "Write a natural-language answer in 2-5 sentences. Cite every factual claim with the provided stable references, such as session slugs, commit SHAs, file paths, architecture IDs, or event IDs. Do not add uncited claims.",
+    "Write a natural-language answer in 2-5 sentences for a normal product user. Use the evidence only to decide what is true. Do not mention session slugs, commit SHAs, file paths, architecture IDs, event IDs, or how you found the answer unless the question explicitly asks for citations, evidence, commits, files, or sources. Do not add uncited claims.",
   ].join("\n");
-}
-
-function withEvidenceReferences(answer: string, citations: MemoryCitation[]): string {
-  const references = citations.flatMap(citationReferences);
-  const missing = references.filter((reference) => !answer.includes(reference));
-  if (missing.length === 0) return answer;
-  return `${answer}\n\nEvidence: ${missing.join(", ")}`;
-}
-
-function citationReferences(citation: MemoryCitation): string[] {
-  return [
-    citation.reference,
-    ...citation.commitShas.map((sha) => `commit:${sha.slice(0, 12)}`),
-    ...citation.eventIds.map((id) => `event:${id}`),
-    ...citation.files.slice(0, 3).map((file) => `file:${file}`),
-  ];
 }

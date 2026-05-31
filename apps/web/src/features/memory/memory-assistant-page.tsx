@@ -105,6 +105,7 @@ export function MemoryAssistantPage() {
 }
 
 function AnswerResult({ answer }: { answer: MemoryAnswer | undefined }) {
+  const [showEvidence, setShowEvidence] = useState(false);
   if (answer === undefined) return null;
 
   return (
@@ -114,25 +115,30 @@ function AnswerResult({ answer }: { answer: MemoryAnswer | undefined }) {
           <Badge className="rounded-md capitalize" variant={confidenceVariant(answer.confidence)}>
             {answer.confidence} confidence
           </Badge>
-          <span className="text-muted-foreground text-xs">{answer.citations.length} citations</span>
+          {answer.citations.length > 0 && (
+            <Button
+              onClick={() => setShowEvidence((current) => !current)}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              {showEvidence ? "Hide evidence" : "Show evidence"}
+            </Button>
+          )}
         </div>
         <p className="text-foreground text-sm leading-7">{answer.answer}</p>
       </article>
 
-      <section className="p-5">
-        <h2 className="font-medium text-sm">Citations</h2>
-        {answer.citations.length === 0 ? (
-          <p className="mt-3 text-muted-foreground text-sm">
-            No direct evidence matched this question.
-          </p>
-        ) : (
+      {showEvidence && (
+        <section className="p-5">
+          <h2 className="font-medium text-sm">Evidence</h2>
           <div className="mt-4 space-y-3">
             {answer.citations.map((citation) => (
               <CitationCard citation={citation} key={`${citation.kind}-${citation.id}`} />
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      )}
     </div>
   );
 }
