@@ -14,12 +14,16 @@ export { EventStore } from "./event-store/index.ts";
 export {
   answerProjectMemory,
   extractDecisionMemories,
+  generateSessionBridgeDocuments,
   rebuildMemoryRecords,
+  sessionBridgeSearchText,
 } from "./memory/index.ts";
 export type {
   AnswerProjectMemoryOptions,
   ExtractDecisionMemoriesInput,
   RebuildMemoryRecordsInput,
+  SessionBridgeDocument,
+  SessionBridgeInput,
 } from "./memory/index.ts";
 export { extractProblemMemories } from "./problem-memory/index.ts";
 export {

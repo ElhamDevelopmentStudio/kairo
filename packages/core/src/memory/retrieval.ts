@@ -8,6 +8,7 @@ import type {
 import type { EventStore } from "../event-store/index.ts";
 import { extractProblemMemories } from "../problem-memory/index.ts";
 import { bm25Search, tokenizeSearchText } from "../search/bm25.ts";
+import { sessionBridgeSearchText } from "./bridge-docs.ts";
 
 export interface RetrieveMemoryOptions {
   limit?: number;
@@ -48,6 +49,7 @@ interface CandidateDocument {
   id: string;
   candidate: MemoryCandidate;
   text: string;
+  anchorText?: string;
   files: string[];
   occurredAt: string;
 }
@@ -68,7 +70,7 @@ export function retrieveMemoryCandidates(
   const shifts = store.recentArchitectureShifts(projectId, candidateLimit);
   const problems = extractProblemMemories(projectId, events, sessions);
   const documents = [
-    ...sessions.map(sessionDocument),
+    ...sessions.map((session) => sessionDocument(session, events, problems)),
     ...(options.decisionMemories ?? []).map(decisionDocument),
     ...shifts.map(architectureShiftDocument),
     ...events.slice(-candidateLimit).map(eventDocument),
@@ -156,20 +158,26 @@ function retrievalContext(
   };
 }
 
-function sessionDocument(session: Session): CandidateDocument {
+function sessionDocument(
+  session: Session,
+  events: KairoEvent[] = [],
+  problems: ProblemMemory[] = [],
+): CandidateDocument {
+  const rawText = [
+    session.title,
+    session.intent,
+    session.summary,
+    session.architectureImpact,
+    ...session.themes,
+    ...session.affectedAreas,
+    ...session.files,
+    ...session.commitShas,
+  ].join("\n");
   return {
     id: `session:${session.id}`,
     candidate: { kind: "session", item: session, score: 0 },
-    text: [
-      session.title,
-      session.intent,
-      session.summary,
-      session.architectureImpact,
-      ...session.themes,
-      ...session.affectedAreas,
-      ...session.files,
-      ...session.commitShas,
-    ].join("\n"),
+    text: [rawText, sessionBridgeSearchText({ session, events, problems })].join("\n"),
+    anchorText: rawText,
     files: session.files,
     occurredAt: session.startedAt,
   };
@@ -293,8 +301,8 @@ function temporalScore(document: CandidateDocument, context: RetrievalContext): 
   if (context.anchorTime !== null) {
     const documentTime = Date.parse(document.occurredAt);
     score += documentTime < context.anchorTime ? 7 : -5;
-    if (documentTime === context.anchorTime && matchesAnchor(document, context.anchorTerms)) {
-      score -= 30;
+    if (documentTime >= context.anchorTime && matchesAnchor(document, context.anchorTerms)) {
+      score -= 1000;
     }
   }
   if (context.firstAppeared && document.candidate.kind === "problem") {
@@ -306,8 +314,9 @@ function temporalScore(document: CandidateDocument, context: RetrievalContext): 
 function matchesAnchor(document: CandidateDocument, anchorTerms: string[]): boolean {
   if (anchorTerms.length === 0) return false;
   const normalized = normalize(document.text);
+  const anchorText = normalize(document.anchorText ?? document.text);
   return (
-    anchorTerms.filter((term) => normalized.includes(term)).length >=
+    anchorTerms.filter((term) => anchorText.includes(term)).length >=
     Math.min(2, anchorTerms.length)
   );
 }
@@ -355,8 +364,12 @@ function findAnchorTime(
   const candidates = documents
     .map((document) => ({
       document,
-      phraseMatch: normalize(document.text).includes(normalizedAnchor) ? 1 : 0,
-      matches: anchorTerms.filter((term) => normalize(document.text).includes(term)).length,
+      phraseMatch: normalize(document.anchorText ?? document.text).includes(normalizedAnchor)
+        ? 1
+        : 0,
+      matches: anchorTerms.filter((term) =>
+        normalize(document.anchorText ?? document.text).includes(term),
+      ).length,
     }))
     .filter((candidate) => candidate.matches > 0)
     .sort(

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { Session } from "@kairo/shared";
 import type { EventStore } from "../event-store/index.ts";
+import { sessionBridgeSearchText } from "../memory/bridge-docs.ts";
 
 export interface TextEmbedding {
   embedding: number[];
@@ -78,6 +79,7 @@ export function sessionSearchText(session: Session): string {
     session.architectureImpact,
     ...session.files,
     ...session.commitShas,
+    sessionBridgeSearchText({ session }),
   ]
     .filter((part): part is string => typeof part === "string" && part.trim().length > 0)
     .join("\n");

@@ -688,7 +688,7 @@ evidence backs that answer.
 
 ### 5.8 — Synthetic bridge documents
 
-- [ ] **Goal:** generate cached retrieval helper documents that bridge vocabulary
+- [x] **Goal:** generate cached retrieval helper documents that bridge vocabulary
   gaps without becoming answer sources.
 - **Files:** `packages/core/src/memory/bridge-docs.ts`,
   `packages/ai/src/answer/`, `packages/core/src/search/semantic.ts`.
@@ -700,6 +700,10 @@ evidence backs that answer.
   session still retrieve the right evidence through bridge docs.
 - **Notes:** Bridge docs may be AI-generated or deterministic. They are retrieval
   accelerators only; answers must cite the underlying raw evidence.
+- **Done:** Added deterministic session bridge documents for features,
+  problems, decisions, risks, files, packages, symbols, and commands; retrieval
+  and semantic indexing now use bridge text while still mapping hits back to the
+  original session evidence.
 
 ### 5.9 — Temporal project knowledge graph
 

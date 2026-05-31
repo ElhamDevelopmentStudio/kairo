@@ -290,6 +290,30 @@ describe("retrieveMemoryCandidates", () => {
       item: expect.objectContaining({ slug: "checkpoint-resume" }),
     });
   });
+
+  it("uses bridge documents to retrieve sessions through different wording", () => {
+    store.appendSession(
+      session({
+        id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+        slug: "cli-frontend-boundary",
+        title: "Kairo service separation",
+        summary: "Listener and watcher can run without the optional web surface.",
+        architectureImpact: "Visualization moved behind an installable frontend boundary.",
+        files: ["apps/cli/src/bin.ts", "apps/web/src/app.tsx"],
+      }),
+    );
+
+    const [top] = retrieveMemoryCandidates(
+      store,
+      "demo",
+      "why did we decouple the ui visualization from the local service?",
+    );
+
+    expect(top).toMatchObject({
+      kind: "session",
+      item: expect.objectContaining({ slug: "cli-frontend-boundary" }),
+    });
+  });
 });
 
 function session(overrides: Partial<Session> = {}): Session {

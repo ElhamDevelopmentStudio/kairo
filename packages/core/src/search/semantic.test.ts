@@ -37,6 +37,7 @@ describe("semantic search", () => {
 
     expect(sessionSearchText(target)).toContain("Auth rewrite");
     expect(sessionSearchText(target)).toContain("src/auth/session.ts");
+    expect(sessionSearchText(target)).toContain("signin");
     expect(sessionSearchContentHash(target)).toMatch(/^[a-f0-9]{64}$/);
     expect(sessionSearchContentHash(target)).toBe(sessionSearchContentHash(target));
   });
