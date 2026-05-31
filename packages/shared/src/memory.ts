@@ -16,6 +16,7 @@ export const MemoryCitation = z.object({
   reference: z.string(),
   excerpt: z.string().optional(),
   commitShas: z.array(z.string()).default([]),
+  eventIds: z.array(z.string()).default([]),
   files: z.array(z.string()).default([]),
   score: z.number().nonnegative(),
 });

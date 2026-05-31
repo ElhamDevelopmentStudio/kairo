@@ -62,6 +62,7 @@ function renderCitation(citation: MemoryCitation): string {
     citation.commitShas.length > 0
       ? `commits: ${citation.commitShas.slice(0, 3).join(", ")}`
       : null,
+    citation.eventIds.length > 0 ? `events: ${citation.eventIds.slice(0, 3).join(", ")}` : null,
   ].filter((detail): detail is string => detail !== null);
 
   const suffix = details.length > 0 ? ` (${details.join("; ")})` : "";

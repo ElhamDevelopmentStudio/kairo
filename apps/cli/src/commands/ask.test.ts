@@ -45,6 +45,8 @@ describe("runAsk", () => {
       commitShas: ["abc1234"],
     });
     expect(renderAskAnswer(answer)).toContain("session:cors-fix");
+    expect(renderAskAnswer(answer)).toContain("commits: abc1234");
+    expect(answer.answer).toContain("session:cors-fix");
   });
 });
 

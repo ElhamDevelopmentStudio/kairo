@@ -29,6 +29,32 @@ describe("answerMemoryWithAi", () => {
     expect(answer.citations).toEqual(grounded.citations);
   });
 
+  it("appends stable evidence references when the provider omits citations", async () => {
+    const answer = await answerMemoryWithAi(grounded, {
+      provider: {
+        name: "minimax",
+        async complete() {
+          return {
+            text: "The API moved to GraphQL to reduce duplicated REST request shaping.",
+            model: "MiniMax-M2.7",
+            provider: "minimax",
+          };
+        },
+        async summarize() {
+          throw new Error("answering should use provider.complete");
+        },
+        async embed() {
+          return { embedding: [], model: "test", provider: "minimax" };
+        },
+      },
+    });
+
+    expect(answer.answer).toContain("Evidence:");
+    expect(answer.answer).toContain("commit:abc123");
+    expect(answer.answer).toContain("event:event-1");
+    expect(answer.answer).toContain("file:apps/api/src/graphql/schema.ts");
+  });
+
   it("keeps abstention answers local when there is no evidence", async () => {
     await expect(
       answerMemoryWithAi({
@@ -57,6 +83,7 @@ const grounded: MemoryAnswer = {
       excerpt: "refactor: switch REST API to GraphQL because duplicate request shaping",
       files: ["apps/api/src/graphql/schema.ts"],
       commitShas: ["abc123"],
+      eventIds: ["event-1"],
       score: 12,
     },
   ],

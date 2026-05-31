@@ -211,6 +211,7 @@ function candidateToCitation(candidate: Candidate): MemoryCitation {
       excerpt: renderProblemExcerpt(candidate.item),
       files: candidate.item.files,
       commitShas: candidate.item.relatedCommitShas,
+      eventIds: candidate.item.eventIds,
       score: candidate.score,
     };
   }
@@ -224,6 +225,7 @@ function candidateToCitation(candidate: Candidate): MemoryCitation {
       excerpt: candidate.item.summary,
       files: candidate.item.affectedPaths,
       commitShas: [],
+      eventIds: [],
       score: candidate.score,
     };
   }
@@ -239,6 +241,7 @@ function candidateToCitation(candidate: Candidate): MemoryCitation {
         : {}),
       files: candidate.item.files,
       commitShas: candidate.item.commitShas,
+      eventIds: candidate.item.eventIds,
       score: candidate.score,
     };
   }
@@ -254,6 +257,7 @@ function candidateToCitation(candidate: Candidate): MemoryCitation {
       excerpt: candidate.item.payload.message,
       files: candidate.item.payload.files.map((file) => file.path),
       commitShas: [candidate.item.payload.sha],
+      eventIds: [candidate.item.id],
       score: candidate.score,
     };
   }
@@ -267,6 +271,7 @@ function candidateToCitation(candidate: Candidate): MemoryCitation {
     excerpt: eventExcerpt(candidate.item),
     files: eventFiles(candidate.item),
     commitShas: eventCommitShas(candidate.item),
+    eventIds: [candidate.item.id],
     score: candidate.score,
   };
 }
@@ -279,6 +284,7 @@ function renderAnswer(question: string, citations: MemoryCitation[]): string {
 
   const source = sourceLabel(primary.kind);
   const basis = primary.excerpt ?? primary.title;
+  const primaryReference = citationReference(primary);
   if (primary.kind === "problem") {
     const supportingProblems = rest
       .filter((citation) => citation.kind === "session" || citation.kind === "commit")
@@ -288,7 +294,7 @@ function renderAnswer(question: string, citations: MemoryCitation[]): string {
       supportingProblems.length === 0
         ? ""
         : ` Related evidence appears in ${supportingProblems.join(", ")}.`;
-    return `Kairo has seen this problem before: ${basis}.${supporting}`;
+    return `Kairo has seen this problem before ${primaryReference}: ${basis}.${supporting}`;
   }
   const supporting =
     rest.length === 0
@@ -297,7 +303,7 @@ function renderAnswer(question: string, citations: MemoryCitation[]): string {
           .slice(0, 2)
           .map((citation) => citation.title)
           .join(", ")}.`;
-  return `Based on stored project memory, the strongest evidence is the ${source} "${primary.title}": ${basis}.${supporting}`;
+  return `Based on stored project memory, the strongest evidence is the ${source} ${primaryReference} "${primary.title}": ${basis}.${supporting}`;
 }
 
 function confidenceFor(citations: MemoryCitation[]): MemoryAnswer["confidence"] {
@@ -379,6 +385,19 @@ function renderProblemExcerpt(memory: ProblemMemory): string {
       : `Related commits: ${memory.relatedCommitShas.slice(0, 3).join(", ")}`,
   ].filter((part): part is string => part !== null);
   return parts.join(" ");
+}
+
+function citationReference(citation: MemoryCitation): string {
+  const secondary = [
+    citation.commitShas.at(0) === undefined
+      ? null
+      : `commit:${citation.commitShas[0]?.slice(0, 12)}`,
+    citation.eventIds.at(0) === undefined ? null : `event:${citation.eventIds[0]}`,
+    citation.files.at(0) === undefined ? null : `file:${citation.files[0]}`,
+  ].filter((part): part is string => part !== null && part !== citation.reference);
+  return secondary.length === 0
+    ? `[${citation.reference}]`
+    : `[${[citation.reference, ...secondary].join("; ")}]`;
 }
 
 function isProblemQuestion(question: string): boolean {

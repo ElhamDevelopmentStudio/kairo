@@ -36,7 +36,7 @@ export async function answerMemoryWithAi(
 
   const answer = {
     ...grounded,
-    answer: result.text.trim(),
+    answer: withEvidenceReferences(result.text.trim(), grounded.citations),
   };
   cache.set(key, answer);
   return answer;
@@ -55,11 +55,28 @@ function renderAnswerPrompt(question: string, citations: MemoryCitation[]): stri
         excerpt: citation.excerpt ?? citation.title,
         files: citation.files,
         commitShas: citation.commitShas,
+        eventIds: citation.eventIds,
       })),
       null,
       2,
     ),
     "",
-    "Write a natural-language answer in 2-5 sentences. Mention evidence references inline when useful, but do not add uncited claims.",
+    "Write a natural-language answer in 2-5 sentences. Cite every factual claim with the provided stable references, such as session slugs, commit SHAs, file paths, architecture IDs, or event IDs. Do not add uncited claims.",
   ].join("\n");
+}
+
+function withEvidenceReferences(answer: string, citations: MemoryCitation[]): string {
+  const references = citations.flatMap(citationReferences);
+  const missing = references.filter((reference) => !answer.includes(reference));
+  if (missing.length === 0) return answer;
+  return `${answer}\n\nEvidence: ${missing.join(", ")}`;
+}
+
+function citationReferences(citation: MemoryCitation): string[] {
+  return [
+    citation.reference,
+    ...citation.commitShas.map((sha) => `commit:${sha.slice(0, 12)}`),
+    ...citation.eventIds.map((id) => `event:${id}`),
+    ...citation.files.slice(0, 3).map((file) => `file:${file}`),
+  ];
 }

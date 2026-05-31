@@ -593,9 +593,9 @@ evidence backs that answer.
   now stores stderr/stdout for failed-command recall, and `kairo ask` ranks
   problem memories alongside sessions, commits, architecture shifts, and events.
 
-### 5.3 — Evidence citations and traceable answers
+### 5.3 — Evidence citations and traceable answers ✅
 
-- [ ] **Goal:** every synthesized memory answer cites the sessions, commits,
+- [x] **Goal:** every synthesized memory answer cites the sessions, commits,
   files, architecture shifts, ADRs, or terminal events it used.
 - **Files:** `packages/shared/src/memory.ts`, `packages/core/src/memory/`,
   `packages/ai/src/answer/`.
@@ -604,6 +604,10 @@ evidence backs that answer.
 - **Tests:** answer synthesis fixtures verify citation presence and that no
   uncited factual claims are emitted when evidence is missing.
 - **Notes:** Prefer concise citations over long copied source text.
+- **Done:** Memory citations now carry event IDs in addition to references,
+  commits, and files. Deterministic answers cite primary evidence inline, CLI
+  evidence output includes event IDs, and AI-backed answers append stable
+  evidence references when a provider omits citations.
 
 ### 5.4 — Hybrid memory retrieval ranking
 

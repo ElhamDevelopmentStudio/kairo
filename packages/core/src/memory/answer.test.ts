@@ -47,11 +47,15 @@ describe("answerProjectMemory", () => {
     const answer = answerProjectMemory(store, "demo", "Why did we switch from REST to GraphQL?");
 
     expect(answer.answer).toContain("GraphQL");
+    expect(answer.answer).toContain("session:graphql-migration");
+    expect(answer.answer).toContain("commit:abc1234");
+    expect(answer.answer).toContain("file:apps/api/src/graphql/schema.ts");
     expect(answer.confidence).toBe("medium");
     expect(answer.citations).toEqual([
       expect.objectContaining({
         kind: "session",
         reference: "session:graphql-migration",
+        eventIds: [],
         files: ["apps/api/src/graphql/schema.ts", "apps/api/src/rest/users.ts"],
         commitShas: ["abc1234"],
       }),
@@ -101,10 +105,14 @@ describe("answerProjectMemory", () => {
     const answer = answerProjectMemory(store, "demo", "Why did we switch from REST to GraphQL?");
 
     expect(answer.answer).toContain("GraphQL");
+    expect(answer.answer).toContain("commit:abcdef123456");
+    expect(answer.answer).toContain("event:33333333-3333-4333-8333-333333333333");
+    expect(answer.answer).toContain("file:apps/api/src/graphql/schema.ts");
     expect(answer.confidence).toBe("medium");
     expect(answer.citations[0]).toMatchObject({
       kind: "commit",
       reference: "commit:abcdef123456",
+      eventIds: ["33333333-3333-4333-8333-333333333333"],
       files: ["apps/api/src/graphql/schema.ts", "apps/api/src/rest/users.ts"],
       commitShas: ["abcdef1234567890"],
     });
@@ -142,12 +150,15 @@ describe("answerProjectMemory", () => {
     const answer = answerProjectMemory(store, "demo", "we fixed AN_ERROR before, how?");
 
     expect(answer.answer).toContain("seen this problem before");
+    expect(answer.answer).toContain("problem:an_error");
+    expect(answer.answer).toContain("event:44444444-4444-4444-8444-444444444444");
     expect(answer.answer).toContain("Exported the problem memory schema");
     expect(answer.confidence).toBe("high");
     expect(answer.citations[0]).toMatchObject({
       kind: "problem",
       files: ["packages/shared/src/problem.ts"],
       commitShas: [fix.payload.sha],
+      eventIds: [terminal.id, fix.id],
     });
   });
 });
