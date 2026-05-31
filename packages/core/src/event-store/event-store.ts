@@ -730,7 +730,11 @@ function rowToMemoryRecord(r: MemoryRecordRow): StoredMemoryRecord {
 }
 
 function rowToKnowledgeGraphEntity(r: KnowledgeGraphEntityRow): KnowledgeGraphEntity {
-  return KnowledgeGraphEntity.parse(JSON.parse(r.data));
+  const data = JSON.parse(r.data) as Record<string, unknown>;
+  if (typeof data.name !== "string" || data.name.trim().length === 0) {
+    data.name = fallbackEntityName(r.canonical_ref, r.kind);
+  }
+  return KnowledgeGraphEntity.parse(data);
 }
 
 function rowToKnowledgeGraphRelationship(
@@ -768,4 +772,13 @@ function cosineSimilarity(a: number[], b: number[]): number {
   }
   if (aNorm === 0 || bNorm === 0) return 0;
   return dot / (Math.sqrt(aNorm) * Math.sqrt(bNorm));
+}
+
+function fallbackEntityName(canonicalRef: string, kind: string): string {
+  const value = canonicalRef.includes(":")
+    ? canonicalRef.slice(canonicalRef.indexOf(":") + 1)
+    : canonicalRef;
+  const trimmed = value.replace(/\/+$/g, "");
+  const last = trimmed.split("/").filter(Boolean).at(-1);
+  return last ?? `${kind} entity`;
 }

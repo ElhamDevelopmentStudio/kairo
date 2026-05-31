@@ -33,6 +33,25 @@ describe("buildKnowledgeGraph", () => {
     );
   });
 
+  it("uses non-empty names for directory-like file paths", () => {
+    const graph = buildKnowledgeGraph({
+      projectId: "demo",
+      sessions: [
+        session({
+          files: ["apps/", "packages/core/src/"],
+        }),
+      ],
+      events: [],
+    });
+
+    expect(graph.entities).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ canonicalRef: "file:apps/", name: "apps" }),
+        expect.objectContaining({ canonicalRef: "file:packages/core/src/", name: "src" }),
+      ]),
+    );
+  });
+
   it("models superseded decisions from overlapping source files", () => {
     const graph = buildKnowledgeGraph({
       projectId: "demo",

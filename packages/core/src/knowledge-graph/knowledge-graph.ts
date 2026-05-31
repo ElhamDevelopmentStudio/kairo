@@ -462,7 +462,7 @@ function addFileEntity(
 ): void {
   builder.entity({
     kind: "file",
-    name: path.split("/").at(-1) ?? path,
+    name: fileEntityName(path),
     canonicalRef: `file:${path}`,
     firstSeenAt: seenAt,
     lastSeenAt: seenAt,
@@ -536,6 +536,10 @@ function packageNameFromPath(path: string): string | null {
 function pathTags(path: string): string[] {
   const [first, second] = path.split("/");
   return [first, second].filter((part): part is string => part !== undefined);
+}
+
+function fileEntityName(path: string): string {
+  return path.replace(/\/+$/g, "").split("/").at(-1) || path || "unknown file";
 }
 
 function normalizeError(value: string): string {

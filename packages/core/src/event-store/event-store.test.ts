@@ -476,4 +476,32 @@ describe("EventStore", () => {
     ]);
     expect(store.projectIds()).toContain("p1");
   });
+
+  it("repairs legacy knowledge graph entities with empty names on read", () => {
+    store.upsertKnowledgeGraphEntity({
+      id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      projectId: "p1",
+      kind: "file",
+      name: "src",
+      canonicalRef: "file:packages/core/src/",
+      firstSeenAt: "2026-05-18T10:00:00.000Z",
+      lastSeenAt: "2026-05-18T10:00:00.000Z",
+      confidence: "high",
+      evidence: [{ kind: "file", reference: "file:packages/core/src/" }],
+      tags: ["file"],
+    });
+
+    const db = new Database(join(tmp, "test.db"));
+    db.prepare(
+      "UPDATE knowledge_graph_entities SET data = json_set(data, '$.name', '') WHERE id = ?",
+    ).run("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+    db.close();
+
+    expect(store.knowledgeGraphEntities("p1")).toEqual([
+      expect.objectContaining({
+        canonicalRef: "file:packages/core/src/",
+        name: "src",
+      }),
+    ]);
+  });
 });
