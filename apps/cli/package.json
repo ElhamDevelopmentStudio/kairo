@@ -7,7 +7,7 @@
     "kairo": "./src/bin.ts"
   },
   "scripts": {
-    "dev": "tsx src/bin.ts serve --no-open --port 4170",
+    "dev": "pnpm --filter @kairo/web build && tsx src/bin.ts serve --no-open --port 4170",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src",
     "test": "vitest run",
