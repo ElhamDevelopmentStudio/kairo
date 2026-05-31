@@ -726,9 +726,9 @@ evidence backs that answer.
   decisions, errors, commits, files, agents, and renames, plus relationship-aware
   retrieval for supersession and change-after questions.
 
-### 5.10 — Optional LLM rerank and answer grounding
+### 5.10 — Optional LLM rerank and answer grounding ✅
 
-- [ ] **Goal:** use an optional AI reranker/reader to improve hard retrieval
+- [x] **Goal:** use an optional AI reranker/reader to improve hard retrieval
   cases without making AI required for core memory lookup.
 - **Files:** `packages/ai/src/answer/rerank.ts`,
   `packages/core/src/memory/retrieval.ts`, `apps/cli/src/commands/ask.ts`.
@@ -740,6 +740,9 @@ evidence backs that answer.
 - **Notes:** Ask the model for the single best evidence candidate or citation set,
   not an unconstrained answer. The final answer still goes through citation
   enforcement.
+- **Done:** Added optional provider-backed evidence reranking before AI answer
+  generation. Invalid responses, timeouts, missing providers, or provider
+  failures fall back to deterministic retrieval and answer output.
 
 ### 5.11 — Source adapter contract for memory inputs
 

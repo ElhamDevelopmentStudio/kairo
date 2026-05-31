@@ -1,4 +1,9 @@
-import { answerMemoryWithAi } from "@kairo/ai";
+import {
+  type AiProvider,
+  answerMemoryWithAi,
+  createAiProvider,
+  rerankMemoryEvidence,
+} from "@kairo/ai";
 import { EventStore, Workspace, answerProjectMemory, extractDecisionMemories } from "@kairo/core";
 import type { MemoryAnswer, MemoryCitation } from "@kairo/shared";
 import { Command } from "commander";
@@ -21,6 +26,8 @@ export interface AskOptions {
   limit?: number;
   ai?: boolean;
   evidence?: boolean;
+  aiProvider?: AiProvider;
+  rerankTimeoutMs?: number;
 }
 
 export async function runAsk(
@@ -42,7 +49,18 @@ export async function runAsk(
       }),
     });
     if (opts.ai === false || grounded.citations.length === 0) return grounded;
-    return await answerMemoryWithAi(grounded, { config: resolveAiConfig(config.ai) });
+    const aiConfig = resolveAiConfig(config.ai);
+    try {
+      const provider = opts.aiProvider ?? createAiProvider(aiConfig);
+      const reranked = await rerankMemoryEvidence(grounded, {
+        provider,
+        config: aiConfig,
+        ...(opts.rerankTimeoutMs === undefined ? {} : { timeoutMs: opts.rerankTimeoutMs }),
+      });
+      return await answerMemoryWithAi(reranked, { provider, config: aiConfig });
+    } catch {
+      return grounded;
+    }
   } finally {
     store.close();
   }

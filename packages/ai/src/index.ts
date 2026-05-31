@@ -1,6 +1,8 @@
 export { ResponseCache } from "./cache/response-cache.ts";
 export { answerMemoryWithAi } from "./answer/answer-memory.ts";
 export type { AnswerMemoryOptions } from "./answer/answer-memory.ts";
+export { rerankMemoryEvidence } from "./answer/rerank.ts";
+export type { RerankMemoryEvidenceOptions } from "./answer/rerank.ts";
 export { hasAiEnv, resolveAiConfig } from "./config/ai-config.ts";
 export type { StoredAiConfig } from "./config/ai-config.ts";
 export { embedText } from "./embed/embed-text.ts";
