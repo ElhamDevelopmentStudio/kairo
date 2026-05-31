@@ -3,9 +3,11 @@ import type {
   KairoEvent,
   MemoryAnswer,
   MemoryCitation,
+  ProblemMemory,
   Session,
 } from "@kairo/shared";
 import type { EventStore } from "../event-store/index.ts";
+import { extractProblemMemories } from "../problem-memory/index.ts";
 
 export interface AnswerProjectMemoryOptions {
   limit?: number;
@@ -26,6 +28,11 @@ type Candidate =
   | {
       kind: "event";
       item: KairoEvent;
+      score: number;
+    }
+  | {
+      kind: "problem";
+      item: ProblemMemory;
       score: number;
     };
 
@@ -48,13 +55,18 @@ export function answerProjectMemory(
   const limit = options.limit ?? 5;
   const candidateLimit = options.candidateLimit ?? 200;
   const terms = tokenize(trimmed);
+  const sessions = store.recentSessions(projectId, candidateLimit);
+  const events = store.eventsForProject(projectId);
   const candidates = rankCandidates(
     [
-      ...store.recentSessions(projectId, candidateLimit).map((item) => scoreSession(item, terms)),
+      ...sessions.map((item) => scoreSession(item, terms)),
       ...store
         .recentArchitectureShifts(projectId, candidateLimit)
         .map((item) => scoreArchitectureShift(item, terms)),
-      ...store.recentEvents(projectId, candidateLimit).map((item) => scoreEvent(item, terms)),
+      ...events.slice(-candidateLimit).map((item) => scoreEvent(item, terms)),
+      ...extractProblemMemories(projectId, events, sessions).map((item) =>
+        scoreProblemMemory(item, terms, isProblemQuestion(trimmed)),
+      ),
     ],
     limit,
   );
@@ -152,6 +164,24 @@ function scoreEvent(event: KairoEvent, terms: string[]): Candidate {
   return { kind: "event", item: event, score: scoreFields(fields, terms) };
 }
 
+function scoreProblemMemory(
+  memory: ProblemMemory,
+  terms: string[],
+  problemQuestion: boolean,
+): Candidate {
+  const fields = [
+    weightedText(memory.errorSignature, 5),
+    weightedText(memory.errorMessage, 5),
+    weightedText(memory.fixSummary ?? "", 4),
+    weightedText(memory.suspectedRootCause ?? "", 3),
+    weightedText(memory.command, 3),
+    weightedText(memory.files.join(" "), 2),
+    weightedText(memory.relatedCommitShas.join(" "), 1),
+  ];
+  const score = scoreFields(fields, terms) + (problemQuestion ? 4 : 0);
+  return { kind: "problem", item: memory, score };
+}
+
 function scoreFields(fields: Array<{ text: string; weight: number }>, terms: string[]): number {
   if (terms.length === 0) return 0;
 
@@ -172,6 +202,19 @@ function weightedText(value: string | null, weight: number): { text: string; wei
 }
 
 function candidateToCitation(candidate: Candidate): MemoryCitation {
+  if (candidate.kind === "problem") {
+    return {
+      kind: "problem",
+      id: candidate.item.id,
+      title: candidate.item.errorSignature,
+      reference: `problem:${candidate.item.errorSignature}`,
+      excerpt: renderProblemExcerpt(candidate.item),
+      files: candidate.item.files,
+      commitShas: candidate.item.relatedCommitShas,
+      score: candidate.score,
+    };
+  }
+
   if (candidate.kind === "architecture_shift") {
     return {
       kind: "architecture_shift",
@@ -236,6 +279,17 @@ function renderAnswer(question: string, citations: MemoryCitation[]): string {
 
   const source = sourceLabel(primary.kind);
   const basis = primary.excerpt ?? primary.title;
+  if (primary.kind === "problem") {
+    const supportingProblems = rest
+      .filter((citation) => citation.kind === "session" || citation.kind === "commit")
+      .slice(0, 2)
+      .map((citation) => citation.title);
+    const supporting =
+      supportingProblems.length === 0
+        ? ""
+        : ` Related evidence appears in ${supportingProblems.join(", ")}.`;
+    return `Kairo has seen this problem before: ${basis}.${supporting}`;
+  }
   const supporting =
     rest.length === 0
       ? ""
@@ -247,6 +301,7 @@ function renderAnswer(question: string, citations: MemoryCitation[]): string {
 }
 
 function confidenceFor(citations: MemoryCitation[]): MemoryAnswer["confidence"] {
+  if (citations[0]?.kind === "problem" && (citations[0]?.score ?? 0) >= 10) return "high";
   if (citations.length >= 3 && (citations[0]?.score ?? 0) >= 12) return "high";
   if (citations.length >= 1 && (citations[0]?.score ?? 0) >= 6) return "medium";
   return "low";
@@ -308,7 +363,28 @@ function sourceLabel(kind: MemoryCitation["kind"]): string {
   if (kind === "architecture_shift") return "architecture shift";
   if (kind === "commit") return "commit";
   if (kind === "event") return "event";
+  if (kind === "problem") return "problem memory";
   return "session";
+}
+
+function renderProblemExcerpt(memory: ProblemMemory): string {
+  const parts = [
+    `Error: ${memory.errorMessage}`,
+    memory.suspectedRootCause === undefined
+      ? null
+      : `Suspected root cause: ${memory.suspectedRootCause}`,
+    memory.fixSummary === undefined ? null : `Fix: ${memory.fixSummary}`,
+    memory.relatedCommitShas.length === 0
+      ? null
+      : `Related commits: ${memory.relatedCommitShas.slice(0, 3).join(", ")}`,
+  ].filter((part): part is string => part !== null);
+  return parts.join(" ");
+}
+
+function isProblemQuestion(question: string): boolean {
+  return /\b(error|fix|fixed|failed|failure|exception|traceback|bug|broke|broken|before|again)\b/i.test(
+    question,
+  );
 }
 
 function tokenize(value: string): string[] {
@@ -341,4 +417,6 @@ const STOP_WORDS = new Set([
   "when",
   "where",
   "why",
+  "before",
+  "again",
 ]);

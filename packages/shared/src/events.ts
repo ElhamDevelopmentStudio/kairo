@@ -66,9 +66,22 @@ export const TerminalEvent = BaseEvent.extend({
     cwd: z.string(),
     exitCode: z.number().int().optional(),
     durationMs: z.number().int().nonnegative().optional(),
+    stdout: z.string().optional(),
+    stderr: z.string().optional(),
   }),
 });
 export type TerminalEvent = z.infer<typeof TerminalEvent>;
+
+export const TerminalIngestPayload = z.object({
+  command: z.string().min(1),
+  cwd: z.string().min(1).optional(),
+  exitCode: z.number().int().optional(),
+  durationMs: z.number().int().nonnegative().optional(),
+  stdout: z.string().optional(),
+  stderr: z.string().optional(),
+  occurredAt: z.string().datetime().optional(),
+});
+export type TerminalIngestPayload = z.infer<typeof TerminalIngestPayload>;
 
 export const AIActivityEvent = BaseEvent.extend({
   kind: z.literal("ai.activity"),

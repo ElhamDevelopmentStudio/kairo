@@ -8,7 +8,12 @@ import {
   renderSession,
   renderTimeline,
 } from "@kairo/core";
-import { AIIngestPayload, GitIngestPayload, type KairoEvent } from "@kairo/shared";
+import {
+  AIIngestPayload,
+  GitIngestPayload,
+  type KairoEvent,
+  TerminalIngestPayload,
+} from "@kairo/shared";
 import { Command } from "commander";
 import kleur from "kleur";
 import {
@@ -154,6 +159,30 @@ async function eventFromPayload(
           },
         },
         forceFinalize: true,
+      };
+    }
+    case "terminal": {
+      const payload = TerminalIngestPayload.parse(rawPayload);
+      const now = new Date().toISOString();
+      const occurredAt = payload.occurredAt ?? now;
+      return {
+        event: {
+          id: crypto.randomUUID(),
+          projectId,
+          occurredAt,
+          observedAt: now,
+          source: "terminal",
+          kind: "terminal.command",
+          payload: {
+            command: payload.command,
+            cwd: payload.cwd ?? repoRoot,
+            ...(payload.exitCode === undefined ? {} : { exitCode: payload.exitCode }),
+            ...(payload.durationMs === undefined ? {} : { durationMs: payload.durationMs }),
+            ...(payload.stdout === undefined ? {} : { stdout: payload.stdout }),
+            ...(payload.stderr === undefined ? {} : { stderr: payload.stderr }),
+          },
+        },
+        forceFinalize: false,
       };
     }
     default:

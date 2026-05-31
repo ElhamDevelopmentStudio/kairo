@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { GitCommitEvent, Session } from "@kairo/shared";
+import type { GitCommitEvent, Session, TerminalEvent } from "@kairo/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EventStore } from "../event-store/index.ts";
 import { answerProjectMemory } from "./answer.ts";
@@ -109,6 +109,47 @@ describe("answerProjectMemory", () => {
       commitShas: ["abcdef1234567890"],
     });
   });
+
+  it("recalls how a previously observed terminal error was fixed", () => {
+    const terminal = terminalEvent({
+      stderr: "AN_ERROR: Cannot find module @kairo/shared/problem",
+      exitCode: 1,
+    });
+    const fix = commitEvent({
+      message: "fix: resolve AN_ERROR by exporting problem memory schema",
+      files: [
+        {
+          path: "packages/shared/src/problem.ts",
+          status: "A",
+          additions: 12,
+          deletions: 0,
+        },
+      ],
+    });
+    store.append(terminal);
+    store.append(fix);
+    store.appendSession(
+      session({
+        title: "Fix problem memory schema export",
+        slug: "fix-problem-memory-schema-export",
+        summary: "Exported the problem memory schema so imports resolve.",
+        files: ["packages/shared/src/problem.ts"],
+        commitShas: [fix.payload.sha],
+        eventIds: [terminal.id, fix.id],
+      }),
+    );
+
+    const answer = answerProjectMemory(store, "demo", "we fixed AN_ERROR before, how?");
+
+    expect(answer.answer).toContain("seen this problem before");
+    expect(answer.answer).toContain("Exported the problem memory schema");
+    expect(answer.confidence).toBe("high");
+    expect(answer.citations[0]).toMatchObject({
+      kind: "problem",
+      files: ["packages/shared/src/problem.ts"],
+      commitShas: [fix.payload.sha],
+    });
+  });
 });
 
 function session(overrides: Partial<Session> = {}): Session {
@@ -146,6 +187,22 @@ function commitEvent(overrides: Partial<GitCommitEvent["payload"]> = {}): GitCom
       message: "feat: add project memory",
       branch: "main",
       files: [],
+      ...overrides,
+    },
+  };
+}
+
+function terminalEvent(overrides: Partial<TerminalEvent["payload"]> = {}): TerminalEvent {
+  return {
+    id: "44444444-4444-4444-8444-444444444444",
+    projectId: "demo",
+    occurredAt: "2026-05-20T08:55:00.000Z",
+    observedAt: "2026-05-20T08:55:01.000Z",
+    source: "terminal",
+    kind: "terminal.command",
+    payload: {
+      command: "pnpm typecheck",
+      cwd: "/repo",
       ...overrides,
     },
   };

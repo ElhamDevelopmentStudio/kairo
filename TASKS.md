@@ -575,9 +575,9 @@ evidence backs that answer.
   grounded in stored sessions, architecture shifts, and raw commit/event
   evidence, include citations, and abstain when no matching evidence exists.
 
-### 5.2 — Error and fix recall memory
+### 5.2 — Error and fix recall memory ✅
 
-- [ ] **Goal:** remember previously solved errors and explain how they were fixed
+- [x] **Goal:** remember previously solved errors and explain how they were fixed
   when the same or similar error appears later.
 - **Files:** `packages/shared/src/problem.ts`, `packages/core/src/problem-memory/`,
   terminal observation/reconstruction code, `apps/cli/src/commands/ask.ts`.
@@ -588,6 +588,10 @@ evidence backs that answer.
   later similar query.
 - **Notes:** Add a first-class `ProblemMemory` / `FixMemory` shape instead of
   relying only on raw terminal text. Redaction rules still apply before storage.
+- **Done:** Added first-class `ProblemMemory` records derived from terminal
+  failures, related sessions, and later fix commits. `kairo ingest terminal`
+  now stores stderr/stdout for failed-command recall, and `kairo ask` ranks
+  problem memories alongside sessions, commits, architecture shifts, and events.
 
 ### 5.3 — Evidence citations and traceable answers
 

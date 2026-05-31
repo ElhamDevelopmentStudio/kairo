@@ -69,6 +69,42 @@ describe("runIngest", () => {
     });
   });
 
+  it("ingests terminal command failures with stderr for problem recall", async () => {
+    const workspace = new Workspace(repoRoot);
+    const config = workspace.init("demo");
+
+    const event = await runIngest(
+      "terminal",
+      {
+        payload: JSON.stringify({
+          command: "pnpm typecheck",
+          cwd: repoRoot,
+          exitCode: 1,
+          stderr: "AN_ERROR: Cannot find module @kairo/shared/problem",
+          occurredAt: "2026-05-18T10:00:00.000Z",
+        }),
+      },
+      repoRoot,
+    );
+
+    const store = new EventStore(workspace.dbPath);
+    try {
+      const events = store.recentEvents(config.projectId);
+      expect(event).toMatchObject({
+        source: "terminal",
+        kind: "terminal.command",
+        payload: {
+          command: "pnpm typecheck",
+          exitCode: 1,
+          stderr: "AN_ERROR: Cannot find module @kairo/shared/problem",
+        },
+      });
+      expect(events[0]).toMatchObject(event);
+    } finally {
+      store.close();
+    }
+  });
+
   it("finalizes and renders the current session on pre-compact AI ingest", async () => {
     const workspace = new Workspace(repoRoot);
     const config = workspace.init("demo");

@@ -1,6 +1,12 @@
 import { z } from "zod";
 
-export const MemoryCitationKind = z.enum(["session", "architecture_shift", "commit", "event"]);
+export const MemoryCitationKind = z.enum([
+  "session",
+  "architecture_shift",
+  "commit",
+  "event",
+  "problem",
+]);
 export type MemoryCitationKind = z.infer<typeof MemoryCitationKind>;
 
 export const MemoryCitation = z.object({
