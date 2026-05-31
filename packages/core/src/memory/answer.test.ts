@@ -118,6 +118,62 @@ describe("answerProjectMemory", () => {
     });
   });
 
+  it("answers decision questions from explicit ADR memories", () => {
+    const answer = answerProjectMemory(store, "demo", "Why use a local API boundary?", {
+      decisionMemories: [
+        {
+          id: "11111111-1111-4111-8111-111111111111",
+          projectId: "demo",
+          title: "Web Data Source",
+          source: "adr",
+          reference: "adr:docs/decisions/0001-web-data-source.md",
+          summary: "Kairo v1 will use an in-process local API for the web dashboard.",
+          rationale: "SQLite ownership stays in @kairo/core.",
+          inferred: false,
+          occurredAt: "2026-05-20T00:00:00.000Z",
+          consequences: ["apps/web remains static"],
+          files: ["apps/cli/src/commands/serve.ts"],
+          relatedShiftIds: [],
+        },
+      ],
+    });
+
+    expect(answer.answer).toContain("decision memory");
+    expect(answer.answer).toContain("adr:docs/decisions/0001-web-data-source.md");
+    expect(answer.answer).toContain("SQLite ownership stays in @kairo/core");
+    expect(answer.citations[0]).toMatchObject({
+      kind: "decision",
+      reference: "adr:docs/decisions/0001-web-data-source.md",
+      files: ["apps/cli/src/commands/serve.ts"],
+    });
+  });
+
+  it("labels architecture-shift decision answers as inference", () => {
+    const answer = answerProjectMemory(store, "demo", "Why did dashboard architecture split?", {
+      decisionMemories: [
+        {
+          id: "22222222-2222-4222-8222-222222222222",
+          projectId: "demo",
+          title: "Dashboard boundary split",
+          source: "architecture_shift",
+          reference: "architecture:33333333-3333-4333-8333-333333333333",
+          summary: "Dashboard visualization moved behind an optional frontend boundary.",
+          inferred: true,
+          occurredAt: "2026-05-20T09:00:00.000Z",
+          consequences: [],
+          files: ["apps/web/src", "apps/cli/src"],
+          relatedShiftIds: ["33333333-3333-4333-8333-333333333333"],
+        },
+      ],
+    });
+
+    expect(answer.answer).toContain("Inference from architecture shift");
+    expect(answer.citations[0]).toMatchObject({
+      kind: "decision",
+      reference: "architecture:33333333-3333-4333-8333-333333333333",
+    });
+  });
+
   it("recalls how a previously observed terminal error was fixed", () => {
     const terminal = terminalEvent({
       stderr: "AN_ERROR: Cannot find module @kairo/shared/problem",

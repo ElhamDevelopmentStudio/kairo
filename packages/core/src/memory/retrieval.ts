@@ -1,4 +1,10 @@
-import type { ArchitectureShift, KairoEvent, ProblemMemory, Session } from "@kairo/shared";
+import type {
+  ArchitectureShift,
+  DecisionMemory,
+  KairoEvent,
+  ProblemMemory,
+  Session,
+} from "@kairo/shared";
 import type { EventStore } from "../event-store/index.ts";
 import { extractProblemMemories } from "../problem-memory/index.ts";
 import { bm25Search, tokenizeSearchText } from "../search/bm25.ts";
@@ -8,6 +14,7 @@ export interface RetrieveMemoryOptions {
   candidateLimit?: number;
   now?: string;
   semanticSessionScores?: Map<string, number>;
+  decisionMemories?: DecisionMemory[];
 }
 
 export type MemoryCandidate =
@@ -19,6 +26,11 @@ export type MemoryCandidate =
   | {
       kind: "architecture_shift";
       item: ArchitectureShift;
+      score: number;
+    }
+  | {
+      kind: "decision";
+      item: DecisionMemory;
       score: number;
     }
   | {
@@ -57,6 +69,7 @@ export function retrieveMemoryCandidates(
   const problems = extractProblemMemories(projectId, events, sessions);
   const documents = [
     ...sessions.map(sessionDocument),
+    ...(options.decisionMemories ?? []).map(decisionDocument),
     ...shifts.map(architectureShiftDocument),
     ...events.slice(-candidateLimit).map(eventDocument),
     ...problems.map(problemDocument),
@@ -99,6 +112,7 @@ function scoreDocument(
   score += recencyScore(document.occurredAt, context);
   score += temporalScore(document, context);
   score += architectureScore(document, context);
+  score += decisionScore(document, context);
   score += problemScore(document, context);
   return score;
 }
@@ -168,6 +182,25 @@ function architectureShiftDocument(shift: ArchitectureShift): CandidateDocument 
     text: [shift.title, shift.summary, shift.kind, ...shift.affectedPaths].join("\n"),
     files: shift.affectedPaths,
     occurredAt: shift.detectedAt,
+  };
+}
+
+function decisionDocument(decision: DecisionMemory): CandidateDocument {
+  return {
+    id: `decision:${decision.id}`,
+    candidate: { kind: "decision", item: decision, score: 0 },
+    text: [
+      decision.title,
+      decision.status,
+      decision.summary,
+      decision.rationale,
+      decision.source,
+      decision.reference,
+      ...decision.consequences,
+      ...decision.files,
+    ].join("\n"),
+    files: decision.files,
+    occurredAt: decision.occurredAt,
   };
 }
 
@@ -282,10 +315,17 @@ function matchesAnchor(document: CandidateDocument, anchorTerms: string[]): bool
 function architectureScore(document: CandidateDocument, context: RetrievalContext): number {
   if (!context.architectureQuestion) return 0;
   if (document.candidate.kind === "architecture_shift") return 10;
+  if (document.candidate.kind === "decision") return document.candidate.item.inferred ? 9 : 16;
   if (document.candidate.kind === "session") {
     return document.candidate.item.architectureImpact !== null ? 5 : 0;
   }
   return 0;
+}
+
+function decisionScore(document: CandidateDocument, context: RetrievalContext): number {
+  if (!context.architectureQuestion || document.candidate.kind !== "decision") return 0;
+  const decision = document.candidate.item;
+  return decision.inferred ? 5 : 12;
 }
 
 function problemScore(document: CandidateDocument, context: RetrievalContext): number {
@@ -331,12 +371,14 @@ function findAnchorTime(
 function candidateTime(candidate: MemoryCandidate): string {
   if (candidate.kind === "session") return candidate.item.startedAt;
   if (candidate.kind === "architecture_shift") return candidate.item.detectedAt;
+  if (candidate.kind === "decision") return candidate.item.occurredAt;
   if (candidate.kind === "problem") return candidate.item.occurredAt;
   return candidate.item.occurredAt;
 }
 
 function weightFor(kind: MemoryCandidate["kind"]): number {
   if (kind === "problem") return 1.5;
+  if (kind === "decision") return 1.45;
   if (kind === "architecture_shift") return 1.35;
   if (kind === "session") return 1.2;
   return 1;

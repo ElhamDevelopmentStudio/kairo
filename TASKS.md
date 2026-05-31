@@ -652,7 +652,7 @@ evidence backs that answer.
 
 ### 5.6 — Decision memory from ADRs and inferred changes
 
-- [ ] **Goal:** index explicit ADRs plus inferred decisions from architecture
+- [x] **Goal:** index explicit ADRs plus inferred decisions from architecture
   shifts so Kairo can answer decision-oriented questions.
 - **Files:** `docs/decisions/`, `packages/core/src/memory/decisions.ts`,
   `packages/shared/src/memory.ts`.
@@ -662,6 +662,10 @@ evidence backs that answer.
 - **Tests:** fixtures with one explicit ADR and one inferred architecture shift.
 - **Notes:** Do not invent rationale. If only inferred evidence exists, label it
   as inference.
+- **Done:** Added ADR-backed decision extraction plus inferred architecture-shift
+  decision memory, wired CLI/MCP/dashboard ask surfaces to cite it, and covered
+  explicit ADR and inferred fallback behavior with real temp-file/EventStore
+  fixtures.
 
 ### 5.7 — Raw evidence preservation and memory schemas
 

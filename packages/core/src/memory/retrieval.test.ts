@@ -131,6 +131,57 @@ describe("retrieveMemoryCandidates", () => {
     });
   });
 
+  it("promotes explicit decision memories over inferred architecture shifts", () => {
+    store.appendArchitectureShift(
+      architectureShift({
+        id: "77777777-7777-4777-8777-777777777777",
+        title: "Dashboard API boundary",
+        summary: "Dashboard data moved behind a local API boundary.",
+        affectedPaths: ["apps/cli/src/commands/serve.ts"],
+      }),
+    );
+
+    const [top] = retrieveMemoryCandidates(store, "demo", "why use a local API boundary?", {
+      decisionMemories: [
+        {
+          id: "11111111-1111-4111-8111-111111111111",
+          projectId: "demo",
+          title: "Web Data Source",
+          source: "adr",
+          reference: "adr:docs/decisions/0001-web-data-source.md",
+          summary: "Kairo v1 will use an in-process local API for the web dashboard.",
+          rationale: "SQLite ownership stays in @kairo/core.",
+          inferred: false,
+          occurredAt: "2026-05-20T00:00:00.000Z",
+          consequences: [],
+          files: ["apps/cli/src/commands/serve.ts"],
+          relatedShiftIds: [],
+        },
+        {
+          id: "22222222-2222-4222-8222-222222222222",
+          projectId: "demo",
+          title: "Dashboard API boundary",
+          source: "architecture_shift",
+          reference: "architecture:77777777-7777-4777-8777-777777777777",
+          summary: "Dashboard data moved behind a local API boundary.",
+          inferred: true,
+          occurredAt: "2026-05-20T09:00:00.000Z",
+          consequences: [],
+          files: ["apps/cli/src/commands/serve.ts"],
+          relatedShiftIds: ["77777777-7777-4777-8777-777777777777"],
+        },
+      ],
+    });
+
+    expect(top).toMatchObject({
+      kind: "decision",
+      item: expect.objectContaining({
+        source: "adr",
+        reference: "adr:docs/decisions/0001-web-data-source.md",
+      }),
+    });
+  });
+
   it("promotes recurring problem memories over raw keyword matches", () => {
     const terminal = terminalEvent({
       stderr: "AN_ERROR: Cannot find module @kairo/shared/problem",

@@ -3,7 +3,13 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { basename, extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { serve } from "@hono/node-server";
-import { EventStore, Workspace, answerProjectMemory, renderSession } from "@kairo/core";
+import {
+  EventStore,
+  Workspace,
+  answerProjectMemory,
+  extractDecisionMemories,
+  renderSession,
+} from "@kairo/core";
 import type { KairoEvent, Session } from "@kairo/shared";
 import { Command } from "commander";
 import { Hono } from "hono";
@@ -138,7 +144,16 @@ export function createDashboardApp({ workspace, webDistPath }: DashboardAppOptio
 
     const { store, projectId } = openProjectStore(workspace);
     try {
-      return c.json(answerProjectMemory(store, projectId, question));
+      const architectureShifts = store.recentArchitectureShifts(projectId, 200);
+      return c.json(
+        answerProjectMemory(store, projectId, question, {
+          decisionMemories: extractDecisionMemories({
+            projectId,
+            architectureShifts,
+            projectRoot: workspace.root,
+          }),
+        }),
+      );
     } finally {
       store.close();
     }

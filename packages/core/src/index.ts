@@ -11,8 +11,8 @@ export type {
 export { detectArchitectureShifts } from "./architecture/index.ts";
 export type { ArchitectureDetectorInput } from "./architecture/index.ts";
 export { EventStore } from "./event-store/index.ts";
-export { answerProjectMemory } from "./memory/index.ts";
-export type { AnswerProjectMemoryOptions } from "./memory/index.ts";
+export { answerProjectMemory, extractDecisionMemories } from "./memory/index.ts";
+export type { AnswerProjectMemoryOptions, ExtractDecisionMemoriesInput } from "./memory/index.ts";
 export { extractProblemMemories } from "./problem-memory/index.ts";
 export {
   installKairoHooks,

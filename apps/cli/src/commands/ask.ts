@@ -1,5 +1,5 @@
 import { answerMemoryWithAi } from "@kairo/ai";
-import { EventStore, Workspace, answerProjectMemory } from "@kairo/core";
+import { EventStore, Workspace, answerProjectMemory, extractDecisionMemories } from "@kairo/core";
 import type { MemoryAnswer, MemoryCitation } from "@kairo/shared";
 import { Command } from "commander";
 import kleur from "kleur";
@@ -28,8 +28,14 @@ export async function runAsk(
   const config = workspace.readConfig();
   const store = new EventStore(workspace.dbPath);
   try {
+    const architectureShifts = store.recentArchitectureShifts(config.projectId, 200);
     const grounded = answerProjectMemory(store, config.projectId, question, {
       limit: opts.limit ?? 5,
+      decisionMemories: extractDecisionMemories({
+        projectId: config.projectId,
+        architectureShifts,
+        projectRoot: workspace.root,
+      }),
     });
     if (opts.ai === false || grounded.citations.length === 0) return grounded;
     return await answerMemoryWithAi(grounded, { config: resolveAiConfig(config.ai) });

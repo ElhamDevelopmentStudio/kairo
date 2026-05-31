@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { EventStore, Workspace } from "@kairo/core";
@@ -47,6 +47,33 @@ describe("runAsk", () => {
     expect(renderAskAnswer(answer)).toContain("session:cors-fix");
     expect(renderAskAnswer(answer)).toContain("commits: abc1234");
     expect(answer.answer).toContain("session:cors-fix");
+  });
+
+  it("answers decision questions from workspace ADR files", async () => {
+    const workspace = new Workspace(root);
+    workspace.init("demo");
+    mkdirSync(join(root, "docs", "decisions"), { recursive: true });
+    writeFileSync(
+      join(root, "docs", "decisions", "0001-web-data-source.md"),
+      `# Web Data Source
+
+## Decision
+
+Kairo v1 will use an in-process local API for the web dashboard.
+
+## Rationale
+
+SQLite ownership stays in \`@kairo/core\`, where migrations and EventStore reads already live.
+`,
+    );
+
+    const answer = await runAsk("Why use a local API for the dashboard?", { ai: false }, root);
+
+    expect(answer.citations[0]).toMatchObject({
+      kind: "decision",
+      reference: "adr:docs/decisions/0001-web-data-source.md",
+    });
+    expect(answer.answer).toContain("SQLite ownership stays in `@kairo/core`");
   });
 });
 

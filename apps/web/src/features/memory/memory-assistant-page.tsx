@@ -195,7 +195,7 @@ function citationLink(citation: MemoryCitation): { label: string; to: string } |
       to: `/dashboard/sessions/${citation.reference.slice("session:".length)}`,
     };
   }
-  if (citation.kind === "architecture_shift") {
+  if (citation.kind === "architecture_shift" || citation.kind === "decision") {
     return { label: "Open decisions", to: "/dashboard/architecture" };
   }
   return null;

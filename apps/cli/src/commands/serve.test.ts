@@ -127,6 +127,39 @@ describe("createDashboardApp", () => {
     );
   });
 
+  it("answers dashboard memory questions from workspace ADR files", async () => {
+    const { workspace } = createWorkspaceFixture();
+    mkdirSync(join(workspace.root, "docs", "decisions"), { recursive: true });
+    writeFileSync(
+      join(workspace.root, "docs", "decisions", "0001-web-data-source.md"),
+      `# Web Data Source
+
+## Decision
+
+Kairo v1 will use an in-process local API for the web dashboard.
+
+## Rationale
+
+SQLite ownership stays in \`@kairo/core\`, where migrations and EventStore reads already live.
+`,
+    );
+    const app = createDashboardApp({ workspace });
+
+    const response = await app.request("/api/ask", {
+      body: JSON.stringify({ question: "Why use a local API for the dashboard?" }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.answer).toContain("SQLite ownership stays in `@kairo/core`");
+    expect(body.citations[0]).toMatchObject({
+      kind: "decision",
+      reference: "adr:docs/decisions/0001-web-data-source.md",
+    });
+  });
+
   it("serves static dashboard files when a build directory is available", async () => {
     const { workspace } = createWorkspaceFixture();
     const webDistPath = mkdtempSync(join(tmpdir(), "kairo-web-dist-"));

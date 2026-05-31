@@ -1,4 +1,10 @@
-import type { KairoEvent, MemoryAnswer, MemoryCitation, ProblemMemory } from "@kairo/shared";
+import type {
+  DecisionMemory,
+  KairoEvent,
+  MemoryAnswer,
+  MemoryCitation,
+  ProblemMemory,
+} from "@kairo/shared";
 import type { EventStore } from "../event-store/index.ts";
 import { type MemoryCandidate, retrieveMemoryCandidates } from "./retrieval.ts";
 
@@ -7,6 +13,7 @@ export interface AnswerProjectMemoryOptions {
   candidateLimit?: number;
   now?: string;
   semanticSessionScores?: Map<string, number>;
+  decisionMemories?: DecisionMemory[];
 }
 
 export function answerProjectMemory(
@@ -32,6 +39,9 @@ export function answerProjectMemory(
     ...(options.semanticSessionScores === undefined
       ? {}
       : { semanticSessionScores: options.semanticSessionScores }),
+    ...(options.decisionMemories === undefined
+      ? {}
+      : { decisionMemories: options.decisionMemories }),
   });
 
   if (candidates.length === 0) {
@@ -76,6 +86,20 @@ function candidateToCitation(candidate: MemoryCandidate): MemoryCitation {
       reference: `architecture:${candidate.item.id}`,
       excerpt: candidate.item.summary,
       files: candidate.item.affectedPaths,
+      commitShas: [],
+      eventIds: [],
+      score: candidate.score,
+    };
+  }
+
+  if (candidate.kind === "decision") {
+    return {
+      kind: "decision",
+      id: candidate.item.id,
+      title: candidate.item.title,
+      reference: candidate.item.reference,
+      excerpt: renderDecisionExcerpt(candidate.item),
+      files: candidate.item.files,
       commitShas: [],
       eventIds: [],
       score: candidate.score,
@@ -213,10 +237,22 @@ function eventCommitShas(event: KairoEvent): string[] {
 
 function sourceLabel(kind: MemoryCitation["kind"]): string {
   if (kind === "architecture_shift") return "architecture shift";
+  if (kind === "decision") return "decision memory";
   if (kind === "commit") return "commit";
   if (kind === "event") return "event";
   if (kind === "problem") return "problem memory";
   return "session";
+}
+
+function renderDecisionExcerpt(memory: DecisionMemory): string {
+  const parts = [
+    memory.inferred ? `Inference from architecture shift: ${memory.summary}` : memory.summary,
+    memory.rationale === undefined ? null : `Rationale: ${memory.rationale}`,
+    memory.consequences.length === 0
+      ? null
+      : `Consequences: ${memory.consequences.slice(0, 3).join("; ")}`,
+  ].filter((part): part is string => part !== null);
+  return parts.join(" ");
 }
 
 function renderProblemExcerpt(memory: ProblemMemory): string {

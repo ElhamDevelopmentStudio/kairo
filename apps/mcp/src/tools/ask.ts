@@ -1,5 +1,5 @@
 import { answerMemoryWithAi, resolveAiConfig } from "@kairo/ai";
-import { EventStore, answerProjectMemory } from "@kairo/core";
+import { EventStore, answerProjectMemory, extractDecisionMemories } from "@kairo/core";
 import type { MemoryAnswer } from "@kairo/shared";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
@@ -17,7 +17,15 @@ export async function askProjectMemory(
   const config = context.workspace.readConfig();
   const store = new EventStore(context.workspace.dbPath);
   try {
-    const grounded = answerProjectMemory(store, config.projectId, trimmed, { limit });
+    const architectureShifts = store.recentArchitectureShifts(config.projectId, 200);
+    const grounded = answerProjectMemory(store, config.projectId, trimmed, {
+      limit,
+      decisionMemories: extractDecisionMemories({
+        projectId: config.projectId,
+        architectureShifts,
+        projectRoot: context.workspace.root,
+      }),
+    });
     if (!useAi || grounded.citations.length === 0) return grounded;
     return await answerMemoryWithAi(grounded, { config: resolveAiConfig(config.ai) });
   } finally {
