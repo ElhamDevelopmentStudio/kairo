@@ -4,6 +4,15 @@
   "private": false,
   "description": "Utility helpers for Kairo packages.",
   "license": "MIT",
+  "homepage": "https://github.com/ElhamDevelopmentStudio/kairo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ElhamDevelopmentStudio/kairo.git",
+    "directory": "packages/utils"
+  },
+  "bugs": {
+    "url": "https://github.com/ElhamDevelopmentStudio/kairo/issues"
+  },
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

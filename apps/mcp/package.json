@@ -4,6 +4,15 @@
   "private": false,
   "description": "Kairo MCP server for exposing local project memory to assistants.",
   "license": "MIT",
+  "homepage": "https://github.com/ElhamDevelopmentStudio/kairo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ElhamDevelopmentStudio/kairo.git",
+    "directory": "apps/mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/ElhamDevelopmentStudio/kairo/issues"
+  },
   "type": "module",
   "bin": {
     "kairo-mcp": "./bin/kairo-mcp.js"

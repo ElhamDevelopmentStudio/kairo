@@ -4,6 +4,15 @@
   "private": false,
   "description": "AI provider and answer helpers for Kairo.",
   "license": "MIT",
+  "homepage": "https://github.com/ElhamDevelopmentStudio/kairo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ElhamDevelopmentStudio/kairo.git",
+    "directory": "packages/ai"
+  },
+  "bugs": {
+    "url": "https://github.com/ElhamDevelopmentStudio/kairo/issues"
+  },
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
