@@ -20,6 +20,30 @@ Kairo observes development activity and transforms it into structured project un
 
 ---
 
+# Install
+
+Install the CLI when you want Kairo's local listener, watcher, and project
+memory without any frontend layer:
+
+```bash
+npm install -g @kairohq/cli
+kairo init
+kairo sweep
+```
+
+Install the MCP server separately when you want an assistant client to query
+Kairo memory:
+
+```bash
+npm install -g @kairohq/mcp
+kairo-mcp
+```
+
+The dashboard and desktop shell are optional surfaces. The CLI and memory engine
+work independently.
+
+---
+
 # Why Kairo Exists
 
 Modern software development became extremely fast.
