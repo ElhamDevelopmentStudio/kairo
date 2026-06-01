@@ -49,6 +49,8 @@ jobs:
 
   desktop:
     name: Build desktop artifacts
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -92,7 +94,7 @@ jobs:
       - name: Build Tauri artifacts
         uses: tauri-apps/tauri-action@v0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           projectPath: apps/desktop
           args: ${{ matrix.args }}
