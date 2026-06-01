@@ -79,3 +79,10 @@ export type {
 } from "./sources/index.ts";
 export { buildProjectModel } from "./project-model/index.ts";
 export type { BuildProjectModelInput } from "./project-model/index.ts";
+export { REFLECTION_MODES, isReflectionMode, reflectProject } from "./reflect/index.ts";
+export type {
+  ReflectProjectInput,
+  ReflectionItem,
+  ReflectionMode,
+  ReflectionReport,
+} from "./reflect/index.ts";

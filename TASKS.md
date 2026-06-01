@@ -840,7 +840,7 @@ evidence backs that answer.
 
 ### 5.16 — Project reflection commands
 
-- [ ] **Goal:** expose proactive intelligence reports, not only user-asked Q&A.
+- [x] **Goal:** expose proactive intelligence reports, not only user-asked Q&A.
 - **Files:** `apps/cli/src/commands/reflect.ts`,
   `packages/core/src/reflect/`, `apps/mcp/src/tools/reflect.ts`.
 - **Acceptance:** commands such as `kairo reflect risks`,
@@ -851,6 +851,9 @@ evidence backs that answer.
   deterministic offline output.
 - **Notes:** Reflection should summarize evidence already captured by Kairo. It
   should not invent work items or recommendations without backing evidence.
+- **Done:** Added deterministic core reflection reports for risks,
+  architecture, repeated errors, contributor map, and release readiness, with
+  CLI and MCP surfaces plus evidence-gap handling.
 
 ### 5.17 — Memory checks for CI and reviews
 
