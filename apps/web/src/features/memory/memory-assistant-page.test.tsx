@@ -1,7 +1,6 @@
 import type { ArchitectureShift, KairoEvent, MemoryAnswer, Session } from "@kairohq/shared";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { RouterProvider, createMemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -38,22 +37,21 @@ describe("MemoryAssistantPage", () => {
 
     renderDashboard("/dashboard/ask");
 
-    await userEvent.type(
-      screen.getByLabelText("Ask project memory"),
-      "Why did the dashboard API move?",
-    );
-    await userEvent.click(screen.getByRole("button", { name: /ask/i }));
+    fireEvent.change(screen.getByLabelText("Ask project memory"), {
+      target: { value: "Why did the dashboard API move?" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /ask/i }));
 
     await screen.findByText(/browser could use the local server/i);
     expect(apiMock.askProjectMemory.mock.calls[0]?.[0]).toBe("Why did the dashboard API move?");
     expect(screen.queryByText("session:dashboard-wiring")).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("button", { name: /show evidence/i }));
+    fireEvent.click(screen.getByRole("button", { name: /show evidence/i }));
 
     expect(screen.getByText("session:dashboard-wiring")).toBeInTheDocument();
     expect(screen.getByText("apps/web/src/app.tsx")).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("link", { name: /open session/i }));
+    fireEvent.click(screen.getByRole("link", { name: /open session/i }));
 
     await waitFor(() => {
       expect(apiMock.fetchSessionDetail).toHaveBeenCalledWith("dashboard-wiring");
@@ -70,10 +68,12 @@ describe("MemoryAssistantPage", () => {
 
     renderDashboard("/dashboard/ask");
 
-    await userEvent.type(screen.getByLabelText("Ask project memory"), "What changed last week?");
-    await userEvent.click(screen.getByRole("button", { name: /ask/i }));
+    fireEvent.change(screen.getByLabelText("Ask project memory"), {
+      target: { value: "What changed last week?" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /ask/i }));
 
-    expect(screen.getByRole("status")).toBeInTheDocument();
+    expect(await screen.findByRole("status")).toBeInTheDocument();
     pending.reject(new Error("offline"));
 
     expect(
