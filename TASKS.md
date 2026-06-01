@@ -855,9 +855,9 @@ evidence backs that answer.
   architecture, repeated errors, contributor map, and release readiness, with
   CLI and MCP surfaces plus evidence-gap handling.
 
-### 5.17 — Memory checks for CI and reviews
+### 5.17 — Memory checks for CI and reviews ✅
 
-- [ ] **Goal:** turn project memory into lightweight checks that help teams avoid
+- [x] **Goal:** turn project memory into lightweight checks that help teams avoid
   repeated mistakes.
 - **Files:** `apps/cli/src/commands/check.ts`, `packages/core/src/checks/`,
   `.github/workflows/` examples in docs.
@@ -868,6 +868,9 @@ evidence backs that answer.
   stale-command warnings, and no-op clean runs.
 - **Notes:** Keep checks quiet by default. The goal is useful project memory, not
   noisy governance.
+- **Done:** Added advisory `kairo check memory` checks for repeated errors,
+  missing architecture ADRs, stale setup commands, and fragile changed files,
+  plus docs with a GitHub Actions example.
 
 ### 5.18 — Source adapter contribution kit
 

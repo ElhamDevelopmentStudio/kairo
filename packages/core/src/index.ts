@@ -10,6 +10,14 @@ export type {
 } from "./workspace/index.ts";
 export { detectArchitectureShifts } from "./architecture/index.ts";
 export type { ArchitectureDetectorInput } from "./architecture/index.ts";
+export { checkProjectMemory } from "./checks/index.ts";
+export type {
+  CheckProjectMemoryInput,
+  MemoryCheckIssue,
+  MemoryCheckReport,
+  MemoryCheckSeverity,
+  MemoryCheckStatus,
+} from "./checks/index.ts";
 export { EventStore } from "./event-store/index.ts";
 export {
   answerProjectMemory,
