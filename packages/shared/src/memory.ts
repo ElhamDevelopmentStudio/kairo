@@ -40,6 +40,7 @@ export const MemoryRecordKind = z.enum([
   "architecture_shift",
   "symbol",
   "agent_run",
+  "supersession",
 ]);
 export type MemoryRecordKind = z.infer<typeof MemoryRecordKind>;
 
@@ -166,6 +167,19 @@ export const AgentRunMemory = MemoryRecordBase.extend({
 });
 export type AgentRunMemory = z.infer<typeof AgentRunMemory>;
 
+export const SupersessionMemory = MemoryRecordBase.extend({
+  memoryKind: z.literal("supersession"),
+  olderTitle: z.string().min(1),
+  olderReference: z.string().min(1),
+  newerTitle: z.string().min(1),
+  newerReference: z.string().min(1),
+  supersededAt: z.string().datetime(),
+  inferred: z.boolean(),
+  source: z.enum(["explicit", "inferred"]),
+  files: z.array(z.string()).default([]),
+});
+export type SupersessionMemory = z.infer<typeof SupersessionMemory>;
+
 export const StoredMemoryRecord = z.discriminatedUnion("memoryKind", [
   SessionMemory,
   DecisionMemory,
@@ -174,5 +188,6 @@ export const StoredMemoryRecord = z.discriminatedUnion("memoryKind", [
   ArchitectureShiftMemory,
   SymbolMemory,
   AgentRunMemory,
+  SupersessionMemory,
 ]);
 export type StoredMemoryRecord = z.infer<typeof StoredMemoryRecord>;

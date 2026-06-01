@@ -420,15 +420,16 @@ function addSupersessionRelationships(
     const newer = sorted[i];
     if (newer === undefined) continue;
     for (const older of sorted.slice(0, i)) {
-      if (!decisionsOverlap(older, newer)) continue;
+      const explicit = explicitlySupersedes(older, newer);
+      if (!explicit && !decisionsOverlap(older, newer)) continue;
       builder.relationship({
         kind: "supersedes",
         fromRef: `decision:${newer.reference}`,
         toRef: `decision:${older.reference}`,
         validFrom: newer.occurredAt,
-        confidence: newer.inferred || older.inferred ? "medium" : "high",
+        confidence: explicit && !newer.inferred && !older.inferred ? "high" : "medium",
         evidence: [...decisionEvidence(newer), ...decisionEvidence(older)],
-        tags: ["decision", "supersession"],
+        tags: ["decision", "supersession", explicit ? "explicit" : "inferred"],
       });
     }
   }
@@ -511,9 +512,38 @@ function decisionsOverlap(a: DecisionMemory, b: DecisionMemory): boolean {
   if (a.reference === b.reference) return false;
   const sharedFiles = new Set(a.files);
   if (b.files.some((file) => sharedFiles.has(file))) return true;
-  const aTerms = significantTerms(a.title);
-  const bTerms = significantTerms(b.title);
+  const aTerms = significantTerms(decisionSupersessionText(a));
+  const bTerms = significantTerms(decisionSupersessionText(b));
   return Array.from(bTerms).filter((term) => aTerms.has(term)).length >= 2;
+}
+
+function explicitlySupersedes(older: DecisionMemory, newer: DecisionMemory): boolean {
+  const text = decisionSupersessionText(newer).toLowerCase();
+  if (
+    !/\b(supersedes|superseded|replaces|replaced|instead of|no longer|deprecates|deprecated)\b/.test(
+      text,
+    )
+  ) {
+    return false;
+  }
+  return (
+    text.includes(older.reference.toLowerCase()) ||
+    Array.from(significantTerms(older.title)).filter((term) => text.includes(term)).length >= 2
+  );
+}
+
+function decisionSupersessionText(decision: DecisionMemory): string {
+  return [
+    decision.title,
+    decision.summary,
+    decision.rationale,
+    decision.status,
+    decision.reference,
+    ...decision.consequences,
+    ...decision.files,
+  ]
+    .filter((part): part is string => part !== undefined)
+    .join("\n");
 }
 
 function significantTerms(value: string): Set<string> {

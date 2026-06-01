@@ -189,6 +189,16 @@ function renderAnswer(question: string, citations: MemoryCitation[]): string {
       supportingProblems.length === 0 ? "" : ` Related context: ${supportingProblems.join(", ")}.`;
     return `Kairo has seen this problem before: ${basis}.${supporting}`;
   }
+  if (primary.kind === "relationship" && /\bsupersedes\b/i.test(primary.title)) {
+    const supporting =
+      rest.length === 0
+        ? ""
+        : ` Related context: ${rest
+            .slice(0, 2)
+            .map((citation) => citation.title)
+            .join(", ")}.`;
+    return `${supersessionAnswer(primary)}${supporting}`;
+  }
   const supporting =
     rest.length === 0
       ? ""
@@ -292,5 +302,22 @@ function relationshipExcerpt(
 ): string {
   const from = `${candidate.from.kind} "${candidate.from.name}"`;
   const to = `${candidate.to.kind} "${candidate.to.name}"`;
-  return `${from} ${candidate.relationship.kind.replaceAll("_", " ")} ${to}.`;
+  const inferred =
+    candidate.relationship.kind === "supersedes" &&
+    !candidate.relationship.tags.includes("explicit")
+      ? " This is inferred from overlapping evidence."
+      : "";
+  return `${from} ${candidate.relationship.kind.replaceAll("_", " ")} ${to}.${inferred}`;
+}
+
+function supersessionAnswer(citation: MemoryCitation): string {
+  const match = /^(.+) supersedes (.+)$/.exec(citation.title);
+  if (match?.[1] === undefined || match[2] === undefined) {
+    return `This used to be true, but was superseded by newer project evidence: ${citation.excerpt ?? citation.title}.`;
+  }
+  const inferred =
+    citation.excerpt?.includes("inferred from overlapping evidence") === true
+      ? " This is inferred from overlapping evidence."
+      : "";
+  return `${match[2]} used to be true, but was superseded by ${match[1]}.${inferred}`;
 }

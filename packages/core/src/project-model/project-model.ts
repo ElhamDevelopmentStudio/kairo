@@ -88,7 +88,7 @@ export function buildProjectModel(input: BuildProjectModelInput): ProjectOperati
     recurringFailures: topScore(recurringFailureItems(problems), limit),
     preferredPatterns: topRecent(patternItems(sessions, decisions), limit),
     importantCommands: topScore(commandItems(events), limit),
-    supersededDecisions: topRecent(
+    supersededDecisions: topSupersededDecisions(
       supersededDecisionItems(input.projectId, sessions, events, decisions),
       limit,
     ),
@@ -327,14 +327,17 @@ function supersededDecisionItems(
       return item({
         kind: "superseded_decision",
         title: `${newer.name} superseded ${older.name}`,
-        summary: `${newer.name} is newer than and overlaps ${older.name}.`,
+        summary: relationship.tags.includes("explicit")
+          ? `${older.name} used to be true, but was superseded by ${newer.name}.`
+          : `${older.name} used to be true, but appears to have been superseded by ${newer.name}.`,
         confidence: relationship.confidence,
         updatedAt: relationship.validFrom,
         evidence: relationship.evidence,
-        tags: ["decision", "supersession"],
+        tags: ["decision", "supersession", ...relationship.tags],
         metadata: {
           newer: newer.canonicalRef,
           older: older.canonicalRef,
+          source: relationship.tags.includes("explicit") ? "explicit" : "inferred",
         },
       });
     })
@@ -349,6 +352,23 @@ function topRecent(items: ProjectModelItem[], limit: number): ProjectModelItem[]
   return dedupeItems(items)
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.title.localeCompare(b.title))
     .slice(0, limit);
+}
+
+function topSupersededDecisions(items: ProjectModelItem[], limit: number): ProjectModelItem[] {
+  return dedupeItems(items)
+    .sort(
+      (a, b) =>
+        supersessionRank(b) - supersessionRank(a) ||
+        b.updatedAt.localeCompare(a.updatedAt) ||
+        a.title.localeCompare(b.title),
+    )
+    .slice(0, limit);
+}
+
+function supersessionRank(item: ProjectModelItem): number {
+  const explicit = item.tags.includes("explicit") ? 1 : 0;
+  const adrBacked = item.evidence.every((entry) => entry.kind === "adr") ? 1 : 0;
+  return explicit * 2 + adrBacked;
 }
 
 function topScore(items: ProjectModelItem[], limit: number): ProjectModelItem[] {

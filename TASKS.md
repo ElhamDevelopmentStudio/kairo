@@ -805,7 +805,7 @@ evidence backs that answer.
 
 ### 5.14 — Supersession and contradiction handling
 
-- [ ] **Goal:** detect when project facts, decisions, or conventions replace
+- [x] **Goal:** detect when project facts, decisions, or conventions replace
   older ones.
 - **Files:** `packages/shared/src/memory.ts`,
   `packages/core/src/memory/supersession.ts`,
@@ -817,6 +817,9 @@ evidence backs that answer.
   modules, replaced dependencies, and frontend/CLI boundary changes.
 - **Notes:** Prefer explicit supersession from ADRs and commits. When inferred,
   carry confidence and label the result as inferred.
+- **Done:** Added supersession memory records, explicit/inferred graph edges,
+  answer phrasing for stale decisions, and fixtures for ADR conflicts, setup
+  command changes, renames, dependencies, and frontend/CLI boundaries.
 
 ### 5.15 — Symbol-time intelligence
 

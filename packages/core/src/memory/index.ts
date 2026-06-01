@@ -14,3 +14,5 @@ export { extractDecisionMemories } from "./decisions.ts";
 export type { ExtractDecisionMemoriesInput } from "./decisions.ts";
 export { rebuildMemoryRecords } from "./records.ts";
 export type { RebuildMemoryRecordsInput } from "./records.ts";
+export { extractSupersessionMemories } from "./supersession.ts";
+export type { ExtractSupersessionMemoriesInput } from "./supersession.ts";

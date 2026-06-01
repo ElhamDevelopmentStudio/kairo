@@ -174,6 +174,53 @@ describe("answerProjectMemory", () => {
     });
   });
 
+  it("explains superseded stale decisions without exposing citation mechanics", () => {
+    const answer = answerProjectMemory(
+      store,
+      "demo",
+      "what superseded direct sqlite dashboard reads?",
+      {
+        decisionMemories: [
+          {
+            id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            projectId: "demo",
+            title: "Use direct SQLite dashboard reads",
+            source: "adr",
+            reference: "adr:docs/decisions/0001-dashboard-storage.md",
+            summary: "The dashboard reads SQLite directly.",
+            inferred: false,
+            occurredAt: "2026-05-18T10:00:00.000Z",
+            consequences: [],
+            files: ["apps/web/src/app.tsx"],
+            relatedShiftIds: [],
+          },
+          {
+            id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+            projectId: "demo",
+            title: "Use local API dashboard reads",
+            source: "adr",
+            reference: "adr:docs/decisions/0002-dashboard-storage.md",
+            summary:
+              "The dashboard reads through the local API. This supersedes direct SQLite dashboard reads.",
+            inferred: false,
+            occurredAt: "2026-05-21T10:00:00.000Z",
+            consequences: [],
+            files: ["apps/web/src/app.tsx"],
+            relatedShiftIds: [],
+          },
+        ],
+      },
+    );
+
+    expect(answer.answer).toContain("Use direct SQLite dashboard reads used to be true");
+    expect(answer.answer).toContain("superseded by Use local API dashboard reads");
+    expect(answer.answer).not.toContain("relationship:");
+    expect(answer.citations[0]).toMatchObject({
+      kind: "relationship",
+      title: "Use local API dashboard reads supersedes Use direct SQLite dashboard reads",
+    });
+  });
+
   it("recalls how a previously observed terminal error was fixed", () => {
     const terminal = terminalEvent({
       stderr: "AN_ERROR: Cannot find module @kairo/shared/problem",

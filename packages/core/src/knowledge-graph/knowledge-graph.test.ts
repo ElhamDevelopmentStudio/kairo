@@ -81,7 +81,8 @@ describe("buildKnowledgeGraph", () => {
 
     expect(supersedes).toMatchObject({
       validFrom: "2026-05-21T10:00:00.000Z",
-      confidence: "high",
+      confidence: "medium",
+      tags: expect.arrayContaining(["inferred"]),
     });
     expect(
       queryKnowledgeGraph(graph, { asOf: "2026-05-20T10:00:00.000Z" }).relationships,

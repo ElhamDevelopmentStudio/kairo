@@ -7,6 +7,7 @@ import {
   ProblemMemory,
   SessionMemory,
   StoredMemoryRecord,
+  SupersessionMemory,
   SymbolMemory,
 } from "./memory.ts";
 
@@ -68,6 +69,17 @@ describe("memory record schemas", () => {
         files: ["packages/core/src/memory/answer.ts"],
         eventIds: ["44444444-4444-4444-8444-444444444444"],
       }),
+      SupersessionMemory.parse({
+        ...base("supersession"),
+        olderTitle: "Use direct SQLite dashboard reads",
+        olderReference: "decision:adr:docs/decisions/0001.md",
+        newerTitle: "Use local API dashboard reads",
+        newerReference: "decision:adr:docs/decisions/0002.md",
+        supersededAt: "2026-05-21T10:00:00.000Z",
+        inferred: false,
+        source: "explicit",
+        files: ["apps/web/src/app.tsx"],
+      }),
     ];
 
     expect(records.map((record) => StoredMemoryRecord.parse(record).memoryKind)).toEqual([
@@ -78,6 +90,7 @@ describe("memory record schemas", () => {
       "architecture_shift",
       "symbol",
       "agent_run",
+      "supersession",
     ]);
     expect(records.every((record) => record.evidence.length > 0)).toBe(true);
   });
@@ -106,4 +119,5 @@ const ids: Record<string, string> = {
   architecture_shift: "55555555-5555-4555-8555-555555555555",
   symbol: "66666666-6666-4666-8666-666666666666",
   agent_run: "77777777-7777-4777-8777-777777777777",
+  supersession: "88888888-8888-4888-8888-888888888888",
 };

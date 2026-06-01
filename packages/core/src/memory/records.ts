@@ -10,10 +10,12 @@ import type {
   Session,
   SessionMemory,
   StoredMemoryRecord,
+  SupersessionMemory,
   SymbolMemory,
 } from "@kairo/shared";
 import { deterministicUuid } from "@kairo/utils/id";
 import { extractProblemMemories } from "../problem-memory/index.ts";
+import { extractSupersessionMemories } from "./supersession.ts";
 
 export interface RebuildMemoryRecordsInput {
   projectId: string;
@@ -32,11 +34,21 @@ export function rebuildMemoryRecords(input: RebuildMemoryRecordsInput): StoredMe
     ...problems,
     ...problems.flatMap(fixMemory),
     ...input.architectureShifts.map(architectureShiftMemory),
+    ...supersessionMemories(input),
     ...symbolMemories(input.projectId, input.sessions, input.events, input.now),
     ...agentRunMemories(input.projectId, input.events),
   ];
 
   return records.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+function supersessionMemories(input: RebuildMemoryRecordsInput): SupersessionMemory[] {
+  return extractSupersessionMemories({
+    projectId: input.projectId,
+    sessions: input.sessions,
+    events: input.events,
+    decisionMemories: input.decisionMemories,
+  });
 }
 
 function sessionMemory(session: Session): SessionMemory {

@@ -14,6 +14,7 @@ export { EventStore } from "./event-store/index.ts";
 export {
   answerProjectMemory,
   extractDecisionMemories,
+  extractSupersessionMemories,
   generateSessionBridgeDocuments,
   rebuildMemoryRecords,
   runMemoryBenchmark,
@@ -24,6 +25,7 @@ export type { BuildKnowledgeGraphInput, KnowledgeGraphQuery } from "./knowledge-
 export type {
   AnswerProjectMemoryOptions,
   ExtractDecisionMemoriesInput,
+  ExtractSupersessionMemoriesInput,
   MemoryBenchmarkCase,
   MemoryBenchmarkCaseResult,
   MemoryBenchmarkCategory,
