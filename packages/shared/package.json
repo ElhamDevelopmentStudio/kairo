@@ -9,7 +9,8 @@
     ".": "./src/index.ts",
     "./ai": "./src/ai.ts",
     "./events": "./src/events.ts",
-    "./session": "./src/session.ts"
+    "./session": "./src/session.ts",
+    "./symbol": "./src/symbol.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

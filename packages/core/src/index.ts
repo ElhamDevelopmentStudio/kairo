@@ -61,6 +61,12 @@ export type {
   SessionReconstructorOptions,
 } from "./session-reconstructor/index.ts";
 export {
+  extractCurrentTypeScriptSymbols,
+  extractSymbolMemories,
+  extractSymbolsFromSource,
+} from "./symbol-index/index.ts";
+export type { ExtractSymbolMemoriesInput } from "./symbol-index/index.ts";
+export {
   getSourceAdapter,
   importFromSource,
   listSourceAdapters,

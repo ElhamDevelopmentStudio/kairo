@@ -6,3 +6,4 @@ export * from "./memory.ts";
 export * from "./project-model.ts";
 export * from "./session.ts";
 export * from "./source.ts";
+export * from "./symbol.ts";

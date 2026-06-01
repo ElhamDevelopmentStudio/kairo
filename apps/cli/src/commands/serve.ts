@@ -152,6 +152,7 @@ export function createDashboardApp({ workspace, webDistPath }: DashboardAppOptio
             architectureShifts,
             projectRoot: workspace.root,
           }),
+          projectRoot: workspace.root,
         }),
       );
     } finally {

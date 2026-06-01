@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { GitCommitEvent, Session, TerminalEvent } from "@kairo/shared";
@@ -218,6 +218,42 @@ describe("answerProjectMemory", () => {
     expect(answer.citations[0]).toMatchObject({
       kind: "relationship",
       title: "Use local API dashboard reads supersedes Use direct SQLite dashboard reads",
+    });
+  });
+
+  it("answers symbol-time questions with file and commit citations", () => {
+    mkdirSync(join(tmp, "packages", "core", "src", "memory"), { recursive: true });
+    writeFileSync(
+      join(tmp, "packages", "core", "src", "memory", "answer.ts"),
+      "export function answerProjectMemory(question: string) { return question; }",
+    );
+    const apiChange = commitEvent({
+      message: "feat: change answerProjectMemory API contract for grounded citations",
+      files: [
+        {
+          path: "packages/core/src/memory/answer.ts",
+          status: "M",
+          additions: 8,
+          deletions: 2,
+        },
+      ],
+    });
+    store.append(apiChange);
+
+    const answer = answerProjectMemory(
+      store,
+      "demo",
+      "when did the answerProjectMemory API contract change?",
+      { projectRoot: tmp },
+    );
+
+    expect(answer.answer).toContain("answerProjectMemory");
+    expect(answer.answer).not.toContain("symbol:");
+    expect(answer.citations[0]).toMatchObject({
+      kind: "symbol",
+      files: ["packages/core/src/memory/answer.ts"],
+      commitShas: [apiChange.payload.sha],
+      eventIds: [apiChange.id],
     });
   });
 

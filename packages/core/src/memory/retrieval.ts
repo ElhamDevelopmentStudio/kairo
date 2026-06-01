@@ -6,11 +6,13 @@ import type {
   KnowledgeGraphRelationship,
   ProblemMemory,
   Session,
+  SymbolMemory,
 } from "@kairo/shared";
 import type { EventStore } from "../event-store/index.ts";
 import { buildKnowledgeGraph } from "../knowledge-graph/index.ts";
 import { extractProblemMemories } from "../problem-memory/index.ts";
 import { bm25Search, tokenizeSearchText } from "../search/bm25.ts";
+import { extractSymbolMemories } from "../symbol-index/index.ts";
 import { sessionBridgeSearchText } from "./bridge-docs.ts";
 
 export interface RetrieveMemoryOptions {
@@ -19,6 +21,7 @@ export interface RetrieveMemoryOptions {
   now?: string;
   semanticSessionScores?: Map<string, number>;
   decisionMemories?: DecisionMemory[];
+  projectRoot?: string;
 }
 
 export type MemoryCandidate =
@@ -45,6 +48,11 @@ export type MemoryCandidate =
   | {
       kind: "problem";
       item: ProblemMemory;
+      score: number;
+    }
+  | {
+      kind: "symbol";
+      item: SymbolMemory;
       score: number;
     }
   | {
@@ -83,6 +91,16 @@ export function retrieveMemoryCandidates(
   const events = store.eventsForProject(projectId);
   const shifts = store.recentArchitectureShifts(projectId, candidateLimit);
   const problems = extractProblemMemories(projectId, events, sessions);
+  const symbols =
+    options.projectRoot === undefined || !SYMBOL_QUERY_PATTERN.test(trimmed)
+      ? []
+      : extractSymbolMemories({
+          projectId,
+          sessions,
+          events,
+          projectRoot: options.projectRoot,
+          ...(options.now === undefined ? {} : { now: options.now }),
+        });
   const graphRelationships = RELATIONSHIP_QUERY_PATTERN.test(trimmed)
     ? graphRelationshipCandidates(
         store,
@@ -100,6 +118,7 @@ export function retrieveMemoryCandidates(
     ...shifts.map(architectureShiftDocument),
     ...events.slice(-candidateLimit).map(eventDocument),
     ...problems.map(problemDocument),
+    ...symbols.map(symbolDocument),
     ...graphRelationships.map(graphRelationshipDocument),
   ];
   const context = retrievalContext(trimmed, documents, options.now ?? new Date().toISOString());
@@ -142,6 +161,7 @@ function scoreDocument(
   score += architectureScore(document, context);
   score += decisionScore(document, context);
   score += problemScore(document, context);
+  score += symbolScore(document, context);
   score += relationshipScore(document, context);
   return score;
 }
@@ -157,6 +177,7 @@ interface RetrievalContext {
   anchorTime: number | null;
   firstAppeared: boolean;
   relationshipQuestion: boolean;
+  symbolQuestion: boolean;
 }
 
 function retrievalContext(
@@ -184,6 +205,7 @@ function retrievalContext(
       question,
     ),
     relationshipQuestion: RELATIONSHIP_QUERY_PATTERN.test(question),
+    symbolQuestion: SYMBOL_QUERY_PATTERN.test(question),
   };
 }
 
@@ -256,6 +278,28 @@ function problemDocument(memory: ProblemMemory): CandidateDocument {
     ].join("\n"),
     files: memory.files,
     occurredAt: memory.occurredAt,
+  };
+}
+
+function symbolDocument(memory: SymbolMemory): CandidateDocument {
+  return {
+    id: `symbol:${memory.id}`,
+    candidate: { kind: "symbol", item: memory, score: 0 },
+    text: [
+      memory.title,
+      memory.summary,
+      memory.symbolName,
+      memory.symbolKind,
+      memory.signature,
+      memory.exported ? "exported" : "local",
+      ...memory.files,
+      ...memory.commitShas,
+      ...memory.eventIds,
+      ...(memory.aliases ?? []),
+      ...memory.tags,
+    ].join("\n"),
+    files: memory.files,
+    occurredAt: memory.lastChangedAt ?? memory.updatedAt,
   };
 }
 
@@ -385,6 +429,14 @@ function problemScore(document: CandidateDocument, context: RetrievalContext): n
   return 0;
 }
 
+function symbolScore(document: CandidateDocument, context: RetrievalContext): number {
+  if (!context.symbolQuestion || document.candidate.kind !== "symbol") return 0;
+  let score = document.candidate.item.symbolKind === "module" ? 8 : 14;
+  if (document.candidate.item.exported) score += 3;
+  if (document.candidate.item.tags.includes("api")) score += 4;
+  return score;
+}
+
 function relationshipScore(document: CandidateDocument, context: RetrievalContext): number {
   if (document.candidate.kind !== "relationship") return 0;
   const kind = document.candidate.item.relationship.kind;
@@ -432,6 +484,7 @@ function candidateTime(candidate: MemoryCandidate): string {
   if (candidate.kind === "architecture_shift") return candidate.item.detectedAt;
   if (candidate.kind === "decision") return candidate.item.occurredAt;
   if (candidate.kind === "problem") return candidate.item.occurredAt;
+  if (candidate.kind === "symbol") return candidate.item.lastChangedAt ?? candidate.item.updatedAt;
   if (candidate.kind === "relationship") return candidate.item.relationship.validFrom;
   return candidate.item.occurredAt;
 }
@@ -439,6 +492,7 @@ function candidateTime(candidate: MemoryCandidate): string {
 function weightFor(kind: MemoryCandidate["kind"]): number {
   if (kind === "relationship") return 0.75;
   if (kind === "problem") return 1.5;
+  if (kind === "symbol") return 1.4;
   if (kind === "decision") return 1.45;
   if (kind === "architecture_shift") return 1.35;
   if (kind === "session") return 1.2;
@@ -517,3 +571,5 @@ const ARCHITECTURE_QUERY_PATTERN =
   /\b(architecture|architectural|why|decision|migration|migrate|refactor|split|boundary|redesign|shift)\b/i;
 const RELATIONSHIP_QUERY_PATTERN =
   /\b(supersede|superseded|replace|replaced|rename|renamed|depends on|dependency|fixes|fixed by|caused by|what changed after)\b/i;
+const SYMBOL_QUERY_PATTERN =
+  /\b(function|class|type|component|module|file|symbol|api|contract|export|signature|introduced|exist|exists|pattern|touched|changed|broke)\b/i;

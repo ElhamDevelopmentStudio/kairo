@@ -4,6 +4,7 @@ import type {
   MemoryAnswer,
   MemoryCitation,
   ProblemMemory,
+  SymbolMemory,
 } from "@kairo/shared";
 import type { EventStore } from "../event-store/index.ts";
 import { type MemoryCandidate, retrieveMemoryCandidates } from "./retrieval.ts";
@@ -14,6 +15,7 @@ export interface AnswerProjectMemoryOptions {
   now?: string;
   semanticSessionScores?: Map<string, number>;
   decisionMemories?: DecisionMemory[];
+  projectRoot?: string;
 }
 
 export function answerProjectMemory(
@@ -42,6 +44,7 @@ export function answerProjectMemory(
     ...(options.decisionMemories === undefined
       ? {}
       : { decisionMemories: options.decisionMemories }),
+    ...(options.projectRoot === undefined ? {} : { projectRoot: options.projectRoot }),
   });
 
   if (candidates.length === 0) {
@@ -94,6 +97,20 @@ function candidateToCitation(candidate: MemoryCandidate): MemoryCitation {
       eventIds: candidate.item.relationship.evidence
         .filter((evidence) => evidence.kind === "event" && evidence.id !== undefined)
         .map((evidence) => evidence.id ?? ""),
+      score: candidate.score,
+    };
+  }
+
+  if (candidate.kind === "symbol") {
+    return {
+      kind: "symbol",
+      id: candidate.item.id,
+      title: candidate.item.title,
+      reference: `symbol:${candidate.item.symbolName}`,
+      excerpt: renderSymbolExcerpt(candidate.item),
+      files: candidate.item.files,
+      commitShas: candidate.item.commitShas,
+      eventIds: candidate.item.eventIds,
       score: candidate.score,
     };
   }
@@ -199,6 +216,16 @@ function renderAnswer(question: string, citations: MemoryCitation[]): string {
             .join(", ")}.`;
     return `${supersessionAnswer(primary)}${supporting}`;
   }
+  if (primary.kind === "symbol") {
+    const supporting =
+      rest.length === 0
+        ? ""
+        : ` Related context: ${rest
+            .slice(0, 2)
+            .map((citation) => citation.title)
+            .join(", ")}.`;
+    return `The closest symbol history is "${primary.title}": ${basis}.${supporting}`;
+  }
   const supporting =
     rest.length === 0
       ? ""
@@ -269,6 +296,7 @@ function sourceLabel(kind: MemoryCitation["kind"]): string {
   if (kind === "event") return "event";
   if (kind === "problem") return "problem memory";
   if (kind === "relationship") return "project relationship";
+  if (kind === "symbol") return "symbol memory";
   return "session";
 }
 
@@ -293,6 +321,20 @@ function renderProblemExcerpt(memory: ProblemMemory): string {
     memory.relatedCommitShas.length === 0
       ? null
       : `Related commits: ${memory.relatedCommitShas.slice(0, 3).join(", ")}`,
+  ].filter((part): part is string => part !== null);
+  return parts.join(" ");
+}
+
+function renderSymbolExcerpt(memory: SymbolMemory): string {
+  const parts = [
+    memory.summary,
+    memory.signature === undefined ? null : `Signature: ${memory.signature}`,
+    memory.commitShas.length === 0
+      ? null
+      : `Related commits: ${memory.commitShas.slice(0, 3).join(", ")}`,
+    (memory.aliases ?? []).length === 0
+      ? null
+      : `Previous names or paths: ${(memory.aliases ?? []).join(", ")}`,
   ].filter((part): part is string => part !== null);
   return parts.join(" ");
 }

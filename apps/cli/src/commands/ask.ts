@@ -47,6 +47,7 @@ export async function runAsk(
         architectureShifts,
         projectRoot: workspace.root,
       }),
+      projectRoot: workspace.root,
     });
     if (opts.ai === false || grounded.citations.length === 0) return grounded;
     const aiConfig = resolveAiConfig(config.ai);

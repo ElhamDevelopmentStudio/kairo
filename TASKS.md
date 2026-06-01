@@ -823,7 +823,7 @@ evidence backs that answer.
 
 ### 5.15 — Symbol-time intelligence
 
-- [ ] **Goal:** answer historical questions about files, symbols, APIs, and
+- [x] **Goal:** answer historical questions about files, symbols, APIs, and
   modules, not only sessions.
 - **Files:** `packages/shared/src/symbol.ts`, `packages/core/src/symbol-index/`,
   `packages/core/src/knowledge-graph/`, `apps/cli/src/commands/ask.ts`.
@@ -834,6 +834,9 @@ evidence backs that answer.
   and recurring failures tied to a file or symbol.
 - **Notes:** Start with TypeScript-friendly static extraction and git history.
   Deeper language-server integration can come later through source adapters.
+- **Done:** Added a TypeScript-friendly symbol index, richer symbol memory
+  records, symbol-aware retrieval and answer citations, and fixtures for moved
+  files, exported API changes, current symbols, and file-linked failures.
 
 ### 5.16 — Project reflection commands
 

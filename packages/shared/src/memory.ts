@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SymbolKind } from "./symbol.ts";
 
 export const MemoryCitationKind = z.enum([
   "session",
@@ -8,6 +9,7 @@ export const MemoryCitationKind = z.enum([
   "event",
   "problem",
   "relationship",
+  "symbol",
 ]);
 export type MemoryCitationKind = z.infer<typeof MemoryCitationKind>;
 
@@ -153,8 +155,15 @@ export type ArchitectureShiftMemory = z.infer<typeof ArchitectureShiftMemory>;
 export const SymbolMemory = MemoryRecordBase.extend({
   memoryKind: z.literal("symbol"),
   symbolName: z.string(),
-  symbolKind: z.enum(["function", "class", "type", "component", "module", "unknown"]),
+  symbolKind: SymbolKind,
   files: z.array(z.string()).default([]),
+  signature: z.string().optional(),
+  exported: z.boolean().default(false),
+  introducedAt: z.string().datetime().optional(),
+  lastChangedAt: z.string().datetime().optional(),
+  commitShas: z.array(z.string()).default([]),
+  eventIds: z.array(z.string()).default([]),
+  aliases: z.array(z.string()).default([]),
 });
 export type SymbolMemory = z.infer<typeof SymbolMemory>;
 

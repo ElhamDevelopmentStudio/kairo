@@ -11,10 +11,10 @@ import type {
   SessionMemory,
   StoredMemoryRecord,
   SupersessionMemory,
-  SymbolMemory,
 } from "@kairo/shared";
 import { deterministicUuid } from "@kairo/utils/id";
 import { extractProblemMemories } from "../problem-memory/index.ts";
+import { extractSymbolMemories } from "../symbol-index/index.ts";
 import { extractSupersessionMemories } from "./supersession.ts";
 
 export interface RebuildMemoryRecordsInput {
@@ -23,6 +23,7 @@ export interface RebuildMemoryRecordsInput {
   events: KairoEvent[];
   architectureShifts: ArchitectureShift[];
   decisionMemories: DecisionMemory[];
+  projectRoot?: string;
   now?: string;
 }
 
@@ -35,7 +36,13 @@ export function rebuildMemoryRecords(input: RebuildMemoryRecordsInput): StoredMe
     ...problems.flatMap(fixMemory),
     ...input.architectureShifts.map(architectureShiftMemory),
     ...supersessionMemories(input),
-    ...symbolMemories(input.projectId, input.sessions, input.events, input.now),
+    ...extractSymbolMemories({
+      projectId: input.projectId,
+      sessions: input.sessions,
+      events: input.events,
+      ...(input.projectRoot === undefined ? {} : { projectRoot: input.projectRoot }),
+      ...(input.now === undefined ? {} : { now: input.now }),
+    }),
     ...agentRunMemories(input.projectId, input.events),
   ];
 
@@ -150,50 +157,6 @@ function architectureShiftMemory(shift: ArchitectureShift): ArchitectureShiftMem
   };
 }
 
-function symbolMemories(
-  projectId: string,
-  sessions: Session[],
-  events: KairoEvent[],
-  now = new Date().toISOString(),
-): SymbolMemory[] {
-  const fileRefs = new Map<string, MemoryEvidenceReference[]>();
-  for (const session of sessions) {
-    for (const file of session.files) {
-      const existing = fileRefs.get(file) ?? [];
-      existing.push({
-        kind: "session",
-        reference: `session:${session.slug}`,
-        id: session.id,
-        title: session.title,
-      });
-      fileRefs.set(file, existing);
-    }
-  }
-  for (const event of events) {
-    for (const file of eventFiles(event)) {
-      const existing = fileRefs.get(file) ?? [];
-      existing.push(eventEvidence(event.id));
-      fileRefs.set(file, existing);
-    }
-  }
-
-  return Array.from(fileRefs.entries()).map(([file, evidence]) => ({
-    id: deterministicUuid("memory.symbol", projectId, file),
-    projectId,
-    memoryKind: "symbol",
-    title: file,
-    summary: `File-level symbol memory for ${file}.`,
-    confidence: "low",
-    createdAt: now,
-    updatedAt: now,
-    evidence: [fileEvidence(file), ...dedupeEvidence(evidence)],
-    tags: ["symbol", "file"],
-    symbolName: file,
-    symbolKind: "module",
-    files: [file],
-  }));
-}
-
 function agentRunMemories(projectId: string, events: KairoEvent[]): AgentRunMemory[] {
   return events
     .filter((event) => event.kind === "ai.activity")
@@ -215,13 +178,6 @@ function agentRunMemories(projectId: string, events: KairoEvent[]): AgentRunMemo
     }));
 }
 
-function eventFiles(event: KairoEvent): string[] {
-  if (event.kind === "git.commit") return event.payload.files.map((file) => file.path);
-  if (event.kind === "ai.activity") return event.payload.filesTouched;
-  if (event.kind === "fs.change") return [event.payload.path];
-  return [];
-}
-
 function commitEvidence(sha: string): MemoryEvidenceReference {
   return { kind: "commit", reference: `commit:${sha.slice(0, 12)}`, id: sha };
 }
@@ -232,14 +188,4 @@ function fileEvidence(path: string): MemoryEvidenceReference {
 
 function eventEvidence(id: string): MemoryEvidenceReference {
   return { kind: "event", reference: `event:${id}`, id };
-}
-
-function dedupeEvidence(evidence: MemoryEvidenceReference[]): MemoryEvidenceReference[] {
-  const seen = new Set<string>();
-  return evidence.filter((entry) => {
-    const key = `${entry.kind}:${entry.reference}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
 }
