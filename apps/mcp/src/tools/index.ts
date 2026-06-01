@@ -3,6 +3,7 @@ import { registerArchitectureShiftsTool } from "./architecture-shifts.ts";
 import { registerAskTool } from "./ask.ts";
 import { type ToolContext, createToolContext } from "./context.ts";
 import { registerImportTool } from "./import.ts";
+import { registerProjectModelTool } from "./project-model.ts";
 import { registerRecentSessionsTool } from "./recent-sessions.ts";
 import { registerSearchTool } from "./search.ts";
 import { registerSessionDetailTool } from "./session-detail.ts";
@@ -17,4 +18,5 @@ export function registerTools(server: McpServer, context: ToolContext): void {
   registerSessionDetailTool(server, context);
   registerArchitectureShiftsTool(server, context);
   registerImportTool(server, context);
+  registerProjectModelTool(server, context);
 }

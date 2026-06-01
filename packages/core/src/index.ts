@@ -69,3 +69,5 @@ export type {
   MemorySourceAdapter,
   SourceAdapterInput,
 } from "./sources/index.ts";
+export { buildProjectModel } from "./project-model/index.ts";
+export type { BuildProjectModelInput } from "./project-model/index.ts";

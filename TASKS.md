@@ -785,7 +785,7 @@ evidence backs that answer.
 
 ### 5.13 — Project operating model memory
 
-- [ ] **Goal:** maintain a compact, source-backed model of how the project works
+- [x] **Goal:** maintain a compact, source-backed model of how the project works
   today.
 - **Files:** `packages/shared/src/project-model.ts`,
   `packages/core/src/project-model/`, `apps/cli/src/commands/status.ts`,
@@ -798,6 +798,10 @@ evidence backs that answer.
 - **Notes:** This is the "what should a contributor know before touching this
   repo?" memory layer. It is derived from lower-level memories and can be
   rebuilt, so it should not become the only source of truth.
+- **Done:** Added shared project-model schemas, a rebuildable core operating
+  model derived from sessions/events/ADRs/problems/graph supersession, CLI
+  `kairo status`, MCP `kairo_project_model`, and fixture coverage for updates
+  from architecture shifts, repeated errors, ADRs, and convention sessions.
 
 ### 5.14 — Supersession and contradiction handling
 
