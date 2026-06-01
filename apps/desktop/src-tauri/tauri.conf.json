@@ -13,6 +13,7 @@
     "windows": [
       {
         "title": "Kairo",
+        "url": "dashboard",
         "width": 1280,
         "height": 860,
         "minWidth": 960,

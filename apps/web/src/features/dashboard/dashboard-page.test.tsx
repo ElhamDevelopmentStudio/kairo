@@ -22,6 +22,7 @@ vi.mock("./api", () => apiMock);
 describe("DashboardPage", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    window.__TAURI__ = undefined;
     window.history.pushState(null, "", "/");
   });
 
@@ -57,6 +58,20 @@ describe("DashboardPage", () => {
 
     expect(await screen.findByText(/Native app controls/)).toBeInTheDocument();
     expect(screen.getByText(/Desktop controls appear/)).toBeInTheDocument();
+  });
+
+  it("redirects the desktop root to the dashboard", async () => {
+    window.__TAURI__ = { core: { invoke: vi.fn() } };
+    apiMock.fetchHealth.mockResolvedValue({ ok: true, projectName: "Kairo" });
+    apiMock.fetchTimeline.mockResolvedValue({
+      architectureShifts: [architectureShift],
+      sessions: [session],
+    });
+
+    renderDashboard("/");
+
+    expect(await screen.findByText("What changed recently")).toBeInTheDocument();
+    expect(apiMock.fetchTimeline).toHaveBeenCalledTimes(1);
   });
 });
 

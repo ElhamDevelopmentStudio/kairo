@@ -6,7 +6,7 @@ import { SearchPage } from "@/features/dashboard/pages/search-page";
 import { SessionPage } from "@/features/dashboard/pages/session-page";
 import { SessionsPage } from "@/features/dashboard/pages/sessions-page";
 import { TimelinePage } from "@/features/dashboard/pages/timeline-page";
-import { DesktopPage } from "@/features/desktop";
+import { DesktopPage, isDesktopRuntime } from "@/features/desktop";
 import { MemoryAssistantPage } from "@/features/memory";
 import { HomePage } from "@/pages/home";
 import { Navigate, createBrowserRouter } from "react-router-dom";
@@ -14,7 +14,7 @@ import type { RouteObject } from "react-router-dom";
 
 export const routes: RouteObject[] = [
   {
-    element: <HomePage />,
+    element: <RootPage />,
     errorElement: <RouteErrorPage />,
     path: "/",
   },
@@ -68,3 +68,10 @@ export const routes: RouteObject[] = [
 ];
 
 export const router = createBrowserRouter(routes);
+
+function RootPage() {
+  if (isDesktopRuntime()) {
+    return <Navigate replace to="/dashboard" />;
+  }
+  return <HomePage />;
+}
