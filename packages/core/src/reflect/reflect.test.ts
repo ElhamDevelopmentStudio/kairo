@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ArchitectureShift, GitCommitEvent, Session, TerminalEvent } from "@kairo/shared";
+import type { ArchitectureShift, GitCommitEvent, Session, TerminalEvent } from "@kairohq/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EventStore } from "../event-store/index.ts";
 import { reflectProject } from "./reflect.ts";
@@ -35,7 +35,7 @@ describe("reflectProject", () => {
       confidence: "low",
       items: expect.arrayContaining([
         expect.objectContaining({
-          title: "an_error: cannot find module @kairo<path>",
+          title: "an_error: cannot find module @kairohq<path>",
           citations: expect.arrayContaining([
             expect.objectContaining({ reference: "event:11111111-1111-4111-8111-111111111111" }),
           ]),
@@ -52,7 +52,7 @@ describe("reflectProject", () => {
       title: "Repeated errors",
       items: [
         expect.objectContaining({
-          title: "an_error: cannot find module @kairo<path>",
+          title: "an_error: cannot find module @kairohq<path>",
           summary: expect.stringContaining("2 times"),
         }),
       ],
@@ -71,7 +71,7 @@ describe("reflectProject", () => {
     expect(reflectProject({ ...base, mode: "release-readiness" })).toMatchObject({
       title: "Release readiness",
       items: expect.arrayContaining([
-        expect.objectContaining({ title: "an_error: cannot find module @kairo<path>" }),
+        expect.objectContaining({ title: "an_error: cannot find module @kairohq<path>" }),
       ]),
     });
   });
@@ -112,7 +112,7 @@ function terminalEvent(id: string, occurredAt: string): TerminalEvent {
       command: "pnpm typecheck",
       cwd: "/repo",
       exitCode: 1,
-      stderr: "AN_ERROR: Cannot find module @kairo/shared/problem",
+      stderr: "AN_ERROR: Cannot find module @kairohq/shared/problem",
     },
   };
 }

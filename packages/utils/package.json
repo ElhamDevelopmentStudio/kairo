@@ -1,5 +1,5 @@
 {
-  "name": "@kairo/utils",
+  "name": "@kairohq/utils",
   "version": "0.0.1",
   "private": false,
   "description": "Utility helpers for Kairo packages.",

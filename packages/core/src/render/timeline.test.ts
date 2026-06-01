@@ -1,4 +1,4 @@
-import type { Session } from "@kairo/shared";
+import type { Session } from "@kairohq/shared";
 import { describe, expect, it } from "vitest";
 import { renderTimeline } from "./timeline.ts";
 

@@ -1,4 +1,4 @@
-import { AiProviderName } from "@kairo/shared";
+import { AiProviderName } from "@kairohq/shared";
 import { describe, expect, it } from "vitest";
 import openAiChat from "./fixtures/openai-chat.json";
 import openAiEmbedding from "./fixtures/openai-embedding.json";

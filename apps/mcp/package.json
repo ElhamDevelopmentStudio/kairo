@@ -1,5 +1,5 @@
 {
-  "name": "@kairo/mcp",
+  "name": "@kairohq/mcp",
   "version": "0.0.1",
   "private": false,
   "description": "Kairo MCP server for exposing local project memory to assistants.",
@@ -26,9 +26,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@kairo/ai": "workspace:*",
-    "@kairo/core": "workspace:*",
-    "@kairo/shared": "workspace:*",
+    "@kairohq/ai": "workspace:*",
+    "@kairohq/core": "workspace:*",
+    "@kairohq/shared": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "tsx": "^4.19.1",
     "zod": "^3.23.8"

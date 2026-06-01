@@ -1,4 +1,4 @@
-import type { MemoryAnswer, MemoryCitation } from "@kairo/shared";
+import type { MemoryAnswer, MemoryCitation } from "@kairohq/shared";
 import { ResponseCache } from "../cache/response-cache.ts";
 import { type AiProvider, type AiProviderConfig, createAiProvider } from "../provider/index.ts";
 

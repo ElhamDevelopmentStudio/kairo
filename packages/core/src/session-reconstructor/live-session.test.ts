@@ -1,4 +1,4 @@
-import type { KairoEvent } from "@kairo/shared";
+import type { KairoEvent } from "@kairohq/shared";
 import { describe, expect, it } from "vitest";
 import { LiveSession } from "./live-session.ts";
 

@@ -1,4 +1,4 @@
-# @kairo/cli
+# @kairohq/cli
 
 ## 0.0.1
 
@@ -6,6 +6,6 @@
 
 - Prepare Kairo packages for public npm distribution.
 - Updated dependencies
-  - @kairo/ai@0.0.1
-  - @kairo/core@0.0.1
-  - @kairo/shared@0.0.1
+  - @kairohq/ai@0.0.1
+  - @kairohq/core@0.0.1
+  - @kairohq/shared@0.0.1

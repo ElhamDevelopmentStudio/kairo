@@ -1,12 +1,12 @@
-import { embedText } from "@kairo/ai";
+import { embedText } from "@kairohq/ai";
 import {
   EventStore,
   type SemanticSearchResult,
   type TextEmbedder,
   Workspace,
   semanticSearchSessions,
-} from "@kairo/core";
-import type { Session } from "@kairo/shared";
+} from "@kairohq/core";
+import type { Session } from "@kairohq/shared";
 import { Command } from "commander";
 import kleur from "kleur";
 import { resolveAiConfig } from "../internal/ai-config.ts";

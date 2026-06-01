@@ -1,4 +1,4 @@
-import type { ArchitectureShift, Session } from "@kairo/shared";
+import type { ArchitectureShift, Session } from "@kairohq/shared";
 import { addDays, differenceInCalendarDays, format, parseISO } from "date-fns";
 
 import { cn } from "@/lib/utils";

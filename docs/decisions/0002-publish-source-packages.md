@@ -14,7 +14,7 @@ Publish the CLI, MCP server, and shared Kairo libraries as source packages. The 
 
 ## Consequences
 
-`npm install -g @kairo/cli` can run the CLI without a build step, and package dry-runs exercise the same files that users install. A later release can move to compiled `dist/` output once the import graph is migrated away from runtime TypeScript loading.
+`npm install -g @kairohq/cli` can run the CLI without a build step, and package dry-runs exercise the same files that users install. A later release can move to compiled `dist/` output once the import graph is migrated away from runtime TypeScript loading.
 
 ## Rejected
 

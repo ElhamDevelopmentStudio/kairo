@@ -7,7 +7,7 @@ import type {
   ProblemMemory,
   Session,
   SymbolMemory,
-} from "@kairo/shared";
+} from "@kairohq/shared";
 import type { EventStore } from "../event-store/index.ts";
 import { buildKnowledgeGraph } from "../knowledge-graph/index.ts";
 import { extractProblemMemories } from "../problem-memory/index.ts";

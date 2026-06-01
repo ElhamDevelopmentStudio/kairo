@@ -1,4 +1,4 @@
-import type { ArchitectureShift, Session } from "@kairo/shared";
+import type { ArchitectureShift, Session } from "@kairohq/shared";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 

@@ -1,4 +1,4 @@
-import type { MemoryAnswer } from "@kairo/shared";
+import type { MemoryAnswer } from "@kairohq/shared";
 import { describe, expect, it } from "vitest";
 import { type MemoryBenchmarkCase, runMemoryBenchmark } from "./benchmark.ts";
 

@@ -3,9 +3,18 @@
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [],
-  "linked": [["@kairo/cli", "@kairo/mcp", "@kairo/ai", "@kairo/core", "@kairo/shared", "@kairo/utils"]],
+  "linked": [
+    [
+      "@kairohq/cli",
+      "@kairohq/mcp",
+      "@kairohq/ai",
+      "@kairohq/core",
+      "@kairohq/shared",
+      "@kairohq/utils"
+    ]
+  ],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@kairo/web", "@kairo/desktop", "@kairo/docs"]
+  "ignore": ["@kairohq/web", "@kairohq/desktop", "@kairohq/docs"]
 }

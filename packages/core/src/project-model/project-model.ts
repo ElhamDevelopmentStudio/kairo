@@ -6,8 +6,8 @@ import type {
   ProjectModelItem,
   ProjectOperatingModel,
   Session,
-} from "@kairo/shared";
-import { ProjectOperatingModel as ProjectOperatingModelSchema } from "@kairo/shared";
+} from "@kairohq/shared";
+import { ProjectOperatingModel as ProjectOperatingModelSchema } from "@kairohq/shared";
 import type { EventStore } from "../event-store/index.ts";
 import { buildKnowledgeGraph } from "../knowledge-graph/index.ts";
 import { extractDecisionMemories } from "../memory/index.ts";

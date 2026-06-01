@@ -1,9 +1,9 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AiProvider, CompleteInput } from "@kairo/ai";
-import { EventStore, Workspace } from "@kairo/core";
-import type { Session } from "@kairo/shared";
+import type { AiProvider, CompleteInput } from "@kairohq/ai";
+import { EventStore, Workspace } from "@kairohq/core";
+import type { Session } from "@kairohq/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { renderAskAnswer, runAsk } from "./ask.ts";
 
@@ -65,7 +65,7 @@ Kairo v1 will use an in-process local API for the web dashboard.
 
 ## Rationale
 
-SQLite ownership stays in \`@kairo/core\`, where migrations and EventStore reads already live.
+SQLite ownership stays in \`@kairohq/core\`, where migrations and EventStore reads already live.
 `,
     );
 
@@ -75,7 +75,7 @@ SQLite ownership stays in \`@kairo/core\`, where migrations and EventStore reads
       kind: "decision",
       reference: "adr:docs/decisions/0001-web-data-source.md",
     });
-    expect(answer.answer).toContain("SQLite ownership stays in `@kairo/core`");
+    expect(answer.answer).toContain("SQLite ownership stays in `@kairohq/core`");
   });
 
   it("uses optional AI rerank before generating the final answer", async () => {

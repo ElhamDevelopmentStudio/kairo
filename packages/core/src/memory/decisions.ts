@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, join, relative } from "node:path";
-import type { ArchitectureShift, DecisionMemory } from "@kairo/shared";
-import { deterministicUuid } from "@kairo/utils/id";
+import type { ArchitectureShift, DecisionMemory } from "@kairohq/shared";
+import { deterministicUuid } from "@kairohq/utils/id";
 
 export interface ExtractDecisionMemoriesInput {
   projectId: string;

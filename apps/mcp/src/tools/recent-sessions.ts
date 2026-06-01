@@ -1,5 +1,5 @@
-import { EventStore } from "@kairo/core";
-import type { Session } from "@kairo/shared";
+import { EventStore } from "@kairohq/core";
+import type { Session } from "@kairohq/shared";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { ToolContext } from "./context.ts";

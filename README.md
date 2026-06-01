@@ -368,8 +368,8 @@ pnpm install
 pnpm typecheck
 
 # inside another project you want Kairo to observe:
-pnpm --filter @kairo/cli dev init
-pnpm --filter @kairo/cli dev doctor
+pnpm --filter @kairohq/cli dev init
+pnpm --filter @kairohq/cli dev doctor
 ```
 
 # Guided Onboarding

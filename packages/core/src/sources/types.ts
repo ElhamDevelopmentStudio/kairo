@@ -1,4 +1,4 @@
-import type { MemorySourceId, SourceAdapterDefinition, SourceImportResult } from "@kairo/shared";
+import type { MemorySourceId, SourceAdapterDefinition, SourceImportResult } from "@kairohq/shared";
 import type { EventStore } from "../event-store/index.ts";
 
 export interface SourceAdapterInput {

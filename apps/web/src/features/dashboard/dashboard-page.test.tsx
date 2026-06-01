@@ -1,4 +1,4 @@
-import type { ArchitectureShift, KairoEvent, Session } from "@kairo/shared";
+import type { ArchitectureShift, KairoEvent, Session } from "@kairohq/shared";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";

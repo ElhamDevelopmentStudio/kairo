@@ -1,4 +1,4 @@
-import type { DecisionMemory, GitCommitEvent, KairoEvent, Session } from "@kairo/shared";
+import type { DecisionMemory, GitCommitEvent, KairoEvent, Session } from "@kairohq/shared";
 import { describe, expect, it } from "vitest";
 import { buildKnowledgeGraph } from "../knowledge-graph/index.ts";
 import { extractSupersessionMemories } from "./supersession.ts";

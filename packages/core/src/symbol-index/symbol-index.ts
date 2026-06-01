@@ -4,8 +4,8 @@ import type {
   MemoryEvidenceReference,
   Session,
   SymbolMemory,
-} from "@kairo/shared";
-import { deterministicUuid } from "@kairo/utils/id";
+} from "@kairohq/shared";
+import { deterministicUuid } from "@kairohq/utils/id";
 import { extractCurrentTypeScriptSymbols } from "./static-symbols.ts";
 
 export interface ExtractSymbolMemoriesInput {

@@ -3,9 +3,9 @@ import {
   answerMemoryWithAi,
   createAiProvider,
   rerankMemoryEvidence,
-} from "@kairo/ai";
-import { EventStore, Workspace, answerProjectMemory, extractDecisionMemories } from "@kairo/core";
-import type { MemoryAnswer, MemoryCitation } from "@kairo/shared";
+} from "@kairohq/ai";
+import { EventStore, Workspace, answerProjectMemory, extractDecisionMemories } from "@kairohq/core";
+import type { MemoryAnswer, MemoryCitation } from "@kairohq/shared";
 import { Command } from "commander";
 import kleur from "kleur";
 import { resolveAiConfig } from "../internal/ai-config.ts";

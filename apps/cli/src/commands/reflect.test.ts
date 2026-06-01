@@ -1,8 +1,8 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { EventStore, Workspace } from "@kairo/core";
-import type { ArchitectureShift } from "@kairo/shared";
+import { EventStore, Workspace } from "@kairohq/core";
+import type { ArchitectureShift } from "@kairohq/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { renderReflectionReport, runReflect } from "./reflect.ts";
 

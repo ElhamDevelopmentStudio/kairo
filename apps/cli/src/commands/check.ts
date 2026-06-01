@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { EventStore, type MemoryCheckReport, Workspace, checkProjectMemory } from "@kairo/core";
+import { EventStore, type MemoryCheckReport, Workspace, checkProjectMemory } from "@kairohq/core";
 import { Command } from "commander";
 import kleur from "kleur";
 

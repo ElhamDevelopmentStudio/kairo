@@ -5,7 +5,7 @@ import type {
   MemoryCitation,
   ProblemMemory,
   SymbolMemory,
-} from "@kairo/shared";
+} from "@kairohq/shared";
 import type { EventStore } from "../event-store/index.ts";
 import { type MemoryCandidate, retrieveMemoryCandidates } from "./retrieval.ts";
 

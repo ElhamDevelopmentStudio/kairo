@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
-import { EventStore, renderSession } from "@kairo/core";
-import type { KairoEvent, Session } from "@kairo/shared";
+import { EventStore, renderSession } from "@kairohq/core";
+import type { KairoEvent, Session } from "@kairohq/shared";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { ToolContext } from "./context.ts";

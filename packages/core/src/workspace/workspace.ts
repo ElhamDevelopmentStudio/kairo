@@ -1,7 +1,7 @@
 import { existsSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import type { AgentIngestConfig } from "@kairo/shared";
-import { ensureDir, readJson, writeJson } from "@kairo/utils/fs";
+import type { AgentIngestConfig } from "@kairohq/shared";
+import { ensureDir, readJson, writeJson } from "@kairohq/utils/fs";
 import {
   DEFAULT_WORKSPACE_AI_CONFIG,
   type WorkspaceAiConfig,

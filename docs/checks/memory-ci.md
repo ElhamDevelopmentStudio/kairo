@@ -30,7 +30,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @kairo/cli exec tsx src/bin.ts check memory
+      - run: pnpm --filter @kairohq/cli exec tsx src/bin.ts check memory
 ```
 
 The check currently flags repeated terminal errors, broad architecture shifts

@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ArchitectureShift } from "@kairo/shared";
+import type { ArchitectureShift } from "@kairohq/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { extractDecisionMemories } from "./decisions.ts";
 
@@ -32,7 +32,7 @@ Kairo v1 will use an in-process local API for the web dashboard.
 ## Rationale
 
 The dashboard is a local operational surface, not a hosted analytics product.
-SQLite ownership stays in \`@kairo/core\` and browser code does not import \`EventStore\`.
+SQLite ownership stays in \`@kairohq/core\` and browser code does not import \`EventStore\`.
 
 ## Consequences
 
@@ -51,7 +51,7 @@ SQLite ownership stays in \`@kairo/core\` and browser code does not import \`Eve
       status: "accepted",
       date: "2026-05-20",
       inferred: false,
-      files: ["@kairo/core", "apps/web"],
+      files: ["@kairohq/core", "apps/web"],
       consequences: [
         "`apps/web` remains a static Vite app.",
         "`kairo serve` owns the local API boundary.",

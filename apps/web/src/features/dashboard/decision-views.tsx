@@ -1,4 +1,4 @@
-import type { ArchitectureShift } from "@kairo/shared";
+import type { ArchitectureShift } from "@kairohq/shared";
 
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

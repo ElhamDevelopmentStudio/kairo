@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { KairoEvent, Session } from "@kairo/shared";
+import type { KairoEvent, Session } from "@kairohq/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   extractCurrentTypeScriptSymbols,

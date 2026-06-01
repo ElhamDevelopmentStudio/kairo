@@ -16,7 +16,7 @@ An in-process API keeps that path simple while preserving the local-first
 boundary: all reads happen on the user's machine against the project-local
 database.
 
-This also keeps SQLite ownership in `@kairo/core`, where migrations, schemas,
+This also keeps SQLite ownership in `@kairohq/core`, where migrations, schemas,
 redaction assumptions, and `EventStore` behavior already live. The web app gets
 a stable data contract without duplicating database access logic in browser
 code.
@@ -35,7 +35,7 @@ about.
 
 - `apps/web` remains a static Vite app.
 - `kairo serve` owns the local API boundary.
-- API handlers should stay thin and call `@kairo/core`.
+- API handlers should stay thin and call `@kairohq/core`.
 - Browser code should not import `better-sqlite3`, `EventStore`, or Node-only
   workspace modules directly.
 - Future Tauri work may revisit direct database reads through a desktop command

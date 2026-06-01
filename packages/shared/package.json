@@ -1,5 +1,5 @@
 {
-  "name": "@kairo/shared",
+  "name": "@kairohq/shared",
   "version": "0.0.1",
   "private": false,
   "description": "Shared schemas and types for Kairo.",

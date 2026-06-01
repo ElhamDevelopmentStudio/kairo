@@ -1,12 +1,12 @@
-import { type AiProviderConfig, embedText } from "@kairo/ai";
+import { type AiProviderConfig, embedText } from "@kairohq/ai";
 import {
   type SemanticSearchResult as CoreSemanticSearchResult,
   EventStore,
   type TextEmbedder,
   type WorkspaceAiConfigType,
   semanticSearchSessions,
-} from "@kairo/core";
-import type { Session } from "@kairo/shared";
+} from "@kairohq/core";
+import type { Session } from "@kairohq/shared";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { ToolContext } from "./context.ts";

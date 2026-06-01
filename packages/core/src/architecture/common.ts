@@ -1,5 +1,5 @@
-import type { ArchitectureShift, GitCommitEvent, KairoEvent, Session } from "@kairo/shared";
-import { deterministicUuid } from "@kairo/utils/id";
+import type { ArchitectureShift, GitCommitEvent, KairoEvent, Session } from "@kairohq/shared";
+import { deterministicUuid } from "@kairohq/utils/id";
 import type { ArchitectureDetectorInput, SessionEventCluster } from "./types.ts";
 
 export interface ShiftParts {

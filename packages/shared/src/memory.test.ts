@@ -34,7 +34,7 @@ describe("memory record schemas", () => {
       ProblemMemory.parse({
         ...base("problem"),
         errorSignature: "cannot find module",
-        errorMessage: "Cannot find module @kairo/shared",
+        errorMessage: "Cannot find module @kairohq/shared",
         command: "pnpm typecheck",
         cwd: "/repo",
         occurredAt: "2026-05-18T10:00:00.000Z",

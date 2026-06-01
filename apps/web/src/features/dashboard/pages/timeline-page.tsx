@@ -1,4 +1,4 @@
-import type { ArchitectureShift, Session } from "@kairo/shared";
+import type { ArchitectureShift, Session } from "@kairohq/shared";
 import { Link } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";

@@ -1,4 +1,4 @@
-import type { ArchitectureShift, KairoEvent, Session } from "@kairo/shared";
+import type { ArchitectureShift, KairoEvent, Session } from "@kairohq/shared";
 
 export interface ArchitectureDetectorInput {
   projectId: string;

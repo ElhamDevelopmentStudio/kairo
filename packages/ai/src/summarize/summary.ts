@@ -1,4 +1,4 @@
-import type { Session } from "@kairo/shared";
+import type { Session } from "@kairohq/shared";
 
 export interface SessionSummary {
   title: string;

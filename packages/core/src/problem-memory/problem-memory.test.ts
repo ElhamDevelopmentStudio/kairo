@@ -1,11 +1,11 @@
-import type { GitCommitEvent, Session, TerminalEvent } from "@kairo/shared";
+import type { GitCommitEvent, Session, TerminalEvent } from "@kairohq/shared";
 import { describe, expect, it } from "vitest";
 import { extractProblemMemories } from "./problem-memory.ts";
 
 describe("extractProblemMemories", () => {
   it("links a terminal error to the later fix commit and session", () => {
     const terminal = terminalEvent({
-      stderr: "AN_ERROR: Cannot find module @kairo/shared/problem",
+      stderr: "AN_ERROR: Cannot find module @kairohq/shared/problem",
       exitCode: 1,
     });
     const commit = commitEvent({
@@ -40,7 +40,7 @@ describe("extractProblemMemories", () => {
 
     expect(memory).toMatchObject({
       projectId: "demo",
-      errorMessage: "AN_ERROR: Cannot find module @kairo/shared/problem",
+      errorMessage: "AN_ERROR: Cannot find module @kairohq/shared/problem",
       command: "pnpm typecheck",
       status: "fixed",
       fixSummary: "Exported the problem memory schema so imports resolve.",

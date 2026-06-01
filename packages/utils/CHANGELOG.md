@@ -1,4 +1,4 @@
-# @kairo/utils
+# @kairohq/utils
 
 ## 0.0.1
 

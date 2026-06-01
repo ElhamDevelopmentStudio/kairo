@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { type AgentGatewayCheck, type ProcessRunner, checkAgentGateways } from "@kairo/ai";
-import { Workspace } from "@kairo/core";
+import { type AgentGatewayCheck, type ProcessRunner, checkAgentGateways } from "@kairohq/ai";
+import { Workspace } from "@kairohq/core";
 import { Command } from "commander";
 import kleur from "kleur";
 

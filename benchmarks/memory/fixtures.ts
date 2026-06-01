@@ -19,7 +19,7 @@ export const memoryBenchmarkCases: MemoryBenchmarkCase[] = [
     id: "problem-an-error-fix",
     category: "problem-fix",
     question: "we fixed AN_ERROR before, how?",
-    expectedReferences: ["problem:an_error: cannot find module @kairo<path>"],
+    expectedReferences: ["problem:an_error: cannot find module @kairohq<path>"],
   },
   {
     id: "temporal-before-dashboard-split",
@@ -36,8 +36,8 @@ export const memoryBenchmarkCases: MemoryBenchmarkCase[] = [
   {
     id: "exact-error-string",
     category: "exact-error",
-    question: "where did MODULE_NOT_FOUND @kairo/shared/problem happen?",
-    expectedReferences: ["problem:module_not_found @kairo<path>"],
+    question: "where did MODULE_NOT_FOUND @kairohq/shared/problem happen?",
+    expectedReferences: ["problem:module_not_found @kairohq<path>"],
   },
   {
     id: "agent-transcript-source-adapter",
@@ -85,7 +85,7 @@ export const memoryBenchmarkDecisions: DecisionMemory[] = [
     reference: "adr:docs/decisions/0002-dashboard-storage.md",
     inferred: false,
     occurredAt: "2026-05-21T10:00:00.000Z",
-    rationale: "SQLite ownership stays inside @kairo/core and the CLI service boundary.",
+    rationale: "SQLite ownership stays inside @kairohq/core and the CLI service boundary.",
     consequences: ["The web surface can stay optional and dashboard-free projects still work."],
     files: ["apps/cli/src/commands/serve.ts", "apps/web/src/features/dashboard/dashboard-page.tsx"],
     relatedShiftIds: ["11111111-1111-4111-8111-111111111111"],
@@ -129,11 +129,11 @@ export function seedMemoryBenchmarkStore(store: EventStore): void {
   store.append(
     errorEvent(
       "55555555-5555-4555-8555-555555555555",
-      "AN_ERROR: Cannot find module @kairo/shared/problem",
+      "AN_ERROR: Cannot find module @kairohq/shared/problem",
     ),
   );
   store.append(
-    errorEvent("88888888-8888-4888-8888-888888888888", "MODULE_NOT_FOUND @kairo/shared/problem"),
+    errorEvent("88888888-8888-4888-8888-888888888888", "MODULE_NOT_FOUND @kairohq/shared/problem"),
   );
   store.append(fixCommit());
   store.append(agentEvent());

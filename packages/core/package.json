@@ -1,5 +1,5 @@
 {
-  "name": "@kairo/core",
+  "name": "@kairohq/core",
   "version": "0.0.1",
   "private": false,
   "description": "Core observation, storage, reconstruction, and memory logic for Kairo.",
@@ -27,8 +27,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@kairo/shared": "workspace:*",
-    "@kairo/utils": "workspace:*",
+    "@kairohq/shared": "workspace:*",
+    "@kairohq/utils": "workspace:*",
     "better-sqlite3": "^11.3.0",
     "chokidar": "^4.0.0",
     "simple-git": "^3.27.0",

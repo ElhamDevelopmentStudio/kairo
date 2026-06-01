@@ -1,4 +1,4 @@
-import { SourceAdapterDefinition, SourceImportResult } from "@kairo/shared";
+import { SourceAdapterDefinition, SourceImportResult } from "@kairohq/shared";
 import type { MemorySourceAdapter, SourceAdapterInput } from "./types.ts";
 
 export interface SourceAdapterConformanceResult {

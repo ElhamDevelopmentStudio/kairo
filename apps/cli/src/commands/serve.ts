@@ -9,8 +9,8 @@ import {
   answerProjectMemory,
   extractDecisionMemories,
   renderSession,
-} from "@kairo/core";
-import type { KairoEvent, Session } from "@kairo/shared";
+} from "@kairohq/core";
+import type { KairoEvent, Session } from "@kairohq/shared";
 import { Command } from "commander";
 import { Hono } from "hono";
 import kleur from "kleur";

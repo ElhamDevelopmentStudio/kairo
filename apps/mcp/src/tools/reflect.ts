@@ -1,5 +1,5 @@
-import { EventStore, REFLECTION_MODES, isReflectionMode, reflectProject } from "@kairo/core";
-import type { ReflectionMode, ReflectionReport } from "@kairo/core";
+import { EventStore, REFLECTION_MODES, isReflectionMode, reflectProject } from "@kairohq/core";
+import type { ReflectionMode, ReflectionReport } from "@kairohq/core";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { ToolContext } from "./context.ts";

@@ -7,13 +7,13 @@ import {
   Workspace,
   renderSession,
   renderTimeline,
-} from "@kairo/core";
+} from "@kairohq/core";
 import {
   AIIngestPayload,
   GitIngestPayload,
   type KairoEvent,
   TerminalIngestPayload,
-} from "@kairo/shared";
+} from "@kairohq/shared";
 import { Command } from "commander";
 import kleur from "kleur";
 import {

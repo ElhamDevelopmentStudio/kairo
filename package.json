@@ -10,7 +10,7 @@
   },
   "packageManager": "pnpm@9.12.0",
   "scripts": {
-    "dev": "pnpm --filter @kairo/web build && concurrently -k -n api,web -c blue,green \"pnpm --filter @kairo/cli exec tsx src/bin.ts serve --no-open --port 4170\" \"pnpm --filter @kairo/web dev\"",
+    "dev": "pnpm --filter @kairohq/web build && concurrently -k -n api,web -c blue,green \"pnpm --filter @kairohq/cli exec tsx src/bin.ts serve --no-open --port 4170\" \"pnpm --filter @kairohq/web dev\"",
     "dev:all": "turbo run dev",
     "changeset": "changeset",
     "version-packages": "changeset version",

@@ -1,8 +1,8 @@
 import { mkdirSync, mkdtempSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { EventStore, Workspace } from "@kairo/core";
-import type { ArchitectureShift, GitCommitEvent, Session } from "@kairo/shared";
+import { EventStore, Workspace } from "@kairohq/core";
+import type { ArchitectureShift, GitCommitEvent, Session } from "@kairohq/shared";
 import { describe, expect, it } from "vitest";
 import { createDashboardApp } from "./serve.ts";
 
@@ -140,7 +140,7 @@ Kairo v1 will use an in-process local API for the web dashboard.
 
 ## Rationale
 
-SQLite ownership stays in \`@kairo/core\`, where migrations and EventStore reads already live.
+SQLite ownership stays in \`@kairohq/core\`, where migrations and EventStore reads already live.
 `,
     );
     const app = createDashboardApp({ workspace });
@@ -153,7 +153,7 @@ SQLite ownership stays in \`@kairo/core\`, where migrations and EventStore reads
 
     expect(response.status).toBe(200);
     const body = await response.json();
-    expect(body.answer).toContain("SQLite ownership stays in `@kairo/core`");
+    expect(body.answer).toContain("SQLite ownership stays in `@kairohq/core`");
     expect(body.citations[0]).toMatchObject({
       kind: "decision",
       reference: "adr:docs/decisions/0001-web-data-source.md",

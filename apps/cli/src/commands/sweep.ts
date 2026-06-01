@@ -5,7 +5,7 @@ import {
   applySessionSummary,
   embedText,
   summarizeSession,
-} from "@kairo/ai";
+} from "@kairohq/ai";
 import {
   EventStore,
   GitObserver,
@@ -18,8 +18,8 @@ import {
   indexSessionEmbeddings,
   renderSession,
   renderTimeline,
-} from "@kairo/core";
-import type { KairoEvent, Session } from "@kairo/shared";
+} from "@kairohq/core";
+import type { KairoEvent, Session } from "@kairohq/shared";
 import { Command } from "commander";
 import kleur from "kleur";
 import { hasAiEnv, resolveAiConfig } from "../internal/ai-config.ts";

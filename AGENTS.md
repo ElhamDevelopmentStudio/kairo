@@ -66,14 +66,14 @@ sides. This includes:
 
 | Kind of code | Lives in |
 |---|---|
-| Cross-package types and zod schemas | `@kairo/shared` |
-| Pure helper functions (date, slug, fs, path, parsing) | `@kairo/utils` |
-| Domain logic (observation, session reconstruction, render) | `@kairo/core` |
-| AI provider abstraction | `@kairo/ai` |
+| Cross-package types and zod schemas | `@kairohq/shared` |
+| Pure helper functions (date, slug, fs, path, parsing) | `@kairohq/utils` |
+| Domain logic (observation, session reconstruction, render) | `@kairohq/core` |
+| AI provider abstraction | `@kairohq/ai` |
 | Binary entrypoints + thin command/transport wiring | `apps/*` |
 
 **Types must be defined once.** If `Session` appears in both `apps/cli` and
-`apps/mcp`, you have a bug — both should import it from `@kairo/shared`. Local
+`apps/mcp`, you have a bug — both should import it from `@kairohq/shared`. Local
 types (used inside a single module and never exported) are fine.
 
 **Apps should be thin.** An app's job is: parse input, call into packages,
@@ -101,7 +101,7 @@ packages/{name}/
 │   │   ├── index.ts          Module's public surface
 │   │   ├── {feature}.ts      Implementation
 │   │   ├── {feature}.test.ts Tests live next to the code they test
-│   │   └── types.ts          Module-local types only (cross-package types go in @kairo/shared)
+│   │   └── types.ts          Module-local types only (cross-package types go in @kairohq/shared)
 │   └── internal/         Private helpers — not exported from root index.ts
 └── test/                 Cross-module integration tests (optional)
 ```
@@ -151,7 +151,7 @@ Is it AI provider / summarization?            →  packages/ai
 Does it run as a binary or service?           →  apps/{name}
 Is it used only inside one module?            →  stay in that module
 Is it used by two modules in one package?     →  hoist to that package's src/internal/
-Is it used by two packages?                   →  hoist to @kairo/shared or @kairo/utils
+Is it used by two packages?                   →  hoist to @kairohq/shared or @kairohq/utils
 ```
 
 When in doubt, prefer hoisting up. Premature locality is worse than premature
@@ -163,17 +163,17 @@ sharing — sharing is recoverable, scattered duplicates are not.
 
 - **Modularity.** Every feature is a folder, not a file. If a file exceeds
   ~300 lines, it almost certainly contains more than one concept — split it.
-- **No duplicate utilities.** Before writing a helper, grep `@kairo/utils` and
+- **No duplicate utilities.** Before writing a helper, grep `@kairohq/utils` and
   the calling package's `src/internal/`. If it exists, use it. If not and the
-  helper is reusable, put it in `@kairo/utils` from the start.
-- **No re-declared types.** Before declaring a type, search `@kairo/shared`.
+  helper is reusable, put it in `@kairohq/utils` from the start.
+- **No re-declared types.** Before declaring a type, search `@kairohq/shared`.
   If the concept exists, import it. If you're adding a new cross-package type,
-  add it to `@kairo/shared`.
+  add it to `@kairohq/shared`.
 - **Strict TypeScript.** The root tsconfig sets `strict`, `noUncheckedIndexedAccess`,
   `exactOptionalPropertyTypes`. Don't loosen these.
 - **No defensive programming for impossible inputs.** Trust internal callers;
   validate only at system boundaries (CLI input, MCP input, hook payloads, AI
-  responses). Use zod schemas from `@kairo/shared` for that validation.
+  responses). Use zod schemas from `@kairohq/shared` for that validation.
 - **Comments.** Default to none. Comment only when the *why* is non-obvious.
   Never comment what the code does — names already do that.
 - **No unused exports.** If nothing imports it, delete it.
@@ -190,15 +190,15 @@ sharing — sharing is recoverable, scattered duplicates are not.
 - **Colocated tests.** `event-store.test.ts` sits next to `event-store.ts`.
   No `__tests__` mirror trees.
 - **What to run per task:** **Only the tests relevant to the task.**
-  `pnpm --filter @kairo/core test event-store` is the norm. Run the full suite
+  `pnpm --filter @kairohq/core test event-store` is the norm. Run the full suite
   (`pnpm test`) only when:
-  - touching `@kairo/shared` (everything depends on it),
-  - touching `@kairo/utils`,
+  - touching `@kairohq/shared` (everything depends on it),
+  - touching `@kairohq/utils`,
   - finishing a phase,
   - or shipping a release.
 - **Fixtures.** Live in `test/fixtures/` at the package root if cross-module,
   or `src/{module}/fixtures/` if module-local.
-- **External calls.** AI provider calls in `@kairo/ai` use recorded fixtures
+- **External calls.** AI provider calls in `@kairohq/ai` use recorded fixtures
   (snapshots of responses) — tests never hit the network.
 
 ---
@@ -214,7 +214,7 @@ sharing — sharing is recoverable, scattered duplicates are not.
   Wait for the second caller before generalizing.
 - **Run only what you need.** Per-task: typecheck the touched package, run
   the relevant test file. Don't `pnpm typecheck` the whole monorepo on every
-  edit unless you've changed `@kairo/shared`.
+  edit unless you've changed `@kairohq/shared`.
 
 ---
 
@@ -239,7 +239,7 @@ sharing — sharing is recoverable, scattered duplicates are not.
   Phase 4. The CLI talks to the core via direct function calls. No HTTP needed.
 - **Don't add Next.js.** The dashboard runs in the Tauri WebView — Vite is right.
 - **Don't reimplement observers in Rust.** Tauri's Rust core only supervises
-  the Node sidecar that runs `@kairo/core` — observation logic stays in Node.
+  the Node sidecar that runs `@kairohq/core` — observation logic stays in Node.
   Node observation is more than fast enough for v1; Rust is the shell, not the
   observer.
 - **Don't add a queue / job system / message bus.** SQLite + a long-running
@@ -247,14 +247,14 @@ sharing — sharing is recoverable, scattered duplicates are not.
 - **Don't add an ORM.** `better-sqlite3` + handwritten SQL is faster, more
   obvious, and easier to debug than Drizzle or Prisma for this scale.
 - **Don't depend tightly on one AI vendor.** All provider calls go through
-  `@kairo/ai`. The SDD calls this out as a top risk (§17.4).
+  `@kairohq/ai`. The SDD calls this out as a top risk (§17.4).
 - **Don't observe outside the project root.** Kairo is per-project. Never
   read or write outside the user's project directory plus `~/.kairo/` for
   global config.
 - **Don't log secrets.** Terminal observation must redact tokens, env vars,
   passwords. Privacy is in the SRS as a hard requirement (§9, §15).
 - **Don't write a "temporary" duplicate type "for now."** It will stay. Put
-  it in `@kairo/shared` the first time.
+  it in `@kairohq/shared` the first time.
 
 ---
 

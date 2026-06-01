@@ -6,7 +6,7 @@ import {
   SourceAdapterDefinition,
   type SourceImportItem,
   SourceImportResult,
-} from "@kairo/shared";
+} from "@kairohq/shared";
 import { extractDecisionMemories } from "../memory/index.ts";
 import type { MemorySourceAdapter, SourceAdapterInput } from "./types.ts";
 

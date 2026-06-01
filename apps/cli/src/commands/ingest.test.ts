@@ -2,8 +2,8 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { EventStore, Workspace } from "@kairo/core";
-import type { KairoEvent } from "@kairo/shared";
+import { EventStore, Workspace } from "@kairohq/core";
+import type { KairoEvent } from "@kairohq/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runIngest, runIngestAgents } from "./ingest.ts";
 
@@ -80,7 +80,7 @@ describe("runIngest", () => {
           command: "pnpm typecheck",
           cwd: repoRoot,
           exitCode: 1,
-          stderr: "AN_ERROR: Cannot find module @kairo/shared/problem",
+          stderr: "AN_ERROR: Cannot find module @kairohq/shared/problem",
           occurredAt: "2026-05-18T10:00:00.000Z",
         }),
       },
@@ -96,7 +96,7 @@ describe("runIngest", () => {
         payload: {
           command: "pnpm typecheck",
           exitCode: 1,
-          stderr: "AN_ERROR: Cannot find module @kairo/shared/problem",
+          stderr: "AN_ERROR: Cannot find module @kairohq/shared/problem",
         },
       });
       expect(events[0]).toMatchObject(event);

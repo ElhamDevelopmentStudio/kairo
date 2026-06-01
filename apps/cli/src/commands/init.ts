@@ -1,14 +1,14 @@
 import { basename, resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
-import { listProviderSetups } from "@kairo/ai";
+import { listProviderSetups } from "@kairohq/ai";
 import {
   Workspace,
   type WorkspaceAiAuthModeType,
   type WorkspaceAiConfigType,
   installKairoHooks,
   uninstallKairoHooks,
-} from "@kairo/core";
-import type { AiProviderName } from "@kairo/shared";
+} from "@kairohq/core";
+import type { AiProviderName } from "@kairohq/shared";
 import { Command } from "commander";
 import kleur from "kleur";
 import { AGENT_SOURCE_DEFINITIONS, parseAgentProviders } from "../internal/agent-sources.ts";

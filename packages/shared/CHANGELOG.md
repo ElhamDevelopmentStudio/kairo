@@ -1,4 +1,4 @@
-# @kairo/shared
+# @kairohq/shared
 
 ## 0.0.1
 

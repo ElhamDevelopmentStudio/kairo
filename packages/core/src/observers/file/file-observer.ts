@@ -1,5 +1,5 @@
 import { relative, sep } from "node:path";
-import type { FileChangeEvent } from "@kairo/shared";
+import type { FileChangeEvent } from "@kairohq/shared";
 import chokidar, { type FSWatcher } from "chokidar";
 
 export type FileEventHandler = (event: FileChangeEvent) => void;

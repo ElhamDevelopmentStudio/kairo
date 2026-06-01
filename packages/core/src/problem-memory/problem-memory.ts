@@ -4,8 +4,8 @@ import type {
   ProblemMemory,
   Session,
   TerminalEvent,
-} from "@kairo/shared";
-import { deterministicUuid } from "@kairo/utils/id";
+} from "@kairohq/shared";
+import { deterministicUuid } from "@kairohq/utils/id";
 
 export function extractProblemMemories(
   projectId: string,

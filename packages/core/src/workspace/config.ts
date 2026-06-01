@@ -1,4 +1,4 @@
-import { AgentIngestConfig, AiProviderName } from "@kairo/shared";
+import { AgentIngestConfig, AiProviderName } from "@kairohq/shared";
 import { z } from "zod";
 
 export const WorkspaceAiAuthModeSchema = z.enum(["api-key", "headless", "none"]);

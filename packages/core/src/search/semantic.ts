@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { Session } from "@kairo/shared";
+import type { Session } from "@kairohq/shared";
 import type { EventStore } from "../event-store/index.ts";
 import { sessionBridgeSearchText } from "../memory/bridge-docs.ts";
 

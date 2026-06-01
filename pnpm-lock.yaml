@@ -38,13 +38,13 @@ importers:
       '@hono/node-server':
         specifier: ^2.0.3
         version: 2.0.3(hono@4.12.21)
-      '@kairo/ai':
+      '@kairohq/ai':
         specifier: workspace:*
         version: link:../../packages/ai
-      '@kairo/core':
+      '@kairohq/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@kairo/shared':
+      '@kairohq/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       commander:
@@ -107,13 +107,13 @@ importers:
 
   apps/mcp:
     dependencies:
-      '@kairo/ai':
+      '@kairohq/ai':
         specifier: workspace:*
         version: link:../../packages/ai
-      '@kairo/core':
+      '@kairohq/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@kairo/shared':
+      '@kairohq/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@modelcontextprotocol/sdk':
@@ -144,7 +144,7 @@ importers:
       '@hugeicons/react':
         specifier: ^1.1.6
         version: 1.1.6(react@19.2.6)
-      '@kairo/shared':
+      '@kairohq/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@tailwindcss/vite':
@@ -229,7 +229,7 @@ importers:
 
   packages/ai:
     dependencies:
-      '@kairo/shared':
+      '@kairohq/shared':
         specifier: workspace:*
         version: link:../shared
     devDependencies:
@@ -239,10 +239,10 @@ importers:
 
   packages/core:
     dependencies:
-      '@kairo/shared':
+      '@kairohq/shared':
         specifier: workspace:*
         version: link:../shared
-      '@kairo/utils':
+      '@kairohq/utils':
         specifier: workspace:*
         version: link:../utils
       better-sqlite3:

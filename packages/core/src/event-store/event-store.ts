@@ -5,8 +5,8 @@ import {
   KnowledgeGraphRelationship,
   Session,
   StoredMemoryRecord,
-} from "@kairo/shared";
-import { deterministicUuid } from "@kairo/utils/id";
+} from "@kairohq/shared";
+import { deterministicUuid } from "@kairohq/utils/id";
 import Database from "better-sqlite3";
 import { load as loadSqliteVec } from "sqlite-vec";
 import { redactSecrets } from "../redact/index.ts";

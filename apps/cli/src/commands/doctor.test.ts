@@ -2,8 +2,8 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ProcessRunner } from "@kairo/ai";
-import { Workspace, installKairoHooks } from "@kairo/core";
+import type { ProcessRunner } from "@kairohq/ai";
+import { Workspace, installKairoHooks } from "@kairohq/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runDoctor } from "./doctor.ts";
 

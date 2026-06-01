@@ -1,5 +1,5 @@
-import { EventStore, Workspace, importFromSource, listSourceAdapters } from "@kairo/core";
-import { MemorySourceId, type SourceImportResult } from "@kairo/shared";
+import { EventStore, Workspace, importFromSource, listSourceAdapters } from "@kairohq/core";
+import { MemorySourceId, type SourceImportResult } from "@kairohq/shared";
 import { Command } from "commander";
 import kleur from "kleur";
 

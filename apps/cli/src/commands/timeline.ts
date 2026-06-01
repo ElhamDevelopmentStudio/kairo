@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { Workspace } from "@kairo/core";
+import { Workspace } from "@kairohq/core";
 import { Command } from "commander";
 import kleur from "kleur";
 

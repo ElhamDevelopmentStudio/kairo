@@ -1,4 +1,4 @@
-import type { KairoEvent, Session } from "@kairo/shared";
+import type { KairoEvent, Session } from "@kairohq/shared";
 import { ResponseCache } from "../cache/response-cache.ts";
 import { type AiProviderConfig, createAiProvider } from "../provider/index.ts";
 import type { SessionSummary, SummarizeSessionResult } from "./summary.ts";

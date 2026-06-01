@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { KairoEvent, Session } from "@kairo/shared";
+import type { KairoEvent, Session } from "@kairohq/shared";
 
 export function buildSessionFromEvents(projectId: string, events: KairoEvent[]): Session {
   const first = events[0];

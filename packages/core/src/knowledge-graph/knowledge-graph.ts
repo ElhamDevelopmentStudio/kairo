@@ -10,8 +10,8 @@ import type {
   MemoryEvidenceReference,
   ProblemMemory,
   Session,
-} from "@kairo/shared";
-import { deterministicUuid } from "@kairo/utils/id";
+} from "@kairohq/shared";
+import { deterministicUuid } from "@kairohq/utils/id";
 import { extractProblemMemories } from "../problem-memory/index.ts";
 
 export interface BuildKnowledgeGraphInput {

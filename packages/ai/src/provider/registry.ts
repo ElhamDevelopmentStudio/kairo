@@ -1,4 +1,4 @@
-import { AiProviderName } from "@kairo/shared";
+import { AiProviderName } from "@kairohq/shared";
 import { createAmazonBedrockProvider } from "./amazon-bedrock.ts";
 import { createAnthropicProvider } from "./anthropic.ts";
 import { createCerebrasProvider } from "./cerebras.ts";

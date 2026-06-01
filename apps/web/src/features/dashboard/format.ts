@@ -1,4 +1,4 @@
-import type { KairoEvent, SessionIntent } from "@kairo/shared";
+import type { KairoEvent, SessionIntent } from "@kairohq/shared";
 import { format, formatDistanceToNowStrict, isSameYear, parseISO } from "date-fns";
 
 const intentLabels: Record<SessionIntent, string> = {

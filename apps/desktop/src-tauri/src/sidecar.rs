@@ -283,7 +283,7 @@ fn dashboard_api_command() -> CommandSpec {
     }
     pnpm_command(vec![
         "--filter",
-        "@kairo/cli",
+        "@kairohq/cli",
         "exec",
         "tsx",
         "src/bin.ts",
@@ -300,7 +300,7 @@ fn observer_command() -> CommandSpec {
     }
     pnpm_command(vec![
         "--filter",
-        "@kairo/cli",
+        "@kairohq/cli",
         "exec",
         "tsx",
         "src/bin.ts",

@@ -1,4 +1,4 @@
-import type { GitCommitEvent } from "@kairo/shared";
+import type { GitCommitEvent } from "@kairohq/shared";
 import simpleGit, { type SimpleGit } from "simple-git";
 import { GitObserver } from "./git-observer.ts";
 

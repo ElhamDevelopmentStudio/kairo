@@ -1,4 +1,4 @@
-import type { DecisionMemory, GitCommitEvent, Session, TerminalEvent } from "@kairo/shared";
+import type { DecisionMemory, GitCommitEvent, Session, TerminalEvent } from "@kairohq/shared";
 import { describe, expect, it } from "vitest";
 import { buildKnowledgeGraph, queryKnowledgeGraph } from "./knowledge-graph.ts";
 
@@ -183,7 +183,7 @@ function terminalEvent(): TerminalEvent {
       command: "pnpm typecheck",
       cwd: "/repo",
       exitCode: 1,
-      stderr: "AN_ERROR: Cannot find module @kairo/shared/problem",
+      stderr: "AN_ERROR: Cannot find module @kairohq/shared/problem",
     },
   };
 }

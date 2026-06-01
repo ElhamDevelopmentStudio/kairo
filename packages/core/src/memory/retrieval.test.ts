@@ -8,7 +8,7 @@ import type {
   GitCommitEvent,
   Session,
   TerminalEvent,
-} from "@kairo/shared";
+} from "@kairohq/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EventStore } from "../event-store/index.ts";
 import { retrieveMemoryCandidates } from "./retrieval.ts";
@@ -151,7 +151,7 @@ describe("retrieveMemoryCandidates", () => {
           source: "adr",
           reference: "adr:docs/decisions/0001-web-data-source.md",
           summary: "Kairo v1 will use an in-process local API for the web dashboard.",
-          rationale: "SQLite ownership stays in @kairo/core.",
+          rationale: "SQLite ownership stays in @kairohq/core.",
           inferred: false,
           occurredAt: "2026-05-20T00:00:00.000Z",
           consequences: [],
@@ -185,7 +185,7 @@ describe("retrieveMemoryCandidates", () => {
 
   it("promotes recurring problem memories over raw keyword matches", () => {
     const terminal = terminalEvent({
-      stderr: "AN_ERROR: Cannot find module @kairo/shared/problem",
+      stderr: "AN_ERROR: Cannot find module @kairohq/shared/problem",
       exitCode: 1,
     });
     const fix = commitEvent({
@@ -219,7 +219,7 @@ describe("retrieveMemoryCandidates", () => {
     expect(top).toMatchObject({
       kind: "problem",
       item: expect.objectContaining({
-        errorSignature: "an_error: cannot find module @kairo<path>",
+        errorSignature: "an_error: cannot find module @kairohq<path>",
         files: ["packages/shared/src/problem.ts"],
         confidence: "high",
       }),

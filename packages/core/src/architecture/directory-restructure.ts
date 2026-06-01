@@ -1,4 +1,4 @@
-import type { KairoEvent } from "@kairo/shared";
+import type { KairoEvent } from "@kairohq/shared";
 import {
   clusterEventsBySession,
   commitFiles,

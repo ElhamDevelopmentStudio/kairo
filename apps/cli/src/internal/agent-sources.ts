@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, relative } from "node:path";
-import type { AgentTranscriptProvider, KairoEvent } from "@kairo/shared";
+import type { AgentTranscriptProvider, KairoEvent } from "@kairohq/shared";
 
 export interface AgentSourceDefinition {
   id: AgentTranscriptProvider;

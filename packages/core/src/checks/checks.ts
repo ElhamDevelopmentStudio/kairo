@@ -5,7 +5,7 @@ import type {
   DecisionMemory,
   MemoryEvidenceReference,
   ProjectModelItem,
-} from "@kairo/shared";
+} from "@kairohq/shared";
 import type { EventStore } from "../event-store/index.ts";
 import { extractDecisionMemories } from "../memory/index.ts";
 import { buildProjectModel } from "../project-model/index.ts";

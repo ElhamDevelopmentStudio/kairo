@@ -1,5 +1,5 @@
-import { EventStore, importFromSource, listSourceAdapters } from "@kairo/core";
-import { MemorySourceId, type SourceImportResult } from "@kairo/shared";
+import { EventStore, importFromSource, listSourceAdapters } from "@kairohq/core";
+import { MemorySourceId, type SourceImportResult } from "@kairohq/shared";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { ToolContext } from "./context.ts";

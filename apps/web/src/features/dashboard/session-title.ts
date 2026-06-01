@@ -1,4 +1,4 @@
-import type { Session } from "@kairo/shared";
+import type { Session } from "@kairohq/shared";
 
 export function displaySessionTitle(session: Session): string {
   if (!isGeneratedSessionTitle(session)) return session.title;

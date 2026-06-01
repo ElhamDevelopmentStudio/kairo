@@ -1,6 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { SourceAdapterDefinition, type SourceImportItem, SourceImportResult } from "@kairo/shared";
+import {
+  SourceAdapterDefinition,
+  type SourceImportItem,
+  SourceImportResult,
+} from "@kairohq/shared";
 import type { MemorySourceAdapter } from "../types.ts";
 
 const FIXTURE_FILE = "source-import.json";

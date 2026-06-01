@@ -1,5 +1,5 @@
 {
-  "name": "@kairo/cli",
+  "name": "@kairohq/cli",
   "version": "0.0.1",
   "private": false,
   "description": "Kairo command-line interface for local-first project memory.",
@@ -19,7 +19,7 @@
     "access": "public"
   },
   "scripts": {
-    "dev": "pnpm --filter @kairo/web build && tsx src/bin.ts serve --no-open --port 4170",
+    "dev": "pnpm --filter @kairohq/web build && tsx src/bin.ts serve --no-open --port 4170",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src bin",
     "test": "vitest run",
@@ -28,9 +28,9 @@
   },
   "dependencies": {
     "@hono/node-server": "^2.0.3",
-    "@kairo/ai": "workspace:*",
-    "@kairo/core": "workspace:*",
-    "@kairo/shared": "workspace:*",
+    "@kairohq/ai": "workspace:*",
+    "@kairohq/core": "workspace:*",
+    "@kairohq/shared": "workspace:*",
     "commander": "^12.1.0",
     "hono": "^4.12.21",
     "kleur": "^4.1.5",

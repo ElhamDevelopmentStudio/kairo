@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { GitCommitEvent, Session, TerminalEvent } from "@kairo/shared";
+import type { GitCommitEvent, Session, TerminalEvent } from "@kairohq/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EventStore } from "../event-store/index.ts";
 import { answerProjectMemory } from "./answer.ts";
@@ -128,7 +128,7 @@ describe("answerProjectMemory", () => {
           source: "adr",
           reference: "adr:docs/decisions/0001-web-data-source.md",
           summary: "Kairo v1 will use an in-process local API for the web dashboard.",
-          rationale: "SQLite ownership stays in @kairo/core.",
+          rationale: "SQLite ownership stays in @kairohq/core.",
           inferred: false,
           occurredAt: "2026-05-20T00:00:00.000Z",
           consequences: ["apps/web remains static"],
@@ -140,7 +140,7 @@ describe("answerProjectMemory", () => {
 
     expect(answer.answer).toContain("decision memory");
     expect(answer.answer).not.toContain("adr:docs/decisions/0001-web-data-source.md");
-    expect(answer.answer).toContain("SQLite ownership stays in @kairo/core");
+    expect(answer.answer).toContain("SQLite ownership stays in @kairohq/core");
     expect(answer.citations[0]).toMatchObject({
       kind: "decision",
       reference: "adr:docs/decisions/0001-web-data-source.md",
@@ -259,7 +259,7 @@ describe("answerProjectMemory", () => {
 
   it("recalls how a previously observed terminal error was fixed", () => {
     const terminal = terminalEvent({
-      stderr: "AN_ERROR: Cannot find module @kairo/shared/problem",
+      stderr: "AN_ERROR: Cannot find module @kairohq/shared/problem",
       exitCode: 1,
     });
     const fix = commitEvent({

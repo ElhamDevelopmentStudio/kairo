@@ -4,8 +4,8 @@ import type {
   MemoryEvidenceReference,
   Session,
   SupersessionMemory,
-} from "@kairo/shared";
-import { deterministicUuid } from "@kairo/utils/id";
+} from "@kairohq/shared";
+import { deterministicUuid } from "@kairohq/utils/id";
 import { buildKnowledgeGraph } from "../knowledge-graph/index.ts";
 
 export interface ExtractSupersessionMemoriesInput {

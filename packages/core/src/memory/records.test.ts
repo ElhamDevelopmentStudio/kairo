@@ -1,4 +1,4 @@
-import type { ArchitectureShift, KairoEvent, Session } from "@kairo/shared";
+import type { ArchitectureShift, KairoEvent, Session } from "@kairohq/shared";
 import { describe, expect, it } from "vitest";
 import { extractDecisionMemories } from "./decisions.ts";
 import { rebuildMemoryRecords } from "./records.ts";
@@ -86,7 +86,7 @@ function terminalEvent(): KairoEvent {
       command: "pnpm typecheck",
       cwd: "/repo",
       exitCode: 1,
-      stderr: "Error: Cannot find module @kairo/shared/problem",
+      stderr: "Error: Cannot find module @kairohq/shared/problem",
     },
   };
 }

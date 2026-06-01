@@ -1,4 +1,4 @@
-import { AiProviderName } from "@kairo/shared";
+import { AiProviderName } from "@kairohq/shared";
 import { listProviderSetups } from "../provider/catalog.ts";
 import type { AiProviderConfig } from "../provider/provider.ts";
 

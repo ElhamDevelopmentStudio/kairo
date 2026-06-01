@@ -1,4 +1,4 @@
-# @kairo/ai
+# @kairohq/ai
 
 Provider-abstracted summarization and embedding helpers for Kairo.
 

@@ -1,4 +1,4 @@
-import type { KairoEvent } from "@kairo/shared";
+import type { KairoEvent } from "@kairohq/shared";
 
 export function bucketize(sorted: KairoEvent[], idleGapMinutes: number): KairoEvent[][] {
   const gapMs = idleGapMinutes * 60_000;

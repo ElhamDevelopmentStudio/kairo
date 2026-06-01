@@ -1,5 +1,5 @@
-import { EventStore, buildProjectModel } from "@kairo/core";
-import type { ProjectOperatingModel } from "@kairo/shared";
+import { EventStore, buildProjectModel } from "@kairohq/core";
+import type { ProjectOperatingModel } from "@kairohq/shared";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ToolContext } from "./context.ts";
 

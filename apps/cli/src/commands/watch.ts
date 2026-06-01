@@ -7,9 +7,9 @@ import {
   Workspace,
   renderSession,
   renderTimeline,
-} from "@kairo/core";
-import type { FinalizedSession } from "@kairo/core";
-import type { KairoEvent } from "@kairo/shared";
+} from "@kairohq/core";
+import type { FinalizedSession } from "@kairohq/core";
+import type { KairoEvent } from "@kairohq/shared";
 import { Command } from "commander";
 import kleur from "kleur";
 

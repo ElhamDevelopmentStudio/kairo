@@ -1,4 +1,4 @@
-import type { MemoryAnswer, MemoryCitation } from "@kairo/shared";
+import type { MemoryAnswer, MemoryCitation } from "@kairohq/shared";
 
 export type MemoryBenchmarkCategory =
   | "architecture-why"

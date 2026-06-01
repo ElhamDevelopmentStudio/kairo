@@ -1,4 +1,4 @@
-import type { AiProviderName, KairoEvent, Session } from "@kairo/shared";
+import type { AiProviderName, KairoEvent, Session } from "@kairohq/shared";
 
 export type { AiProviderName };
 

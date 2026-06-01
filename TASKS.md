@@ -30,7 +30,7 @@ phase plugs into a clean skeleton.
   - Update `apps/cli/tsconfig.json` and `apps/mcp/tsconfig.json` relative paths
     (`../../tsconfig.base.json`, `../../packages/shared`, etc.).
 - **Acceptance:** `pnpm install` succeeds, `pnpm typecheck` clean, `kairo --help`
-  works via `pnpm --filter @kairo/cli dev --help`.
+  works via `pnpm --filter @kairohq/cli dev --help`.
 - **Tests:** none new — typecheck is the test.
 - **Notes:** This is mechanical. Don't refactor code while moving.
 
@@ -38,14 +38,14 @@ phase plugs into a clean skeleton.
 
 - [x] **Goal:** a home for cross-cutting pure helpers exists before anything needs one.
 - **Files:**
-  - `packages/utils/package.json` (`@kairo/utils`, deps: none).
+  - `packages/utils/package.json` (`@kairohq/utils`, deps: none).
   - `packages/utils/tsconfig.json` (composite, extends base).
   - `packages/utils/src/index.ts` (empty re-exports).
   - `packages/utils/src/date/` — `format.ts` + `format.test.ts` for `toIsoDate`, `relativeTime`.
   - `packages/utils/src/slug/` — `slugify.ts` + tests.
   - `packages/utils/src/fs/` — `ensure-dir.ts`, `read-json.ts`, `write-json.ts` + tests.
-- **Acceptance:** `pnpm --filter @kairo/utils test` passes; the package is
-  importable as `@kairo/utils` from other packages.
+- **Acceptance:** `pnpm --filter @kairohq/utils test` passes; the package is
+  importable as `@kairohq/utils` from other packages.
 - **Tests:** unit tests for every exported helper. Pure functions, easy.
 - **Notes:** Resist the urge to add a helper "just in case." Add only what
   Phase 1 will use: date formatting, slug generation, dir creation, JSON read/write.
@@ -60,7 +60,7 @@ phase plugs into a clean skeleton.
     `apps/*/src/**/*.test.ts`.
   - Each package's `package.json`: `"test": "vitest run"` script.
 - **Acceptance:** `pnpm test` from the repo root runs every test in the repo.
-- **Tests:** add one trivial passing test in `@kairo/utils` to prove the setup.
+- **Tests:** add one trivial passing test in `@kairohq/utils` to prove the setup.
 - **Notes:** No need for `tsx` integration — Vitest handles TS natively.
 
 ### 0.4 — Biome for lint + format ✅
@@ -85,7 +85,7 @@ phase plugs into a clean skeleton.
 
 ### 0.6 — Centralize cross-package types ✅
 
-- [x] **Goal:** `@kairo/shared` is the only place cross-package types live.
+- [x] **Goal:** `@kairohq/shared` is the only place cross-package types live.
 - **Files:**
   - Audit `apps/cli`, `apps/mcp`, `packages/core` for any type that should be
     shared (currently fine — `Workspace` types are package-local). Document
@@ -109,13 +109,13 @@ phase plugs into a clean skeleton.
   `index.ts` re-exporting only the public surface. GitObserver and FileObserver
   do not yet have unit tests — deferred to Phase 1.1 / Phase 2.1 where they get
   fleshed out with real fixtures.
-- `Workspace` was refactored to consume `@kairo/utils/fs` (`ensureDir`, `readJson`,
+- `Workspace` was refactored to consume `@kairohq/utils/fs` (`ensureDir`, `readJson`,
   `writeJson`) — first proof of the Sharing Law in action.
 - Type audit (0.6): no cross-package duplicates. Package-local types
   (`WorkspaceConfig`, `FileEventHandler`, `SessionReconstructorOptions`) stay
-  in `@kairo/core`; they have no second caller yet.
-- Tests today: 30 passing (`@kairo/utils` 17, `@kairo/core` 13). `apps/cli`,
-  `apps/mcp`, `@kairo/shared` have no tests yet (commands and tools are stubs
+  in `@kairohq/core`; they have no second caller yet.
+- Tests today: 30 passing (`@kairohq/utils` 17, `@kairohq/core` 13). `apps/cli`,
+  `apps/mcp`, `@kairohq/shared` have no tests yet (commands and tools are stubs
   filled in starting Phase 1).
 
 ---
@@ -159,7 +159,7 @@ phase plugs into a clean skeleton.
   zod, opens `Workspace`, writes one event row to `kairo.db`.
 - **Tests:** `ingest.test.ts` runs the command function against a temp project
   dir, asserts on the resulting DB row.
-- **Notes:** Use zod schemas from `@kairo/shared`. Use a `Workspace.find()`
+- **Notes:** Use zod schemas from `@kairohq/shared`. Use a `Workspace.find()`
   helper that walks up from cwd to find `.kairo/` (add it to `packages/core/src/workspace/`).
 
 ### 1.4 — Implement `kairo sweep` ✅
@@ -224,7 +224,7 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
   surface before Phase 2 starts emitting live fs/terminal/ai events.
 - **Files:**
   - `packages/utils/src/id/deterministic-uuid.ts` (+ test) — pure SHA-256 →
-    UUID-shaped id; subpath export `@kairo/utils/id`.
+    UUID-shaped id; subpath export `@kairohq/utils/id`.
   - `packages/core/src/observers/git/git-observer.ts` — `GitObserver.toEvent`
     now derives id from `("git.commit", projectId, sha)` so re-ingesting the
     same commit is idempotent.
@@ -365,7 +365,7 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
 
 - [x] **Goal:** Vite + React + Tailwind + shadcn skeleton.
 - **Files:** `apps/web/`.
-- **Acceptance:** `pnpm --filter @kairo/web dev` boots Vite, shows a placeholder page.
+- **Acceptance:** `pnpm --filter @kairohq/web dev` boots Vite, shows a placeholder page.
 - **Tests:** none yet.
 - **Notes:** No Next.js. The web app is static; `kairo serve` hosts it.
 - **Done:** Added the Vite React app with Tailwind v4, shadcn-compatible UI
@@ -381,7 +381,7 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
 - **Notes:** Recommend (a) for v1 — simpler. (b) becomes a later option when
   Tauri-shelling, since the WebView can `invoke` a Rust command that reads SQLite directly.
 - **Done:** Chose option (a): `kairo serve` will expose a small in-process local
-  API that reads SQLite through `@kairo/core`. Browser-side SQLite remains
+  API that reads SQLite through `@kairohq/core`. Browser-side SQLite remains
   deferred for possible Tauri command integration.
 
 ### 3.3 — Timeline view
@@ -437,11 +437,11 @@ architecture shifts are detected.
   - `packages/ai/src/summarize/` — `summarize-session.ts` + tests.
   - `packages/ai/src/embed/` — `embed-text.ts` + tests.
   - `packages/ai/src/cache/` — `response-cache.ts` keyed by content hash + tests.
-- **Acceptance:** `import { summarizeSession, embedText } from '@kairo/ai'` works.
+- **Acceptance:** `import { summarizeSession, embedText } from '@kairohq/ai'` works.
   Provider selected via config + env var.
 - **Tests:** providers tested against recorded JSON fixtures (no network).
 - **Notes:** Vendor lock-in is flagged as a top risk in SDD §17.4. Never call
-  a provider directly from `apps/*` or `packages/core` — always through `@kairo/ai`.
+  a provider directly from `apps/*` or `packages/core` — always through `@kairohq/ai`.
   Provider setup catalog lists common providers first, then the rest
   alphabetically, with custom OpenAI-compatible support and no-network provider
   tests.
@@ -467,7 +467,7 @@ architecture shifts are detected.
 - **Acceptance:** `kairo init` writes a sensible default. Users can switch
   provider by editing config.
 - **Tests:** schema validation tests.
-- **Notes:** Carry forward provider setup UX from `@kairo/ai`: API-key auth for
+- **Notes:** Carry forward provider setup UX from `@kairohq/ai`: API-key auth for
   OpenAI, Anthropic, Gemini, OpenRouter, Ollama, Amazon Bedrock, Azure OpenAI,
   Cerebras, Cohere, custom OpenAI-compatible, DeepSeek, Fireworks, Groq, Kilo
   Gateway, LM Studio, MiniMax, Mistral, Moonshot Kimi, Perplexity, Together AI,
@@ -476,7 +476,7 @@ architecture shifts are detected.
   and Vertex AI ADC.
   Workspace config now validates `ai` settings, `kairo init` writes Anthropic by
   default or accepts `--ai-provider` / `--ai-auth`, and `sweep` passes config
-  through to `@kairo/ai` while still allowing `KAIRO_AI_*` env overrides.
+  through to `@kairohq/ai` while still allowing `KAIRO_AI_*` env overrides.
 
 ### 4.4 — Architecture shift detection ✅
 
@@ -538,7 +538,7 @@ architecture shifts are detected.
   they should reuse existing user auth from each tool, avoid storing tokens, and
   run only through explicit bounded commands after the core AI provider layer is
   stable.
-- **Done:** Added a separate `@kairo/ai/gateway` layer, Codex CLI readiness
+- **Done:** Added a separate `@kairohq/ai/gateway` layer, Codex CLI readiness
   detection, planned Claude Code/Cursor extension points, doctor reporting, and
   a provider-vs-gateway decision note.
 
@@ -569,8 +569,8 @@ evidence backs that answer.
   Preserve raw source evidence as the answer substrate: summaries and synthetic
   documents may improve retrieval, but they must never replace commits, diffs,
   terminal events, hook payloads, ADRs, or session records as citations.
-- **Done:** Added local retrieval through `@kairo/core`, then provider-backed
-  natural-language answering through `@kairo/ai`, `kairo ask`, and the
+- **Done:** Added local retrieval through `@kairohq/core`, then provider-backed
+  natural-language answering through `@kairohq/ai`, `kairo ask`, and the
   `kairo_ask` MCP tool. MiniMax is the default init provider. Answers are
   grounded in stored sessions, architecture shifts, and raw commit/event
   evidence, include citations, and abstain when no matching evidence exists.
@@ -639,7 +639,7 @@ evidence backs that answer.
   optional dashboard API/client boundary.
 - **Acceptance:** dashboard users can ask a project-history question against an
   existing `.kairo/` workspace, see a synthesized answer, inspect citations,
-  and jump to related sessions; `@kairo/cli` remains installable and usable
+  and jump to related sessions; `@kairohq/cli` remains installable and usable
   without React, Vite, or dashboard assets.
 - **Tests:** component tests for query entry, loading/error states, cited answer
   rendering, and session navigation.
@@ -906,12 +906,12 @@ and get a concise answer with evidence links back into project memory.
   `src-tauri/src/main.rs`, `src-tauri/src/lib.rs`. The renderer is whatever
   `apps/web` builds; `tauri.conf.json` points `build.frontendDist` at it and
   `build.devUrl` at the Vite dev server.
-- **Acceptance:** `pnpm --filter @kairo/desktop dev` (wraps `tauri dev`) opens
+- **Acceptance:** `pnpm --filter @kairohq/desktop dev` (wraps `tauri dev`) opens
   the dashboard in a native window with HMR for the renderer.
 - **Notes:** Tauri 2. Use the system WebView (WKWebView on macOS, WebView2 on
   Windows, WebKitGTK on Linux). The Rust core is thin — its job is to host the
   WebView, expose `invoke` commands, and supervise the Node sidecar (6.3).
-- **Done:** Added `@kairo/desktop` with Tauri 2 config, a native dashboard
+- **Done:** Added `@kairohq/desktop` with Tauri 2 config, a native dashboard
   window, renderer dev/build wiring, and desktop validation scripts.
 
 ### 6.2 — Tray icon + autostart ✅
@@ -928,13 +928,13 @@ and get a concise answer with evidence links back into project memory.
 ### 6.3 — Observer sidecar management ✅
 
 - [x] **Goal:** the Rust core spawns and supervises a Node sidecar that runs the
-  `@kairo/core` observers for each registered project.
+  `@kairohq/core` observers for each registered project.
 - **Files:** `apps/desktop/src-tauri/src/sidecar.rs`,
-  `apps/desktop/sidecar/observer.ts` (Node entrypoint that imports `@kairo/core`),
+  `apps/desktop/sidecar/observer.ts` (Node entrypoint that imports `@kairohq/core`),
   `externalBin` entry in `tauri.conf.json` for the bundled Node binary.
 - **Acceptance:** open desktop app → projects you've registered show as "observing";
   killing the desktop app kills the sidecar; sidecar crash auto-restarts.
-- **Notes:** The Rust core *cannot* import `@kairo/core` in-process — this is the
+- **Notes:** The Rust core *cannot* import `@kairohq/core` in-process — this is the
   load-bearing architectural difference from the prior Electron plan. The sidecar
   is a packaged Node binary (via `pkg` or `@yao-pkg/pkg`) declared as an
   `externalBin`; Rust spawns it with `tauri-plugin-shell`'s `Command::sidecar`.
@@ -963,11 +963,11 @@ and get a concise answer with evidence links back into project memory.
 
 ## Phase 7 — Distribution
 
-**Goal:** `npm install -g @kairo/cli` works; releases are automated.
+**Goal:** `npm install -g @kairohq/cli` works; releases are automated.
 
 ### 7.1 — npm publish config ✅
 
-- [x] **Goal:** `@kairo/cli` and `@kairo/mcp` are publishable.
+- [x] **Goal:** `@kairohq/cli` and `@kairohq/mcp` are publishable.
 - **Files:** `apps/cli/package.json` (`"publishConfig"`), `apps/mcp/package.json`.
 - **Acceptance:** dry-run `npm publish` works.
 - **Done:** CLI/MCP plus required internal packages are public `0.0.1` packages, include source-only publish files, install executable bin wrappers, and pass npm publish dry-run plus packed global install smoke tests.
@@ -998,7 +998,7 @@ and get a concise answer with evidence links back into project memory.
 - **Files:** `apps/docs/` (Astro Starlight or similar).
 - **Done:** Added an Astro Starlight docs app with landing, quickstart, CLI guide, desktop guide, package reference, and MCP reference pages.
 
-**Milestone:** anyone can `npm install -g @kairo/cli`, then `kairo init && kairo sweep`, and have it work.
+**Milestone:** anyone can `npm install -g @kairohq/cli`, then `kairo init && kairo sweep`, and have it work.
 
 ---
 

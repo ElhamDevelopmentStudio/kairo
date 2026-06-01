@@ -1,5 +1,5 @@
-import { EventStore, Workspace, buildProjectModel } from "@kairo/core";
-import type { ProjectOperatingModel } from "@kairo/shared";
+import { EventStore, Workspace, buildProjectModel } from "@kairohq/core";
+import type { ProjectOperatingModel } from "@kairohq/shared";
 import { Command } from "commander";
 import kleur from "kleur";
 

@@ -1,8 +1,8 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { EventStore, type TextEmbedder, Workspace, indexSessionEmbeddings } from "@kairo/core";
-import type { Session } from "@kairo/shared";
+import { EventStore, type TextEmbedder, Workspace, indexSessionEmbeddings } from "@kairohq/core";
+import type { Session } from "@kairohq/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { searchSessions } from "./search.ts";
 

@@ -70,7 +70,7 @@ Kairo approach:
    and "when this error first appeared".
 4. Use graph traversal to add candidate memories connected through
    `fixes`, `caused_by`, `supersedes`, `depends_on`, and `explained_by`.
-5. Optionally rerank the top candidates through `@kairo/ai`.
+5. Optionally rerank the top candidates through `@kairohq/ai`.
 6. Generate answers only from candidates with citation-ready evidence.
 
 Implementation notes:

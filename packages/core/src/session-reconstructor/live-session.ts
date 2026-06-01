@@ -1,4 +1,4 @@
-import type { KairoEvent, Session } from "@kairo/shared";
+import type { KairoEvent, Session } from "@kairohq/shared";
 import { buildSessionFromEvents } from "./session-builder.ts";
 
 export interface FinalizedSession {

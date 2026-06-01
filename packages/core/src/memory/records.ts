@@ -11,8 +11,8 @@ import type {
   SessionMemory,
   StoredMemoryRecord,
   SupersessionMemory,
-} from "@kairo/shared";
-import { deterministicUuid } from "@kairo/utils/id";
+} from "@kairohq/shared";
+import { deterministicUuid } from "@kairohq/utils/id";
 import { extractProblemMemories } from "../problem-memory/index.ts";
 import { extractSymbolMemories } from "../symbol-index/index.ts";
 import { extractSupersessionMemories } from "./supersession.ts";

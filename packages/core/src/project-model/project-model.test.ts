@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ArchitectureShift, KairoEvent, Session } from "@kairo/shared";
+import type { ArchitectureShift, KairoEvent, Session } from "@kairohq/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EventStore } from "../event-store/index.ts";
 import { buildProjectModel } from "./project-model.ts";
@@ -44,7 +44,7 @@ describe("buildProjectModel", () => {
     expect(model.conventions.map((item) => item.title)).toContain("Contributor rules");
     expect(model.preferredPatterns.map((item) => item.title)).toContain("Contributor rules");
     expect(model.recurringFailures[0]).toMatchObject({
-      title: "an_error: cannot find module @kairo<path>",
+      title: "an_error: cannot find module @kairohq<path>",
       metadata: { count: 2 },
     });
     expect(model.fragileAreas[0]).toMatchObject({
@@ -125,13 +125,13 @@ function seedModelFixture(): void {
   store.append(
     terminalEvent(
       "44444444-4444-4444-8444-444444444444",
-      "AN_ERROR: Cannot find module @kairo/shared/problem",
+      "AN_ERROR: Cannot find module @kairohq/shared/problem",
     ),
   );
   store.append(
     terminalEvent(
       "55555555-5555-4555-8555-555555555555",
-      "AN_ERROR: Cannot find module @kairo/shared/problem",
+      "AN_ERROR: Cannot find module @kairohq/shared/problem",
     ),
   );
   store.appendSession(

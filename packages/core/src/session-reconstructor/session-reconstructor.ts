@@ -1,4 +1,4 @@
-import type { KairoEvent, Session } from "@kairo/shared";
+import type { KairoEvent, Session } from "@kairohq/shared";
 import { bucketize } from "./bucketize.ts";
 import { buildSessionFromEvents } from "./session-builder.ts";
 

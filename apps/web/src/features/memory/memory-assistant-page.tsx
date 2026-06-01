@@ -1,5 +1,5 @@
 import { LinkSquare02Icon, Search01Icon } from "@hugeicons/core-free-icons";
-import type { MemoryAnswer, MemoryCitation } from "@kairo/shared";
+import type { MemoryAnswer, MemoryCitation } from "@kairohq/shared";
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";

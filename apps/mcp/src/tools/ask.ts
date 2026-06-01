@@ -1,6 +1,6 @@
-import { answerMemoryWithAi, resolveAiConfig } from "@kairo/ai";
-import { EventStore, answerProjectMemory, extractDecisionMemories } from "@kairo/core";
-import type { MemoryAnswer } from "@kairo/shared";
+import { answerMemoryWithAi, resolveAiConfig } from "@kairohq/ai";
+import { EventStore, answerProjectMemory, extractDecisionMemories } from "@kairohq/core";
+import type { MemoryAnswer } from "@kairohq/shared";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { ToolContext } from "./context.ts";

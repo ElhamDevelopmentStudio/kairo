@@ -1,4 +1,4 @@
-# @kairo/web
+# @kairohq/web
 
 Static Vite dashboard for Kairo.
 
@@ -7,6 +7,6 @@ component conventions. `kairo serve` will host this app in a later task.
 
 ## Scripts
 
-- `pnpm --filter @kairo/web dev` starts Vite.
-- `pnpm --filter @kairo/web build` builds the static dashboard.
-- `pnpm --filter @kairo/web typecheck` checks TypeScript.
+- `pnpm --filter @kairohq/web dev` starts Vite.
+- `pnpm --filter @kairohq/web build` builds the static dashboard.
+- `pnpm --filter @kairohq/web typecheck` checks TypeScript.

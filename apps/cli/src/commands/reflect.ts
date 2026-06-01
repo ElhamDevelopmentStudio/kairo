@@ -4,8 +4,8 @@ import {
   Workspace,
   isReflectionMode,
   reflectProject,
-} from "@kairo/core";
-import type { ReflectionMode, ReflectionReport } from "@kairo/core";
+} from "@kairohq/core";
+import type { ReflectionMode, ReflectionReport } from "@kairohq/core";
 import { Command } from "commander";
 import kleur from "kleur";
 

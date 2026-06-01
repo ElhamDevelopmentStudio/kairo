@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ensureDir, readJson, writeJson } from "@kairo/utils/fs";
+import { ensureDir, readJson, writeJson } from "@kairohq/utils/fs";
 
 type JsonObject = Record<string, unknown>;
 type HookFormat = "claude" | "codex";

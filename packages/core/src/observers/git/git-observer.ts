@@ -1,5 +1,5 @@
-import type { GitCommitEvent } from "@kairo/shared";
-import { deterministicUuid } from "@kairo/utils/id";
+import type { GitCommitEvent } from "@kairohq/shared";
+import { deterministicUuid } from "@kairohq/utils/id";
 import simpleGit, { type SimpleGit } from "simple-git";
 
 type GitCommitFile = GitCommitEvent["payload"]["files"][number];

@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ArchitectureShift, Session, TerminalEvent } from "@kairo/shared";
+import type { ArchitectureShift, Session, TerminalEvent } from "@kairohq/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EventStore } from "../event-store/index.ts";
 import { checkProjectMemory } from "./checks.ts";
@@ -149,7 +149,7 @@ function failingEvent(id: string, occurredAt: string): TerminalEvent {
     source: "terminal",
     kind: "terminal.command",
     payload: {
-      command: "pnpm --filter @kairo/core test answer",
+      command: "pnpm --filter @kairohq/core test answer",
       cwd: "/repo",
       exitCode: 1,
       stderr: "AN_ERROR: Cannot read project memory answer",

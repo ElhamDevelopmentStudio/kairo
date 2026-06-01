@@ -5,9 +5,9 @@
 Kairo keeps AI provider APIs and agent runtime gateways as separate integration
 layers.
 
-Provider APIs live in `@kairo/ai` provider modules and use explicit API-key or
+Provider APIs live in `@kairohq/ai` provider modules and use explicit API-key or
 local-provider configuration for summarization and embeddings. Agent runtime
-gateways live in `@kairo/ai/gateway` and reuse authentication that already
+gateways live in `@kairohq/ai/gateway` and reuse authentication that already
 belongs to an installed tool, such as the local Codex CLI login.
 
 ## Rationale
@@ -39,4 +39,4 @@ auth and non-interactive execution boundaries are added deliberately.
 
 `kairo doctor` can report whether Codex is installed and authenticated without
 requiring or storing any Codex token. Future gateway work should add new runtime
-checks under `@kairo/ai/gateway` instead of extending provider setup tables.
+checks under `@kairohq/ai/gateway` instead of extending provider setup tables.

@@ -3,8 +3,8 @@ import {
   KairoEvent as KairoEventSchema,
   MemoryAnswer as MemoryAnswerSchema,
   Session as SessionSchema,
-} from "@kairo/shared";
-import type { ArchitectureShift, KairoEvent, MemoryAnswer, Session } from "@kairo/shared";
+} from "@kairohq/shared";
+import type { ArchitectureShift, KairoEvent, MemoryAnswer, Session } from "@kairohq/shared";
 import axios from "axios";
 import { z } from "zod";
 

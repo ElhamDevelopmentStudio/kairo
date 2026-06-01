@@ -1,4 +1,4 @@
-import type { KairoEvent, ProblemMemory, Session } from "@kairo/shared";
+import type { KairoEvent, ProblemMemory, Session } from "@kairohq/shared";
 
 export interface SessionBridgeDocument {
   id: string;
@@ -136,8 +136,9 @@ function fileTerms(session: Session): string[] {
 function packageTerms(session: Session): string[] {
   return session.files.flatMap((file) => {
     const parts = file.split("/");
-    if (parts[0] === "packages" && parts[1] !== undefined) return [`@kairo/${parts[1]}`, parts[1]];
-    if (parts[0] === "apps" && parts[1] !== undefined) return [`@kairo/${parts[1]}`, parts[1]];
+    if (parts[0] === "packages" && parts[1] !== undefined)
+      return [`@kairohq/${parts[1]}`, parts[1]];
+    if (parts[0] === "apps" && parts[1] !== undefined) return [`@kairohq/${parts[1]}`, parts[1]];
     return [];
   });
 }

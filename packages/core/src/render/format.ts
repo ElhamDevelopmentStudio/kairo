@@ -1,5 +1,5 @@
-import type { Session } from "@kairo/shared";
-import { toIsoDate } from "@kairo/utils";
+import type { Session } from "@kairohq/shared";
+import { toIsoDate } from "@kairohq/utils";
 
 export function renderDateRange(session: Session): string {
   const start = toIsoDate(new Date(session.startedAt));

@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { EventStore, Workspace } from "@kairo/core";
+import { EventStore, Workspace } from "@kairohq/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runWatch } from "./watch.ts";
 

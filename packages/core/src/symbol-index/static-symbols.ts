@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
-import type { IndexedSymbol } from "@kairo/shared";
+import type { IndexedSymbol } from "@kairohq/shared";
 
 export function extractCurrentTypeScriptSymbols(projectRoot: string): IndexedSymbol[] {
   if (!existsSync(projectRoot)) return [];

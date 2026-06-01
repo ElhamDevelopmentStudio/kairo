@@ -1,4 +1,4 @@
-import { Workspace } from "@kairo/core";
+import { Workspace } from "@kairohq/core";
 
 export interface ToolContext {
   workspace: Workspace | null;

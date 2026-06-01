@@ -1,6 +1,6 @@
-import { type AiProviderConfig, createAiProvider } from "@kairo/ai";
-import { EventStore, Workspace } from "@kairo/core";
-import type { Session } from "@kairo/shared";
+import { type AiProviderConfig, createAiProvider } from "@kairohq/ai";
+import { EventStore, Workspace } from "@kairohq/core";
+import type { Session } from "@kairohq/shared";
 import { Command } from "commander";
 import { hasAiEnv, resolveAiConfig } from "../internal/ai-config.ts";
 

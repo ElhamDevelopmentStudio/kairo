@@ -1,4 +1,4 @@
-import type { KairoEvent, Session } from "@kairo/shared";
+import type { KairoEvent, Session } from "@kairohq/shared";
 import { renderFrontmatterList } from "./format.ts";
 
 export function renderSession(session: Session, events: KairoEvent[]): string {

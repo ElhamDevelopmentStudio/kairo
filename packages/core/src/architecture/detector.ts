@@ -1,4 +1,4 @@
-import type { ArchitectureShift } from "@kairo/shared";
+import type { ArchitectureShift } from "@kairohq/shared";
 import { detectDependencyShifts } from "./dependency-shift.ts";
 import { detectDirectoryRestructures } from "./directory-restructure.ts";
 import { detectFrameworkMigrations } from "./framework-migration.ts";
