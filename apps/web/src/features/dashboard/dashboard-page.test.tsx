@@ -49,6 +49,15 @@ describe("DashboardPage", () => {
     expect(apiMock.fetchTimeline).toHaveBeenCalledTimes(1);
     expect(apiMock.fetchSessionDetail).toHaveBeenCalledWith("dashboard-wiring");
   });
+
+  it("routes to desktop controls without redirecting", async () => {
+    apiMock.fetchHealth.mockResolvedValue({ ok: true, projectName: "Kairo" });
+
+    renderDashboard("/dashboard/desktop");
+
+    expect(await screen.findByText(/Native app controls/)).toBeInTheDocument();
+    expect(screen.getByText(/Desktop controls appear/)).toBeInTheDocument();
+  });
 });
 
 function renderDashboard(initialEntry: string) {

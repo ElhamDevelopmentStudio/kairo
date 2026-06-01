@@ -5,6 +5,7 @@ import {
   GitBranchIcon,
   Search01Icon,
   Sun03Icon,
+  WorkIcon,
 } from "@hugeicons/core-free-icons";
 import type { IconSvgElement } from "@hugeicons/react";
 import { useEffect, useState } from "react";
@@ -24,6 +25,7 @@ const navigation = [
   { icon: GitBranchIcon, label: "Decisions", to: "/dashboard/architecture" },
   { icon: Search01Icon, label: "Search", to: "/dashboard/search" },
   { icon: AiChat02Icon, label: "Ask", to: "/dashboard/ask" },
+  { icon: WorkIcon, label: "Desktop", to: "/dashboard/desktop" },
 ];
 
 export function DashboardPage() {

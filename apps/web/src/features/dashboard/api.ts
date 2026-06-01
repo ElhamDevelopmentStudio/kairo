@@ -8,7 +8,9 @@ import type { ArchitectureShift, KairoEvent, MemoryAnswer, Session } from "@kair
 import axios from "axios";
 import { z } from "zod";
 
+const baseURL = apiBaseUrl();
 const client = axios.create({
+  ...(baseURL === undefined ? {} : { baseURL }),
   headers: {
     Accept: "application/json",
   },
@@ -103,4 +105,13 @@ export async function askProjectMemory(question: string): Promise<AskMemoryRespo
 async function parseResponse<T>(path: string, schema: z.ZodTypeAny): Promise<T> {
   const response = await client.get<unknown>(path);
   return schema.parse(response.data) as T;
+}
+
+function apiBaseUrl(): string | undefined {
+  const configured = import.meta.env.VITE_KAIRO_API_BASE;
+  if (typeof configured === "string" && configured.length > 0) return configured;
+  if (globalThis.window?.location.hostname === "tauri.localhost") {
+    return "http://127.0.0.1:4170";
+  }
+  return undefined;
 }
