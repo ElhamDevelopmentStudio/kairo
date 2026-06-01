@@ -766,7 +766,7 @@ evidence backs that answer.
 
 ### 5.12 — Memory retrieval benchmarks
 
-- [ ] **Goal:** measure intelligence-layer quality with reproducible local
+- [x] **Goal:** measure intelligence-layer quality with reproducible local
   fixtures before tuning retrieval heuristics.
 - **Files:** `benchmarks/memory/`, `packages/core/src/memory/*.test.ts`,
   `docs/benchmarks/memory.md`.
@@ -779,6 +779,9 @@ evidence backs that answer.
 - **Notes:** Tune only against declared fixtures and keep a held-out set. Avoid
   optimizing a heuristic because it fixes one inspected miss unless the fixture
   category explains the broader failure mode.
+- **Done:** Added a reusable core benchmark evaluator, local memory fixture
+  corpus, runnable deterministic/offline benchmark script, rerank-fixture mode,
+  and benchmark docs with commands and reported metrics.
 
 ### 5.13 — Project operating model memory
 

@@ -16,6 +16,7 @@ export {
   extractDecisionMemories,
   generateSessionBridgeDocuments,
   rebuildMemoryRecords,
+  runMemoryBenchmark,
   sessionBridgeSearchText,
 } from "./memory/index.ts";
 export { buildKnowledgeGraph, queryKnowledgeGraph } from "./knowledge-graph/index.ts";
@@ -23,7 +24,12 @@ export type { BuildKnowledgeGraphInput, KnowledgeGraphQuery } from "./knowledge-
 export type {
   AnswerProjectMemoryOptions,
   ExtractDecisionMemoriesInput,
+  MemoryBenchmarkCase,
+  MemoryBenchmarkCaseResult,
+  MemoryBenchmarkCategory,
+  MemoryBenchmarkReport,
   RebuildMemoryRecordsInput,
+  RunMemoryBenchmarkOptions,
   SessionBridgeDocument,
   SessionBridgeInput,
 } from "./memory/index.ts";
