@@ -74,12 +74,12 @@ phase plugs into a clean skeleton.
 - **Tests:** none.
 - **Notes:** If Biome flags scaffolded code, fix the code, not the config.
 
-### 0.5 — `pnpm doctor` ✅
+### 0.5 — `pnpm run doctor` ✅
 
 - [x] **Goal:** one command verifies the whole repo is healthy.
 - **Files:**
   - Root `package.json`: `"doctor": "turbo run typecheck lint test --concurrency=10"`.
-- **Acceptance:** `pnpm doctor` runs typecheck + lint + test for every workspace package; exits 0.
+- **Acceptance:** `pnpm run doctor` runs typecheck + lint + test for every workspace package; exits 0.
 - **Tests:** none new.
 - **Notes:** This becomes the CI entrypoint in Phase 7.
 
@@ -94,7 +94,7 @@ phase plugs into a clean skeleton.
 - **Tests:** typecheck.
 - **Notes:** Re-run this audit at the end of every phase.
 
-**Milestone:** `pnpm install && pnpm doctor` is green. Repo conforms to AGENTS.md. ✅
+**Milestone:** `pnpm install && pnpm run doctor` is green. Repo conforms to AGENTS.md. ✅
 
 **Phase 0 notes (2026-05-18):**
 - Dropped TypeScript project references / `composite: true`. v0 runs from source via
@@ -244,7 +244,7 @@ sessions in `.kairo/timeline.md` and `.kairo/sessions/`. This is the demo.
   - `packages/core/src/observers/file/file-observer.test.ts` — verifies ignore
     matching covers exact paths, `dir/**`, and secret-file globs such as
     `.env.*`, `*.pem`, `*.key`, and `id_rsa*`.
-- **Acceptance:** `pnpm doctor` green; core, cli, and utils tests all passing.
+- **Acceptance:** `pnpm run doctor` green; core, cli, and utils tests all passing.
 - **Notes:** Redaction is **aggressive by default** (drop signal > leak). Tone
   down by editing the pattern list in `redact.ts`. The agent-reviewer also
   flagged a possible `parseNumstat` rename-with-edit bug and a stub-CLI/hook
@@ -1007,7 +1007,7 @@ and get a concise answer with evidence links back into project memory.
 - **Audit after each phase:** re-check the AGENTS.md type-centralization and
   Sharing-Law rules. Hoist anything that needs hoisting *before* starting the
   next phase.
-- **Full test run at phase boundaries:** `pnpm doctor` must be green before
+- **Full test run at phase boundaries:** `pnpm run doctor` must be green before
   moving to the next phase.
 - **Update `docs/SRS.md` / `docs/SDD.md`** if the phase taught you the spec
   was wrong. Don't silently diverge.
