@@ -22,7 +22,11 @@ vi.mock("./api", () => apiMock);
 describe("DashboardPage", () => {
   afterEach(() => {
     vi.restoreAllMocks();
-    window.__TAURI__ = undefined;
+    Object.defineProperty(window, "__TAURI__", {
+      configurable: true,
+      value: undefined,
+      writable: true,
+    });
     window.history.pushState(null, "", "/");
   });
 
@@ -60,8 +64,7 @@ describe("DashboardPage", () => {
     expect(screen.getByText(/Desktop controls appear/)).toBeInTheDocument();
   });
 
-  it("redirects the desktop root to the dashboard", async () => {
-    window.__TAURI__ = { core: { invoke: vi.fn() } };
+  it("redirects the app root to the dashboard", async () => {
     apiMock.fetchHealth.mockResolvedValue({ ok: true, projectName: "Kairo" });
     apiMock.fetchTimeline.mockResolvedValue({
       architectureShifts: [architectureShift],
