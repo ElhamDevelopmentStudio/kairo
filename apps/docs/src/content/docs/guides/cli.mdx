@@ -1,0 +1,26 @@
+---
+title: CLI Guide
+description: Run Kairo without any frontend.
+---
+
+The CLI is the standalone Kairo service layer. It can initialize, observe, ingest, search, and answer from project memory without installing the dashboard or desktop app.
+
+## Common Commands
+
+```sh
+kairo init
+kairo doctor
+kairo sweep
+kairo watch
+kairo status
+kairo timeline
+kairo ask "why did this change?"
+```
+
+## Local Files
+
+Kairo writes per-project state into `.kairo/`. Keep this folder local unless you intentionally want to share generated project memory.
+
+## AI Providers
+
+AI answers are optional. Without provider configuration, Kairo still records events and reconstructs sessions. With a provider, answers and summaries become more natural.

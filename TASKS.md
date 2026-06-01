@@ -965,33 +965,38 @@ and get a concise answer with evidence links back into project memory.
 
 **Goal:** `npm install -g @kairo/cli` works; releases are automated.
 
-### 7.1 — npm publish config
+### 7.1 — npm publish config ✅
 
-- [ ] **Goal:** `@kairo/cli` and `@kairo/mcp` are publishable.
+- [x] **Goal:** `@kairo/cli` and `@kairo/mcp` are publishable.
 - **Files:** `apps/cli/package.json` (`"publishConfig"`), `apps/mcp/package.json`.
 - **Acceptance:** dry-run `npm publish` works.
+- **Done:** CLI/MCP plus required internal packages are public `0.0.1` packages, include source-only publish files, install executable bin wrappers, and pass npm publish dry-run plus packed global install smoke tests.
 
-### 7.2 — Changesets
+### 7.2 — Changesets ✅
 
-- [ ] **Goal:** versioning is automated.
+- [x] **Goal:** versioning is automated.
 - **Files:** `.changeset/config.json`.
 - **Acceptance:** `pnpm changeset` flow works for bumping versions.
+- **Done:** Added Changesets config and root scripts, linked publishable Kairo packages, ignored private app packages, and applied the initial patch bump/changelogs with `pnpm version-packages`.
 
-### 7.3 — CI
+### 7.3 — CI ✅
 
-- [ ] **Goal:** GitHub Actions runs `pnpm doctor` on every PR.
+- [x] **Goal:** GitHub Actions runs the repo doctor on every PR.
 - **Files:** `.github/workflows/ci.yml`.
 - **Acceptance:** PR runs typecheck, lint, test in CI.
+- **Done:** CI installs Node, pnpm, Rust, and Tauri Linux dependencies, then runs `pnpm run doctor` so typecheck, lint, and tests execute across the workspace.
 
-### 7.4 — Release workflow
+### 7.4 — Release workflow ✅
 
-- [ ] **Goal:** tag → npm publish + Tauri build artifacts (`.dmg`, `.AppImage`, `.msi`) via `tauri build` (using `tauri-apps/tauri-action` in CI).
+- [x] **Goal:** tag → npm publish + Tauri build artifacts (`.dmg`, `.AppImage`, `.msi`) via `tauri build` (using `tauri-apps/tauri-action` in CI).
 - **Files:** `.github/workflows/release.yml`.
+- **Done:** Tag workflow verifies packages, publishes npm packages with Changesets, and builds desktop `.dmg`, `.AppImage`, and `.msi` artifacts through `tauri-apps/tauri-action`.
 
-### 7.5 — Docs site
+### 7.5 — Docs site ✅
 
-- [ ] **Goal:** docs.kairo.dev (or similar) — quickstart, guides, API ref.
+- [x] **Goal:** docs.kairo.dev (or similar) — quickstart, guides, API ref.
 - **Files:** `apps/docs/` (Astro Starlight or similar).
+- **Done:** Added an Astro Starlight docs app with landing, quickstart, CLI guide, desktop guide, package reference, and MCP reference pages.
 
 **Milestone:** anyone can `npm install -g @kairo/cli`, then `kairo init && kairo sweep`, and have it work.
 

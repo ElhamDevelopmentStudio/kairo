@@ -1,0 +1,42 @@
+---
+title: Quickstart
+description: Install Kairo, initialize a workspace, and ingest project history.
+---
+
+## Requirements
+
+- Node.js 22 or newer.
+- Git installed and available on `PATH`.
+- A project directory with a `.git` folder.
+
+## Install the CLI
+
+```sh
+npm install -g @kairo/cli
+```
+
+## Initialize a Project
+
+Run this inside the project you want Kairo to remember.
+
+```sh
+kairo init
+```
+
+Guided setup can import local agent transcripts and configure an optional AI provider. You can skip those questions and still use the local memory store.
+
+## Ingest Existing History
+
+```sh
+kairo sweep
+```
+
+This reads existing git history, reconstructs sessions, and writes local Kairo memory under `.kairo/`.
+
+## Ask a Question
+
+```sh
+kairo ask "what changed in the dashboard data source?"
+```
+
+Use `--evidence` when you want citations and source details.

@@ -3,13 +3,22 @@
   "ui": "stream",
   "tasks": {
     "typecheck": {
-      "inputs": ["src/**/*.{ts,tsx}", "tsconfig.json", "../../tsconfig.base.json"]
+      "inputs": [
+        "src/**/*.{ts,tsx,astro,md,mdx}",
+        "tsconfig.json",
+        "astro.config.mjs",
+        "../../tsconfig.base.json"
+      ]
     },
     "lint": {
-      "inputs": ["src/**/*.{ts,tsx}", "../../biome.json"]
+      "inputs": ["src/**/*.{ts,tsx,astro,md,mdx}", "astro.config.mjs", "../../biome.json"]
     },
     "test": {
-      "inputs": ["src/**/*.{ts,tsx,json}", "test/**/*.{ts,tsx}", "../../vitest.config.ts"]
+      "inputs": [
+        "src/**/*.{ts,tsx,json,astro,md,mdx}",
+        "test/**/*.{ts,tsx}",
+        "../../vitest.config.ts"
+      ]
     },
     "dev": {
       "cache": false,
@@ -17,6 +26,7 @@
     },
     "build": {
       "dependsOn": ["^build"],
+      "inputs": ["src/**", "astro.config.mjs", "tsconfig.json", "package.json"],
       "outputs": ["dist/**"]
     },
     "clean": {

@@ -1,0 +1,22 @@
+---
+title: Desktop Guide
+description: Use the optional Tauri desktop shell.
+---
+
+The desktop app is optional. It wraps the dashboard pages, manages sidecars, offers tray controls, and can send session notifications.
+
+## Run Locally
+
+```sh
+pnpm --filter @kairo/desktop dev
+```
+
+The native window opens directly on the dashboard. The landing page remains a browser-only surface.
+
+## Build the App
+
+```sh
+pnpm --filter @kairo/desktop build
+```
+
+Release CI builds platform artifacts with Tauri.
