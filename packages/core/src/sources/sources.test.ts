@@ -4,7 +4,12 @@ import { join } from "node:path";
 import type { KairoEvent, Session } from "@kairo/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EventStore } from "../event-store/index.ts";
-import { importFromSource, listSourceAdapters } from "./index.ts";
+import {
+  assertSourceAdapterConformance,
+  importFromSource,
+  listSourceAdapters,
+  templateSourceAdapter,
+} from "./index.ts";
 
 let root: string;
 let store: EventStore;
@@ -41,6 +46,55 @@ describe("source adapters", () => {
     );
     expect(source("terminal-events").privacyClass).toBe("sensitive");
     expect(source("project-files").cursorKind).toBe("content-version");
+  });
+
+  it("runs the shared conformance suite for first-party adapters and the template adapter", () => {
+    mkdirSync(join(root, "docs", "decisions"), { recursive: true });
+    writeFileSync(
+      join(root, "docs", "decisions", "0001-memory.md"),
+      [
+        "# Store memory locally",
+        "",
+        "## Decision",
+        "",
+        "Kairo stores project memory in local SQLite.",
+      ].join("\n"),
+    );
+    writeFileSync(
+      join(root, "source-import.json"),
+      JSON.stringify([
+        {
+          id: "template-001",
+          sourceId: "template-source",
+          kind: "note",
+          title: "Template fixture",
+          metadata: { path: "docs/example.md", version: "2026-06-01" },
+        },
+      ]),
+    );
+    store.append(
+      gitEvent({
+        id: "11111111-1111-4111-8111-111111111111",
+        occurredAt: "2026-05-18T10:00:00.000Z",
+      }),
+    );
+    store.append(terminalEvent());
+    store.append(agentEvent());
+    store.appendSession(session());
+
+    const adapters = [...listSourceAdapters(), templateSourceAdapter];
+    const results = adapters.map((adapter) => assertSourceAdapterConformance(adapter, inputBase()));
+
+    expect(results.map((result) => result.sourceId)).toEqual([
+      "kairo-sessions",
+      "git-history",
+      "terminal-events",
+      "adrs",
+      "agent-transcripts",
+      "project-files",
+      "template-source",
+    ]);
+    expect(results.at(-1)).toMatchObject({ sourceId: "template-source", itemCount: 1 });
   });
 
   it("imports git, terminal, agent, and session evidence from real EventStore rows incrementally", () => {
@@ -136,11 +190,17 @@ function source(id: ReturnType<typeof listSourceAdapters>[number]["definition"][
 
 function input(sourceId: Parameters<typeof importFromSource>[0]["sourceId"], cursor?: string) {
   return {
+    ...inputBase(),
     sourceId,
+    ...(cursor === undefined ? {} : { cursor }),
+  };
+}
+
+function inputBase() {
+  return {
     projectId: "p1",
     projectRoot: root,
     store,
-    ...(cursor === undefined ? {} : { cursor }),
   };
 }
 

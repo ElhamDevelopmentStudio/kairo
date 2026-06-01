@@ -96,6 +96,7 @@ export const sourceAdapters: MemorySourceAdapter[] = [
       metadataSchema: {
         sha: "Git commit SHA",
         branch: "Branch observed when the commit was ingested",
+        author: "Git commit author",
         files: "Changed files and line counts",
       },
       transformations: [
@@ -190,6 +191,8 @@ export const sourceAdapters: MemorySourceAdapter[] = [
       metadataSchema: {
         reference: "ADR path or inferred architecture shift reference",
         inferred: "Whether the decision was inferred from architecture evidence",
+        status: "Decision status when present in the ADR",
+        files: "Files referenced by the decision",
       },
       transformations: [
         {

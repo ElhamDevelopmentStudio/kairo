@@ -8,6 +8,7 @@ export const MemorySourceId = z.enum([
   "adrs",
   "agent-transcripts",
   "project-files",
+  "template-source",
 ]);
 export type MemorySourceId = z.infer<typeof MemorySourceId>;
 

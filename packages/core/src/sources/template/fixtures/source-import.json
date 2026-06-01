@@ -1,0 +1,14 @@
+[
+  {
+    "id": "template-001",
+    "sourceId": "template-source",
+    "kind": "note",
+    "title": "Template source fixture",
+    "cursor": "2026-06-01:template-001",
+    "evidence": [{ "kind": "file", "reference": "docs/example.md" }],
+    "metadata": {
+      "path": "docs/example.md",
+      "version": "2026-06-01"
+    }
+  }
+]

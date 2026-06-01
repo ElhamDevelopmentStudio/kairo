@@ -872,9 +872,9 @@ evidence backs that answer.
   missing architecture ADRs, stale setup commands, and fragile changed files,
   plus docs with a GitHub Actions example.
 
-### 5.18 — Source adapter contribution kit
+### 5.18 — Source adapter contribution kit ✅
 
-- [ ] **Goal:** make memory-source contributions obvious, bounded, and easy to
+- [x] **Goal:** make memory-source contributions obvious, bounded, and easy to
   review.
 - **Files:** `docs/sources/adapter-authoring.md`,
   `packages/core/src/sources/template/`, adapter conformance fixtures,
@@ -886,6 +886,9 @@ evidence backs that answer.
   adapters.
 - **Notes:** This task builds on 5.11. 5.11 defines the runtime contract; this
   task creates the contributor workflow and examples.
+- **Done:** Added source adapter authoring docs, a template adapter with sample
+  fixture data, and a reusable conformance check shared by first-party and
+  template adapters.
 
 **Milestone:** ask Kairo why something changed or how a past error was fixed,
 and get a concise answer with evidence links back into project memory.

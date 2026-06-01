@@ -1,5 +1,8 @@
 export { getSourceAdapter, listSourceAdapters, sourceAdapters } from "./adapters.ts";
+export { assertSourceAdapterConformance } from "./conformance.ts";
+export { templateSourceAdapter } from "./template/adapter.ts";
 export type { ImportFromSourceInput, MemorySourceAdapter, SourceAdapterInput } from "./types.ts";
+export type { SourceAdapterConformanceResult } from "./conformance.ts";
 import { MemorySourceId, type SourceImportResult } from "@kairo/shared";
 import { getSourceAdapter } from "./adapters.ts";
 import type { ImportFromSourceInput } from "./types.ts";
