@@ -2,6 +2,7 @@
 import { Command } from "commander";
 import { askCommand } from "./commands/ask.ts";
 import { doctorCommand } from "./commands/doctor.ts";
+import { importCommand } from "./commands/import.ts";
 import { ingestCommand } from "./commands/ingest.ts";
 import { initCommand } from "./commands/init.ts";
 import { searchCommand } from "./commands/search.ts";
@@ -22,6 +23,7 @@ program.addCommand(initCommand);
 program.addCommand(askCommand);
 program.addCommand(doctorCommand);
 program.addCommand(ingestCommand);
+program.addCommand(importCommand);
 program.addCommand(timelineCommand);
 program.addCommand(showCommand);
 program.addCommand(searchCommand);

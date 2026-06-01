@@ -746,7 +746,7 @@ evidence backs that answer.
 
 ### 5.11 — Source adapter contract for memory inputs
 
-- [ ] **Goal:** make future memory sources pluggable without hardcoding every
+- [x] **Goal:** make future memory sources pluggable without hardcoding every
   tool/export format into core.
 - **Files:** `packages/core/src/sources/`, `packages/shared/src/source.ts`,
   `apps/cli/src/commands/import.ts`, `apps/mcp/src/tools/import.ts`.
@@ -760,6 +760,9 @@ evidence backs that answer.
 - **Notes:** Prefer explicit adapters over `if source_type === ...` branches in
   core. This keeps Kairo open to Cursor, GitHub PRs/issues, CI logs, Obsidian,
   and other sources later.
+- **Done:** Added shared source schemas, first-party adapter definitions/import
+  surfaces, CLI/MCP import inspection, and conformance coverage for incremental
+  cursors, privacy classes, and declared transformations.
 
 ### 5.12 — Memory retrieval benchmarks
 

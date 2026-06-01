@@ -52,3 +52,14 @@ export type {
   LiveSessionOptions,
   SessionReconstructorOptions,
 } from "./session-reconstructor/index.ts";
+export {
+  getSourceAdapter,
+  importFromSource,
+  listSourceAdapters,
+  sourceAdapters,
+} from "./sources/index.ts";
+export type {
+  ImportFromSourceInput,
+  MemorySourceAdapter,
+  SourceAdapterInput,
+} from "./sources/index.ts";
