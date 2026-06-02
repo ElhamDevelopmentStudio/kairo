@@ -1,5 +1,9 @@
 # Kairo
 
+<p align="center">
+  <img src="assets/readme-banner.png" alt="Kairo - Understand how your software evolved. Timeline intelligence, context preservation, architecture evolution, and automatic documentation." width="100%" />
+</p>
+
 Kairo is a local-first development intelligence system. It observes project
 activity, stores it locally, and reconstructs useful project memory.
 
