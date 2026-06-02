@@ -6,6 +6,7 @@ This directory contains the project-specific docs beyond setup.
 
 - [SRS.md](SRS.md): what Kairo must do, product scope, privacy, constraints.
 - [SDD.md](SDD.md): how Kairo is designed, package responsibilities, data flow.
+- [developer.md](developer.md): local repository setup and development commands.
 - [../AGENTS.md](../AGENTS.md): contributor and agent rules for code placement, tests, and boundaries.
 - [../TASKS.md](../TASKS.md): phased implementation plan and current acceptance criteria.
 

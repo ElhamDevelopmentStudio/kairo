@@ -11,6 +11,8 @@ Keep contributions small, local-first, and easy to verify.
 
 ## Setup
 
+For full repository setup, use [docs/developer.md](docs/developer.md).
+
 ```sh
 corepack enable
 pnpm install
