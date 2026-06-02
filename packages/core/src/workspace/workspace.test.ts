@@ -31,6 +31,22 @@ describe("Workspace.init", () => {
     expect(config.projectId).toMatch(/^[0-9a-f-]{36}$/);
     expect(config.ignore).toContain(".git/**");
     expect(config.sessionIdleGapMinutes).toBe(30);
+    expect(config.ai).toBeNull();
+    expect(config.agentIngest).toEqual({ enabled: false, providers: [] });
+  });
+
+  it("can initialize with explicit AI config", () => {
+    const ws = new Workspace(projectRoot);
+    const config = ws.init("demo", {
+      ai: {
+        provider: "minimax",
+        model: "MiniMax-M2.7",
+        apiKeyEnv: "MINIMAX_API_KEY",
+        baseUrl: "https://api.minimax.io/v1",
+        authMode: "api-key",
+      },
+    });
+
     expect(config.ai).toEqual({
       provider: "minimax",
       model: "MiniMax-M2.7",
@@ -38,7 +54,6 @@ describe("Workspace.init", () => {
       baseUrl: "https://api.minimax.io/v1",
       authMode: "api-key",
     });
-    expect(config.agentIngest).toEqual({ enabled: false, providers: [] });
   });
 
   it("can initialize with AI disabled", () => {
