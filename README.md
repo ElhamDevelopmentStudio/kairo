@@ -46,14 +46,14 @@ This reads existing git history and writes local Kairo state under `.kairo/`.
 kairo doctor
 ```
 
-## Ask From Project Memory
+## Use With Codex Or Claude Code
 
-```sh
-kairo ask "what changed in the dashboard data source?"
-```
+After `kairo init`, use Codex or Claude Code normally from the project. When you
+ask about previous decisions, past fixes, architecture changes, or why something
+exists, the assistant can query Kairo through the MCP setup written by init.
 
-Claude Code and Codex can also ask Kairo through the MCP setup written by
-`kairo init`.
+`kairo ask "what changed in the dashboard data source?"` is only a manual CLI
+check; it is not required for assistant integrations.
 
 ## Where To Read More
 
