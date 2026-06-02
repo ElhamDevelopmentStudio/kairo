@@ -180,7 +180,7 @@ async function withOnboarding(opts: InitOptions): Promise<InitOptions> {
     const wantsProvider = await confirm(
       readline,
       "Use an AI provider for natural-language answers and summaries?",
-      true,
+      false,
     );
     if (!wantsProvider) return { ...opts, agentProviders, aiProvider: "none" };
 
@@ -209,7 +209,7 @@ function agentIngestConfigFromOptions(agentProviders: string | undefined) {
 }
 
 function aiConfigFromOptions(
-  providerChoice = "minimax",
+  providerChoice = "none",
   authChoice?: string,
   apiKeyEnvChoice?: string,
 ): WorkspaceAiConfigType | null {

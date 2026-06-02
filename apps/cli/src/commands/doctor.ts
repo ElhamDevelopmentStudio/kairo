@@ -44,6 +44,10 @@ export async function runDoctor(
       { label: ".git directory", ok: existsSync(join(cwd, ".git")) },
       { label: "Claude Code hook", ok: existsSync(join(cwd, ".claude/hooks.json")) },
       { label: "Codex hook", ok: existsSync(join(cwd, ".codex/hooks.json")) },
+      { label: "Kairo MCP config", ok: existsSync(join(cwd, ".mcp.json")) },
+      { label: "Codex MCP config", ok: existsSync(join(cwd, ".codex/config.toml")) },
+      { label: "Agent memory guidance", ok: existsSync(join(cwd, "AGENTS.md")) },
+      { label: "Claude memory guidance", ok: existsSync(join(cwd, "CLAUDE.md")) },
     ],
     gateways,
   };

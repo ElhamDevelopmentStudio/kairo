@@ -1,0 +1,5 @@
+# KAIRO:CODEX-MCP:START
+[mcp_servers.kairo]
+command = "kairo-mcp"
+args = []
+# KAIRO:CODEX-MCP:END

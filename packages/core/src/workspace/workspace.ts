@@ -2,12 +2,7 @@ import { existsSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import type { AgentIngestConfig } from "@kairohq/shared";
 import { ensureDir, readJson, writeJson } from "@kairohq/utils/fs";
-import {
-  DEFAULT_WORKSPACE_AI_CONFIG,
-  type WorkspaceAiConfig,
-  type WorkspaceConfig,
-  WorkspaceConfigSchema,
-} from "./config.ts";
+import { type WorkspaceAiConfig, type WorkspaceConfig, WorkspaceConfigSchema } from "./config.ts";
 
 const WORKSPACE_DIR = ".kairo";
 const CONFIG_FILE = "config.json";
@@ -88,7 +83,7 @@ export class Workspace {
       createdAt: new Date().toISOString(),
       ignore: [...DEFAULT_IGNORE],
       sessionIdleGapMinutes: 30,
-      ai: options.ai === undefined ? DEFAULT_WORKSPACE_AI_CONFIG : options.ai,
+      ai: options.ai ?? null,
       agentIngest: options.agentIngest ?? { enabled: false, providers: [] },
     };
     writeJson(this.configPath, config);

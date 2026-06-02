@@ -36,12 +36,7 @@ describe("askProjectMemory", () => {
       store.close();
     }
 
-    const answer = await askProjectMemory(
-      { workspace },
-      "Why did dashboard routing change?",
-      5,
-      false,
-    );
+    const answer = await askProjectMemory({ workspace }, "Why did dashboard routing change?", 5);
 
     expect(answer?.answer).toContain("Dashboard routing split");
     expect(answer?.citations[0]).toMatchObject({

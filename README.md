@@ -17,7 +17,7 @@ This README is only for setting up Kairo as a user.
 ## Install
 
 ```sh
-npm install -g @kairohq/cli
+npm install -g @kairohq/cli @kairohq/mcp
 ```
 
 ## Initialize A Project
@@ -28,8 +28,9 @@ Run this inside the project you want Kairo to remember.
 kairo init
 ```
 
-Guided setup can import supported local assistant transcripts and configure an
-optional AI provider. You can skip both and still use local project memory.
+`kairo init` creates local Kairo state, installs Claude Code and Codex capture
+hooks, and registers the local Kairo MCP server so those assistants can query
+project memory. No Kairo AI provider is required by default.
 
 ## Ingest Existing History
 
@@ -51,14 +52,8 @@ kairo doctor
 kairo ask "what changed in the dashboard data source?"
 ```
 
-## Optional MCP Server
-
-Install this only when an MCP-compatible assistant should query Kairo memory.
-
-```sh
-npm install -g @kairohq/mcp
-kairo-mcp
-```
+Claude Code and Codex can also ask Kairo through the MCP setup written by
+`kairo init`.
 
 ## Where To Read More
 

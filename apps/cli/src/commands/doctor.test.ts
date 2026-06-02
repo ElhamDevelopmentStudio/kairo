@@ -35,6 +35,10 @@ describe("runDoctor", () => {
       { label: ".git directory", ok: true },
       { label: "Claude Code hook", ok: true },
       { label: "Codex hook", ok: true },
+      { label: "Kairo MCP config", ok: true },
+      { label: "Codex MCP config", ok: true },
+      { label: "Agent memory guidance", ok: true },
+      { label: "Claude memory guidance", ok: true },
     ]);
     expect(result.gateways.map((gateway) => [gateway.name, gateway.readiness])).toEqual([
       ["codex", "ready"],

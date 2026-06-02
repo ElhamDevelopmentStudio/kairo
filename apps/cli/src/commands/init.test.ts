@@ -19,8 +19,14 @@ describe("runInit", () => {
     const first = runInit({ name: "demo" }, projectRoot);
     const claudePath = join(projectRoot, ".claude", "hooks.json");
     const codexPath = join(projectRoot, ".codex", "hooks.json");
+    const mcpPath = join(projectRoot, ".mcp.json");
+    const agentsPath = join(projectRoot, "AGENTS.md");
+    const claudeGuidePath = join(projectRoot, "CLAUDE.md");
     const firstClaude = readFileSync(claudePath, "utf8");
     const firstCodex = readFileSync(codexPath, "utf8");
+    const firstMcp = readFileSync(mcpPath, "utf8");
+    const firstAgents = readFileSync(agentsPath, "utf8");
+    const firstClaudeGuide = readFileSync(claudeGuidePath, "utf8");
 
     const second = runInit({ name: "ignored" }, projectRoot);
 
@@ -35,19 +41,19 @@ describe("runInit", () => {
     });
     expect(readFileSync(claudePath, "utf8")).toBe(firstClaude);
     expect(readFileSync(codexPath, "utf8")).toBe(firstCodex);
+    expect(readFileSync(mcpPath, "utf8")).toBe(firstMcp);
+    expect(readFileSync(agentsPath, "utf8")).toBe(firstAgents);
+    expect(readFileSync(claudeGuidePath, "utf8")).toBe(firstClaudeGuide);
+    expect(JSON.parse(firstMcp).mcpServers.kairo.command).toBe("kairo-mcp");
+    expect(firstAgents).toContain("Kairo Project Memory");
+    expect(firstClaudeGuide).toContain("Kairo Project Memory");
   });
 
-  it("writes MiniMax AI config by default", () => {
+  it("uses local memory without AI by default", () => {
     runInit({ name: "demo" }, projectRoot);
     const config = JSON.parse(readFileSync(join(projectRoot, ".kairo", "config.json"), "utf8"));
 
-    expect(config.ai).toEqual({
-      provider: "minimax",
-      model: "MiniMax-M2.7",
-      apiKeyEnv: "MINIMAX_API_KEY",
-      authMode: "api-key",
-      baseUrl: "https://api.minimax.io/v1",
-    });
+    expect(config.ai).toBeNull();
     expect(config.agentIngest).toEqual({ enabled: false, providers: [] });
   });
 

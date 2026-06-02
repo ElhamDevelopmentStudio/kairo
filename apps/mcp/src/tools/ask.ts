@@ -9,7 +9,7 @@ export async function askProjectMemory(
   context: ToolContext,
   question: string,
   limit: number,
-  useAi = true,
+  useAi = false,
 ): Promise<MemoryAnswer | null> {
   const trimmed = question.trim();
   if (!context.workspace || trimmed.length === 0) return null;
@@ -40,7 +40,7 @@ export function registerAskTool(server: McpServer, context: ToolContext): void {
     {
       question: z.string(),
       limit: z.number().int().positive().max(10).default(5),
-      useAi: z.boolean().default(true),
+      useAi: z.boolean().default(false),
     },
     async ({ question, limit, useAi }) => ({
       content: [
